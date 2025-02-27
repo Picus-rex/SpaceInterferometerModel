@@ -1,0 +1,4 @@
+Name;Min Wav [microm];Max Wav [microm];Duration [yr] ;Baseline [m];Aperture [m];Nulling needed
+Darwin;6;20;5;500;2;1E-05
+TPF-I;6;18;5;100;4;1E-05
+LIFE;4;18.5;5;600;4;1E-05

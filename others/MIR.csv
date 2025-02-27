@@ -1,0 +1,6 @@
+Name, Diameter [m], Reference wavelength [m]
+Spitzer,0.85,3.57e-6
+Herschel Space Observatory,3.28,363e-6
+James Webb Space Telescope,6.6,5.6e-6
+Giant Magellan Telescope,25.4,5e-6
+Thirty Meter Telescope,30,5e-6

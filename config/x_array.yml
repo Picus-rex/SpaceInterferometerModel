@@ -1,0 +1,58 @@
+instrument:
+    apertures: 4
+    baseline: 10
+    apertures_ratio: 2
+    array: "X-Array"
+    intensities:
+     - [1, 1, 1, 1]
+
+    wavelength: 10e-6
+
+    instrumental_leakage:               # [1]
+        intensity: 2e-6
+        phase: 1e-5
+        polarisation: 1e-5
+
+
+environment:
+    stellar_angular_radius: 1e-9        # [rad]
+    exoplanet_position:                 # x, y in [rad]
+        - 2.27e-7
+        - 0
+
+    disturbances:                       # [1]
+
+        star_flux: 7.5e5                # Stellar flux [photons/s/m^2]
+        planet_flux: 0.0775             # Planet flux [photons/s/m^2]
+        exozodiacal_flux: 22.07         # EZ flux [photons/s/m^2]
+        localzodiacal_flux: 7.1e12      # LZ flux [photons/s/m^2]
+
+        exozodiacal_extension: 3.2318e-07 # TBD
+
+        effective_solid_angle: 8.75e-12 # sterad
+
+        perturbations:
+            intensity: 1e-3
+            phase: 1e-3
+            x_position: 1e-3
+            y_position: 1e-3
+
+
+simulation:
+    consider_non_ideal: true                # If false, fields with [1] are optional
+    monte_carlo_iterations: 1000            # [1]
+
+    angular_extension:
+     - [-0.1e-6, 0.1e-6, 500]               # start, end, number of points
+
+
+outputs:
+    plot_array: true
+
+    plot_planets: 0
+    planets_angular_separations:
+     - 3e-6
+     - 10e-6
+     - 15e-6
+
+    plot_star: true

@@ -7,59 +7,67 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
+data = ReadYaml('config/linear_array.yml');
+
 %% Parameters
 
-N = 4;                                          % Apertures
-lambda = 10e-6;                                 % Wavelength [m] 
-B = 10;                                         % Baseline scaling factor
-Ratio = 2;                                      % Apertures position ratio
-stellar_ang_radius = 0.001 * lambda / B;        % Default value
+% Creation of the grid for the response
+data.simulation.theta_range = linspace(data.simulation.angular_extension{1}, ...
+    data.simulation.angular_extension{2}, data.simulation.angular_extension{3});    
+[data.simulation.theta_x, data.simulation.theta_y] = ...
+    meshgrid(data.simulation.theta_range, data.simulation.theta_range);
 
-plot_planets = 1;                               % 0: No 1: below 2: P-Pop
+% Positions (x, y) of the apertures 
+data.instrument.positions = define_array(data.instrument.array, ...
+    data.instrument.baseline, data.instrument.apertures_ratio);
 
+% Type conversion (from cell to matrix)
+data.instrument.intensities = cell2mat(data.instrument.intensities);
+
+% Plot array
+if data.outputs.plot_array
+    data.instrument.diameter = plot_apertures(data.instrument.positions, ...
+        data.instrument.intensities, true);
+else
+    data.instrument.diameter = plot_apertures(data.instrument.positions, ...
+        data.instrument.intensities, false);
+end
+
+%% Analysis
+
+% Compute optimal splitting
+[data.simulation.U, data.instrument.combination, ...
+    data.instrument.phase_shifts] = compute_optimal_splitting(...
+    data.instrument.apertures, data.instrument.baseline, ...
+    data.instrument.wavelength, data.instrument.positions(:, 1), ...
+    data.instrument.positions(:, 2), ...
+    data.environment.stellar_angular_radius, true);
+
+% Classify baselines
+classify_baselines(data.instrument.positions, data.instrument.phase_shifts, true);
+
+% Complex Field and Response Function
+if data.simulation.consider_non_ideal
+    [T, T_chopped, T_real, T_real_std] = compute_response_function(data);
+else
+    [T, T_chopped] = compute_response_function(data);
+end
+
+%% Plot
+
+plot_planets = data.outputs.plot_planets;
 if plot_planets == 1
-    theta_planets = [3e-6, 10e-6, 15e-6];       % Plan. Angular separations
+    theta_planets = cell2mat(data.outputs.planets_angular_separations);
     Np = length(theta_planets);                 % Simulated planets
 elseif plot_planets == 2
     [ang_sep, stellar_ang_radius] = select_random_exoplanet("others/TestPlanetPopulation.txt");
 end
 
-plot_array = true;                              % Switch array plot
-plot_star = true;                               % Plot star
-
-theta_range = linspace(-20e-6, 20e-6, 2000);    % Angular grid [rad]
-[theta_x, theta_y] = meshgrid(theta_range, theta_range);
-
-% Positions (x, y) of the apertures 
-positions_xarray = define_array("X-Array", B, Ratio);
-
-positions_linear = define_array("Linear", B, Ratio*1.5);
-
-positions = positions_xarray;
-
-% Amplitudes for all apertures.
-A = ones(4, 1);
-
-% Plot array
-if plot_array
-    D = plot_apertures(positions, A, true);
-end
-
-
-% Compute optimal splitting
-[~, combination, phase_shifts] = compute_optimal_splitting(N, B, lambda,...
-    positions(:, 1), positions(:, 2), stellar_ang_radius, true);
-
-classify_baselines(positions, phase_shifts, true);
-
-%% Complex Field and Response Function
-
-[T, T_chopped] = compute_response_function(lambda, N, ...
-                positions, A, phase_shifts, combination, theta_x, theta_y);
-
-%% Plot
+plot_array = data.outputs.plot_array;
+plot_star = data.outputs.plot_star;
 
 angles = linspace(0, 2*pi, 10000); 
+theta_range = data.simulation.theta_range;
 
 figure; hold on;
 imagesc(theta_range, theta_range, T);
@@ -76,8 +84,8 @@ elseif plot_planets == 2
     plot(planet_x, planet_y, 'w--', 'LineWidth', 1.5);
 end
 if plot_star
-    star_x = stellar_ang_radius * cos(angles);
-    star_y = stellar_ang_radius * sin(angles);
+    star_x = data.environment.stellar_angular_radius * cos(angles);
+    star_y = data.environment.stellar_angular_radius * sin(angles);
     plot(star_x, star_y, 'r--', 'LineWidth', 1.5);
 end
 xlabel('\theta_x (rad)');
@@ -89,6 +97,9 @@ axis xy; axis equal;
 figure; 
 semilogy(theta_range, T(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", "Normal response"); hold on;
 semilogy(theta_range, T_chopped(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", "Phase chopping response");
+if data.simulation.consider_non_ideal
+    semilogy(theta_range, T_real(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", "Error response");
+end
 
 % Scaling factor C for theta^2 and theta^4
 C2 = T(floor(size(T, 1)/2), floor(size(T, 1)/2)) / theta_range(floor(size(T, 1)/2))^2;

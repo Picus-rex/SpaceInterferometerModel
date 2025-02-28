@@ -1,3 +1,4 @@
 exports/
 .DS_Store
 *.asv
+*temp*

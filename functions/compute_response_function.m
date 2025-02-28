@@ -1,10 +1,9 @@
-function [T_standard, T_chopped, T_real, T_real_std] = ...
-    compute_response_function(lambda, N, positions, A, phase_shifts, ...
-    combination, theta_x, theta_y, N_MC, sigma_phase, sigma_intensity, sigma_pol)
+function [T_standard, T_chopped, T_real, T_real_std, data] = ...
+    compute_response_function(data)
 %COMPUTE_RESPONSE_FUNCTION Computes the response function and the phase 
 % chopping response function for a system of N apertures.
 %
-% INPUTS:
+% ARGUMENT INPUTS:
 %   lambda[1]           Wavelength [m]
 %   N[1]                Number of apertures [-]
 %   positions[Nx2]      Matrix of (x, y) positions of the apertures
@@ -12,16 +11,24 @@ function [T_standard, T_chopped, T_real, T_real_std] = ...
 %   phase_shifts[Nx1]   Vector of phase shifts for each aperture
 %   combination[Nx1]    Vector of beam combiner coefficients
 %   theta_x, theta_y    Meshgrid of angular coordinates
-%  Optional:
 %   N_MC[1]             Number of MC simulations to perform
 %   sigma_phase[1]      Standard deviation for the phase errors [rad]
 %   sigma_intensity[1]  Standard deviation for relative intensity errors 
 %   sigma_pol[1]        Standard deviation for polarisation-induced phase errors [rad]
+%   environment[struct] External perturbations (see configuration)
+%
+%   OR
+%
+%   data[struct]        For integrated development, all the inputs can be
+%                       grouped into a single struct
 %
 % OUTPUTS:
 %   T_standard          Normalised response function 
 %   T_chopped           Normalised phase chopping response function
-%  If optional arguments have been specified:
+%   data[struct]        For integrated development, group all the results                
+% 
+%   With specific inputs:
+%
 %   T_real              Normalized mean intensity response with errors
 %   T_real_std          Normalized 1-sigma envelope of the error response
 %
@@ -38,45 +45,90 @@ function [T_standard, T_chopped, T_real, T_real_std] = ...
 %                     - Added compatibility for MC analysis and error
 %                       definition. The function can still be used as it
 %                       is.
+%   2025-02-28 -------- 2.0
+%                     - Use of name-value pairs for inputs.
+%                     - Add external sensitivity.
+%                     - Not retrocompatible with older versions.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Dealing with partial outputs
-if nargin <= 8
-    N_MC = 0;
+arguments
+    data.lambda (1, 1) double = 10e-6
+    data.N (1, 1) double = 4
+    data.positions (:, 2) {mustBeNumeric}
+    data.A (:, 1) double = [1; 1; 1; 1]
+    data.phase_shifts (:, 1) double
+    data.combinations (:, 1) double
+    data.theta_x (:, :) double
+    data.theta_y (:, :) double
+
+    data.N_MC (1, 1) double = 0
+    data.sigma_phase (1, 1) double = 0
+    data.sigma_intensity (1, 1) double = 0
+    data.sigma_pol (1, 1) double = 0
+
+    data.environment struct = struct()
+
+    data.data struct
 end
 
 % If a single struct is passed (in the integrated module), extract
 % everything to continue.
-if isstruct(lambda)
-
-    data = lambda;
-    instrument =  data.instrument;
-    simulation =  data.simulation;
-    environment = data.environment;
-
-    lambda = instrument.wavelength;
-    N = instrument.apertures;
-    positions = instrument.positions; 
-    A = instrument.intensities;
-    phase_shifts = instrument.phase_shifts;
-    combination = instrument.combination;
+if ~isfield(data, "data")
     
-    theta_x = simulation.theta_x;
-    theta_y = simulation.theta_y;
+    data.instrument = {
+        "wavelength": data.lambda, ...
+        "apertures" : data.N, ...
+        "positions" : data.positions, ...
+        "intensities": data.A, ...
+        "phase_shifts": data.phase_shifts, ...
+        "combination": data.combination
+    };
 
-    if isfield(data.simulation, "monte_carlo_iterations") && simulation.monte_carlo_iterations > 0
-        N_MC = simulation.monte_carlo_iterations;
-        
-        sigma_phase = instrument.instrumental_leakage.phase;
-        sigma_intensity = instrument.instrumental_leakage.intensity;
-        sigma_pol = instrument.instrumental_leakage.polarisation;
-    else
-        N_MC = 0;
+    data.simulation = {
+        "theta_x" : data.theta_x, ...
+        "theta_y" : data.theta_y, ...
+        "monte_carlo_iterations" : data.N_MC
+    };
+
+    if data.N_MC > 0
+         
+        data.instrument.instrumental_leakage.phase = data.sigma_phase;
+        data.instrument.instrumental_leakage.intensity = data.sigma_intensity;
+        data.instrument.instrumental_leakage.polarisation = data.sigma_pol;
+
     end
 
+
+else
+    data = data.data;
 end
+
+instrument =  data.instrument;
+simulation =  data.simulation;
+environment = data.environment;
+
+lambda = instrument.wavelength;
+N = instrument.apertures;
+positions = instrument.positions; 
+A = instrument.intensities;
+phase_shifts = instrument.phase_shifts;
+combination = instrument.combination;
+
+theta_x = simulation.theta_x;
+theta_y = simulation.theta_y;
+
+if isfield(data.simulation, "monte_carlo_iterations") && simulation.monte_carlo_iterations > 0
+    N_MC = simulation.monte_carlo_iterations;
+    
+    sigma_phase = instrument.instrumental_leakage.phase;
+    sigma_intensity = instrument.instrumental_leakage.intensity;
+    sigma_pol = instrument.instrumental_leakage.polarisation;
+else
+    N_MC = 0;
+end
+
 
 % Grid dimensions
 nx = size(theta_x, 1);
@@ -98,6 +150,7 @@ if N_MC > 0
 
     % Preallocate for MC analysis 
     R_MC = zeros(nx, ny, N_MC);
+    eps_MC = zeros(N_MC, 1);
     
     % Monte Carlo simulation loop
     for mc = 1:N_MC
@@ -111,22 +164,35 @@ if N_MC > 0
 
         R_MC(:,:,mc) = create_field(theta_x, theta_y, N, lambda, ...
             positions, A_err, combination, phase_err);
+
+        if ~isempty(fieldnames(environment))
+            eps_MC(mc) = add_external_sensitivity(instrument, environment);
+        end
+
     end
     
     % CMean and standard deviation
     R_mean = mean(R_MC, 3);
     R_std  = std(R_MC, 0, 3);
+    epsilon = mean(eps_MC);
+    epsilon_std = std(eps_MC, 0);
     
     % Normalize the responses
     norm_factor = max(R_mean(:));
     
-    T_real = R_mean / norm_factor;
+    T_real = R_mean * (1 + epsilon) / norm_factor;
     T_real_std = R_std / norm_factor;
 
 end
 
-end
+% Group results
+data.simulation.T_standard = T_standard;
+data.simulation.T_chopped = T_chopped;
+data.simulation.T_real = T_real;
+data.simulation.T_read_std = T_real_std;
+data.simulation.epsilon_std = epsilon_std;
 
+end
 
 
 

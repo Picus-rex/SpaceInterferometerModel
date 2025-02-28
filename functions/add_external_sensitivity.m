@@ -1,18 +1,49 @@
 function epsilon = add_external_sensitivity(instrument, environment)
+%ADD_EXTERNAL_SENSITIVITY Consider the effects of environmental leakage on
+%the behaviour of a nulling interferometer. This function requires inputs
+%structured following the configuration files.
+%
+% INPUTS:
+%   instruments[struct] Fields linked to the interferometer. Includes:
+%                        - positions    Nx2
+%                        - lambda       1
+%                        - diameter     1
+%                        - phase_shifts Nx1
+%                        - apertures    1
+%                        - intensities  Nx1
+%   environment[struct] Fields linked to the environmental conditions. For
+%                       details, consider the configuration file
+%
+% OUTPUTS:
+%   epsilon[1]          Perturbation associated to the response function.
+%
+% REFERENCES:
+%   Lay OP. Systematic errors in nulling interferometers. 2004;  
+%
+% NOTES:
+%   - This function is part of Monte Carlo analysis.
+%
+% VERSION HISTORY:
+%   2025-02-27 -------- 1.0
+%
+% Author: Francesco De Bortoli
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Extract data from instrument
 positions = instrument.positions;
 lambda = instrument.wavelength;
-diameter = instrument.diameter;
-phi = instrument.phases;
+diameter = instrument.diameter(1);
+phi = instrument.phase_shifts;
+N = instrument.apertures;
+A = instrument.intensities';
 
 % Extract data from perturbations
 Fstar = environment.disturbances.star_flux / diameter;       
 theta_star = environment.stellar_angular_radius;             
 
 Fplanet = environment.disturbances.planet_flux; 
-theta_planet_x = environment.exoplanet_position(1);
-theta_planet_y = environment.exoplanet_position(2);
+theta_planet_x = cell2mat(environment.exoplanet_position(1));
+theta_planet_y = cell2mat(environment.exoplanet_position(2));
 
 FEZ = environment.disturbances.exozodiacal_flux; 
 theta_ez = environment.disturbances.exozodiacal_extension;

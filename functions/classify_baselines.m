@@ -15,7 +15,8 @@ function imaging_baselines = classify_baselines(positions, phases, export)
 %                        - aperture_i, aperture_j are indices of the 
 %                          baseline pair
 %                        - imaging_flag = 1 if imaging baseline
-%                        - imaging_flag = 0 if nulling baseline 
+%                        - imaging_flag = 0 if nulling baseline
+%                        - imaging_flag = NaN otherwise (mixed situation)
 %
 % REFERENCES:
 %   Lay OP. Imaging properties of rotating nulling interferometers. 2005;
@@ -24,15 +25,16 @@ function imaging_baselines = classify_baselines(positions, phases, export)
 %   - A baseline may contribute to both imaging and nulling.
 %
 % VERSION HISTORY:
-%   2025-02-14 -------- 1.1
+%   2025-02-14 -------- 1.0
+%   2025-02-28 -------- 1.1
+%                     - Corrected defintion based on the used convention
+%                       (this does not correspond anymore to the reference)
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 N = size(positions, 1); 
 num_baselines = nchoosek(N, 2);         % Number of unique baseline pairs
-
-warning("Classification may vary depending on the definition, please check.")
 
 imaging_baselines = zeros(num_baselines, 3); 
 
@@ -41,13 +43,13 @@ for i = 1:N-1
     for j = i+1:N
         
         % Compute phase difference between aperture pairs
-        delta_phi = phases(i) - phases(j);
+        delta_phi = abs(abs(phases(i)) - abs(phases(j)));
         
         % Determine if it is an imaging baseline
-        if abs(sin(delta_phi)) > 1e-6
-            is_imaging = true;
-        elseif abs(cos(delta_phi)) > 1e-6
+        if abs(delta_phi - pi) < 1e-6
             is_imaging = false;
+        elseif delta_phi < 1e-6
+            is_imaging = true;
         else
             is_imaging = NaN;
         end

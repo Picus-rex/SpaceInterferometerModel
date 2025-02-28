@@ -17,8 +17,7 @@ instrument:
 environment:
     stellar_angular_radius: 1e-9        # [rad]
     exoplanet_position:                 # x, y in [rad]
-        - 2.27e-7
-        - 0
+        - [2.27e-7, 0]
 
     disturbances:                       # [1]
 
@@ -32,8 +31,8 @@ environment:
         effective_solid_angle: 8.75e-12 # sterad
 
         perturbations:
-            intensity: 1e-3
-            phase: 1e-3
+            intensity: 1e-2
+            phase: 1e-2
             x_position: 1e-3
             y_position: 1e-3
 

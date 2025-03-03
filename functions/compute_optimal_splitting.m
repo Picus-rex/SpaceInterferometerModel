@@ -74,6 +74,10 @@ phases = angle(U(:, end)).';
 
 if autoplot
     
+    conversion_rad2mas = 1e3 * (3600 * 180) / pi;
+    theta_x = theta_x * conversion_rad2mas;
+    theta_y = theta_y * conversion_rad2mas;
+
     % Compute the transformed field at the output and normalised ity
     W = U' * A';  
     W_intensity = abs(W).^2;
@@ -86,8 +90,8 @@ if autoplot
         imagesc(theta_x, theta_y, ...
             reshape(abs(W_intensity(m, :)), sqrt(Npt), sqrt(Npt)));
         colorbar; styling; % colormap winter;
-        xlabel('\theta_x [rad]');
-        ylabel('\theta_y [rad]');
+        xlabel('\theta_x [mas]');
+        ylabel('\theta_y [mas]');
         title(['Mode ', num2str(m)]);
     end
     
@@ -97,8 +101,8 @@ if autoplot
             imagesc(theta_x, theta_y, ...
                 reshape(abs(W_intensity(m, :)), sqrt(Npt), sqrt(Npt)));
             colorbar; styling(true, 6, 6, sprintf("exports/optimal_modes_%.0f.pdf", m+4)); % colormap winter;
-            xlabel('\theta_x [rad]');
-            ylabel('\theta_y [rad]');
+            xlabel('\theta_x [mas]');
+            ylabel('\theta_y [mas]');
 
             % set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 6, 6]);
             % set(findall(gcf, '-property', 'FontName'), 'FontName', 'Times New Roman');
@@ -119,7 +123,7 @@ if autoplot
         W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
         intensity_profile = W_reshaped(i_y0, :);
         plot(theta_x, intensity_profile, "LineWidth", 1.5, 'DisplayName', ['Mode ', num2str(m)]);
-        xlabel('\theta_x (\lambda/B)');
+        xlabel('\theta_x [mas]');
         ylabel('Intensity profile');
         title(['Mode ', num2str(m)]);
     end
@@ -132,7 +136,7 @@ if autoplot
         hold on;
     end
 
-    xlabel('\theta_x (\lambda/B)');
+    xlabel('\theta_x [mas]');
     ylabel('Normalized Intensity');
     legend;
     grid minor; hold off;

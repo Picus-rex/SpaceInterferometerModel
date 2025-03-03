@@ -1,4 +1,4 @@
-function [T_standard, T_chopped, T_real, T_real_std, data] = ...
+function [T_standard, T_chopped, T_real, T_real_chopped, data] = ...
     compute_response_function(data)
 %COMPUTE_RESPONSE_FUNCTION Computes the response function and the phase 
 % chopping response function for a system of N apertures.
@@ -30,7 +30,7 @@ function [T_standard, T_chopped, T_real, T_real_std, data] = ...
 %   With specific inputs:
 %
 %   T_real              Normalized mean intensity response with errors
-%   T_real_std          Normalized 1-sigma envelope of the error response
+%   T_real_chopped      Norm. mean int. response with errors and chopped
 %
 % REFERENCES:
 %   Lay OP. Imaging properties of rotating nulling interferometers. 2005;
@@ -49,6 +49,8 @@ function [T_standard, T_chopped, T_real, T_real_std, data] = ...
 %                     - Use of name-value pairs for inputs.
 %                     - Add external sensitivity.
 %                     - Not retrocompatible with older versions.
+%   2025-03-03 -------- 2.1
+%                     - Added "real" chopped signal as output.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -131,7 +133,7 @@ end
 
 
 % Grid dimensions
-nx = size(theta_x, 1);
+nx = size(theta_x, 2);
 ny = size(theta_y, 1);
 
 R_standard = create_field(theta_x, theta_y, N, lambda, positions, A, ...
@@ -149,7 +151,8 @@ T_chopped = R_chopped / max(R_chopped(:));
 if N_MC > 0
 
     % Preallocate for MC analysis 
-    R_MC = zeros(nx, ny, N_MC);
+    R_MC = zeros(ny, nx, N_MC);
+    R_MC_neg = zeros(ny, nx, N_MC);
     eps_MC = zeros(N_MC, 1);
     
     % Monte Carlo simulation loop
@@ -165,6 +168,9 @@ if N_MC > 0
         R_MC(:,:,mc) = create_field(theta_x, theta_y, N, lambda, ...
             positions, A_err, combination, phase_err);
 
+        R_MC_neg(:,:,mc) = create_field(theta_x, theta_y, N, lambda, ...
+            positions, A_err, combination, -phase_err);
+
         if ~isempty(fieldnames(environment))
             eps_MC(mc) = add_external_sensitivity(instrument, environment);
         end
@@ -173,6 +179,7 @@ if N_MC > 0
     
     % CMean and standard deviation
     R_mean = mean(R_MC, 3);
+    R_mean_neg = mean(R_MC_neg, 3);
     R_std  = std(R_MC, 0, 3);
     epsilon = mean(eps_MC);
     epsilon_std = std(eps_MC, 0);
@@ -183,12 +190,17 @@ if N_MC > 0
     T_real = R_mean * (1 + epsilon) / norm_factor;
     T_real_std = R_std / norm_factor;
 
+    R_real_chopped = 0.5 * abs(R_mean - R_mean_neg);
+    T_real_chopped = R_real_chopped / max(R_real_chopped(:));
+
+
 end
 
 % Group results
 data.simulation.T_standard = T_standard;
 data.simulation.T_chopped = T_chopped;
 data.simulation.T_real = T_real;
+data.simulation.T_real_chopped = T_real_chopped;
 data.simulation.T_read_std = T_real_std;
 data.simulation.epsilon_std = epsilon_std;
 
@@ -200,7 +212,7 @@ end
 function R = create_field(theta_x, theta_y, N, lambda, positions, A, ...
     combination, phase_shifts)
 
-E = zeros(size(theta_x));
+E = zeros(size(theta_y, 1), size(theta_x, 2));
 
 for k = 1:N
 

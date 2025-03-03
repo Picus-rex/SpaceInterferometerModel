@@ -6,7 +6,7 @@ instrument:
     intensities:
      - [0.5, 0.5, 0.5, 0.5]
     phase_shifts:
-     - [0, 3.1415, 1.5708, 4.7124]
+     - [1.5708, 4.7124, 3.1415, 0]
 
     wavelength: 10e-6
 

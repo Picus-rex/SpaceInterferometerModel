@@ -88,8 +88,8 @@ end
 
 % For a single value, rms(N_c) is the absolute value; avoid diving by 0.
 rms_Nc = abs(N_c);
-if rms_Nc == 0
-    rms_Nc = 1;  
+if rms_Nc < 1e-6
+    rms_Nc = 1;
 end
 
 % Compute angular resolution as the FWHM

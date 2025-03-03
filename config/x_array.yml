@@ -43,7 +43,8 @@ simulation:
     monte_carlo_iterations: 1000            # [1]
 
     angular_extension:
-     - [-0.1e-6, 0.1e-6, 500]               # start, end, number of points
+        theta_x: [-0.1e-6, 0.1e-6, 500]     # start, end, number of points
+        theta_y: [-0.1e-6, 0.1e-6, 500]     # start, end, number of points
 
 
 outputs:

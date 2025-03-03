@@ -72,7 +72,15 @@ Fields in italic are optional.
 | -------- | -------- | --------------- |
 | `consider_non_ideal` | - | Flag indicating whether to consider non-ideal conditions |
 | *`monte_carlo_iterations`* | - | Number of iterations for the Monte Carlo simulation |
-| `angular_extension` | multiple | Vector of start, end points [rad] and number of points to consider. |
+| `angular_extension` | multiple | Vector of start, end points [rad] and number of points to consider. Otherwise, is a struct, as described below. |
+
+If non square arrays are desired (to increase the angular resolution on the x axis for linear arrays, for example, without exceeding resources), then `angular_extension` must be an array with the following fields:
+
+| **Name** | **Unit** | **Description** |
+| -------- | -------- | --------------- |
+| `theta_x`| multiple | Vector of start, end points [rad] and number of points to consider for the x axis. |
+| `theta_y`| multiple | Vector of start, end points [rad] and number of points to consider for the y axis. |
+
 
 #### Output properties
 

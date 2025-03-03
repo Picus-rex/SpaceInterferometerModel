@@ -19,6 +19,7 @@ function [eta_mod, IWA] = ...
 %
 % NOTES:
 %   - Check plot for correctness of fmincon function.
+%   - This function works only if the exoplanet is in the x axis. 
 %
 % VERSION HISTORY:
 %   2025-02-18 -------- 1.0
@@ -59,11 +60,14 @@ IWA = fmincon(fun, x0/2, [], [], [], [], theta_range(jmin)/1e-7, ...
 IWA = IWA * 1e-7;
 
 if autoplot
+    
+    conversion_rad2mas = 1e3 * (3600 * 180) / pi;
+    theta_range = theta_range * conversion_rad2mas;
 
     figure; hold on;
     plot(theta_range, signal, "LineWidth", 1.5, "DisplayName", "PSF along maximum peak")
     yline(eta_mod, '--', "LineWidth", 1.5, "DisplayName", "Asymptotic modulation efficiency");
-    xline(IWA, '--', "LineWidth", 1.5, "DisplayName", "Internal working angle");
+    xline(IWA*conversion_rad2mas, '--', "LineWidth", 1.5, "DisplayName", "Internal working angle");
 
     xline(theta_range(j), "r--", "DisplayName", "Max \theta")
     xline(theta_range(jmin), "b--", "DisplayName", "Min \theta")

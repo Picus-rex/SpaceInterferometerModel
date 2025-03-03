@@ -16,10 +16,11 @@ lambda = data.instrument.wavelength;
 B = data.instrument.baseline;
 A = cell2mat(data.instrument.intensities);
 phase_shifts = cell2mat(data.instrument.phase_shifts);
-theta_range = linspace(data.simulation.angular_extension{1}, ...
-    data.simulation.angular_extension{2}, data.simulation.angular_extension{3});
+theta_range = define_range(data.simulation.angular_extension);
 
 positions = define_array(data.instrument.array, B, data.instrument.apertures_ratio);
+
+conversion_rad2mas = 1e3 * (3600 * 180) / pi;
 
 %% Compute the PSF
 PSF = compute_psf(lambda, A, positions, phase_shifts, [1.453e-7, 0], theta_range);
@@ -36,8 +37,8 @@ x = r * cos(angles);
 y = r * sin(angles);
 
 figure; hold on;
-imagesc(theta_range, theta_range, PSF);
-plot(x, y, 'r--')
+imagesc(theta_range * conversion_rad2mas, theta_range * conversion_rad2mas, PSF);
+plot(x * conversion_rad2mas, y * conversion_rad2mas, 'r--')
 colorbar;
 title("PSF");
 

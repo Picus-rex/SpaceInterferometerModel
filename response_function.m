@@ -7,15 +7,13 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/linear_array.yml');
+data = ReadYaml('config/x_array.yml');
 
 %% Parameters
 
 % Creation of the grid for the response
-data.simulation.theta_range = linspace(data.simulation.angular_extension{1}, ...
-    data.simulation.angular_extension{2}, data.simulation.angular_extension{3});    
-[data.simulation.theta_x, data.simulation.theta_y] = ...
-    meshgrid(data.simulation.theta_range, data.simulation.theta_range);
+[data.simulation.theta_range, data.simulation.theta_x, ...
+    data.simulation.theta_y] = define_range(data.simulation.angular_extension);
 
 % Positions (x, y) of the apertures 
 data.instrument.positions = define_array(data.instrument.array, ...
@@ -49,7 +47,7 @@ data.simulation.baselines = ...
 
 % Complex Field and Response Function
 if data.simulation.consider_non_ideal
-    [T, T_chopped, T_real, T_real_std] = compute_response_function("data", data);
+    [T, T_chopped, T_real, T_real_chopped, data] = compute_response_function("data", data);
 else
     [T, T_chopped] = compute_response_function("data", data);
 end
@@ -68,7 +66,8 @@ plot_array = data.outputs.plot_array;
 plot_star = data.outputs.plot_star;
 
 angles = linspace(0, 2*pi, 10000); 
-theta_range = data.simulation.theta_range;
+conversion_rad2mas = 1e3 * (3600 * 180) / pi;
+theta_range = data.simulation.theta_range * conversion_rad2mas;
 
 figure; hold on;
 imagesc(theta_range, theta_range, T);
@@ -89,8 +88,8 @@ if plot_star
     star_y = data.environment.stellar_angular_radius * sin(angles);
     plot(star_x, star_y, 'r--', 'LineWidth', 1.5);
 end
-xlabel('\theta_x (rad)');
-ylabel('\theta_y (rad)');
+xlabel('\theta_x [mas]');
+ylabel('\theta_y [mas]');
 title('Response Function');
 colorbar; styling; % colormap winter;
 axis xy; axis equal;
@@ -100,6 +99,7 @@ semilogy(theta_range, T(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName"
 semilogy(theta_range, T_chopped(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", "Phase chopping response");
 if data.simulation.consider_non_ideal
     semilogy(theta_range, T_real(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", "Error response");
+    semilogy(theta_range, T_real_chopped(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", "Error response chopped");
 end
 
 % Scaling factor C for theta^2 and theta^4
@@ -111,7 +111,7 @@ semilogy(theta_range, C2 * theta_range.^(2), "--", 'DisplayName', "\theta^{2}", 
 semilogy(theta_range, C4 * theta_range.^(4), "--", 'DisplayName', "\theta^{4}", "LineWidth", 1.5);
 semilogy(theta_range, C6 * theta_range.^(6), "--", 'DisplayName', "\theta^{6}", "LineWidth", 1.5);
 
-xlabel('\theta_x (\lambda/B)');
+xlabel('\theta_x [mas]');
 ylabel('Normalized Intensity');
 legend;
 grid minor; hold off;
@@ -147,8 +147,8 @@ if plot_planets == 1
         styling; % colormap winter; 
         colorbar;
         
-        xlabel('\theta_x (rad)');
-        ylabel('\theta_y (rad)');
+        xlabel('\theta_x [mas]');
+        ylabel('\theta_y [mas]');
         zlabel('Normalized Intensity');
         title(['Planet ', num2str(p)]);
         grid on; view([0, 0]);

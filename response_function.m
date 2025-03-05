@@ -7,7 +7,8 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/x_array.yml');
+data = ReadYaml('config/linear_array.yml');
+data = convert_data(data);
 
 %% Parameters
 

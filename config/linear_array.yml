@@ -7,6 +7,7 @@ instrument:
      - [1, 1, 1, 1]
 
     wavelength: 10e-6
+    throughput: 0.1
 
     instrumental_leakage:               # [1]
         intensity: 2e-6
@@ -15,6 +16,9 @@ instrument:
 
 
 environment:
+    target_distance: 15                 # [pc]
+    star_radius: 696340000              # [m]
+    star_temperature: 5770              # [K]
     stellar_angular_radius: 1e-9        # [rad]
     exoplanet_position:                 # x, y in [rad]
         - [2.27e-7, 0]
@@ -27,6 +31,7 @@ environment:
         localzodiacal_flux: 7.1e12      # LZ flux [photons/s/m^2]
 
         exozodiacal_extension: 3.2318e-07 # TBD
+        exozodiacal_inclination: 60     # [deg]
 
         effective_solid_angle: 8.75e-12 # sterad
 

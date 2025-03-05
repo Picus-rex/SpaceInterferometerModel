@@ -36,10 +36,14 @@ diameter = instrument.diameter(1);
 phi = instrument.phase_shifts;
 N = instrument.apertures;
 A = instrument.intensities';
+throughput = instrument.throughput;
 
 % Extract data from perturbations
 Fstar = environment.disturbances.star_flux / diameter;       
-theta_star = environment.stellar_angular_radius;             
+theta_star = environment.stellar_angular_radius; 
+target_dist = environment.target_distance;
+star_radius = environment.star_radius;
+star_temperature = environment.star_temperature;
 
 Fplanet = environment.disturbances.planet_flux; 
 theta_planet_x = cell2mat(environment.exoplanet_position(1));
@@ -121,15 +125,11 @@ for j = 1:N
         b_jk = sqrt(xjk^2 + yjk^2);
         arg = 2*pi * b_jk * theta_ez / lambda;
         
-        if j ~= k
-            B_EZ(j,k) = 2 * FEZ * besselj(1, arg) / arg;
-            dB_dx(j,k) = -2 * xjk * FEZ * besselj(2, arg) / b_jk^2;
-            dB_dy(j,k) = -2 * yjk * FEZ * besselj(2, arg) / b_jk^2;
-        else
-            B_EZ(j,k) = 2 * FEZ * 0.5;
-            dB_dx(j,k) = -2 * xjk * FEZ * 0;
-            dB_dy(j,k) = -2 * yjk * FEZ * 0;
-        end
+        % SET 0 LATITUDE TEMP! ############################################
+        [~, B_EZ(j,k)] = compute_background_emissions(lambda, diameter, ...
+            b_jk, 0, target_dist, star_radius, star_temperature, 1, throughput);
+        
+        dB_dx(j,k) = 0;
  
     end
 end

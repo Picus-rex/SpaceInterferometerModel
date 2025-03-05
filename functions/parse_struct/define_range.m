@@ -1,5 +1,6 @@
 function [theta_range, theta_x, theta_y] = define_range(angular_extension)
-%DEFINE_RANGE
+%DEFINE_RANGE Extract the values to create the visualisation grid
+%associated to the problem.
 
 if ~isstruct(angular_extension)
     theta_range = linspace(angular_extension{1}, angular_extension{2}, ...

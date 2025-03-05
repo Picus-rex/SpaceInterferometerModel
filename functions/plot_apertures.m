@@ -17,7 +17,7 @@ function [D, a] = plot_apertures(positions, A, export)
 %   Lay OP. Imaging properties of rotating nulling interferometers. 2005; 
 %
 % NOTES:
-%   - Efficiencies have been assumed
+%   - Efficiencies have been assumed from Lay 2004.
 %
 % VERSION HISTORY:
 %   2025-02-14 -------- 1.0
@@ -27,7 +27,7 @@ function [D, a] = plot_apertures(positions, A, export)
 
 % Constants
 eta_opt = 0.2;          % Optical transmission efficiency
-eta_bc = 0.90;          % Beam combiner efficiency
+eta_bc = 0.25;          % Beam combiner efficiency
 
 % Aperture sizes relation
 a = (A.^2) / (eta_opt * eta_bc);

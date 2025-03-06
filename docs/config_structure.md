@@ -20,6 +20,7 @@ Fields in italic are optional.
 | `apertures_ratio` | - | Ratio among the maximum and minimum baselines of the system^[In general, it depends on the selected array] | 
 | `array` | string    | Name of the used array, either `Diamond`, `Linear` or `X-Array` |
 | `baseline` | m      | Maximum baseline of the system |
+| `efficiencies` | struct | Includes fields `beam_combiner` and `optical_line` |
 | *`instrumental_leakage`* | struct | See below. All these fields are optional. |
 | `intensities` | -   | Vector of the intensities associated to each aperture |
 | *`phase_shifts`* | rad | Can be specified manually or derived using appropriate functions |
@@ -41,7 +42,11 @@ Fields in italic are optional.
 | -------- | -------- | --------------- |
 | `stellar_angular_radius` | rad | Angular radius of the star |
 | `exoplanet_position` | rad | Position of the exoplanet in the sky, given as a vector of x and y coordinates |
+| `exoplanet_radius` | m | Radius of the exoplanet |
 | *`disturbances`* | struct | See below. All these fields are optional. |
+| `star_radius` | m   | Radius of the star. |
+| `star_temperature` | K | Star effective temperature. |
+| `target_distance` | pc | Distance to the study element. |
 
 Where `disturbances` includes:
 
@@ -49,9 +54,6 @@ Where `disturbances` includes:
 | -------- | -------- | --------------- |
 | `star_flux` | photons/s/m² | Stellar flux received from the star |
 | `planet_flux` | photons/s/m² | Flux received from the exoplanet |
-| `exozodiacal_flux` | photons/s/m² | Flux from the exozodiacal light |
-| `localzodiacal_flux` | photons/s/m² | Flux from the local zodiacal light |
-| `exozodiacal_extension` | - | TBD (To Be Determined) |
 | `effective_solid_angle` | sterad | Effective solid angle of the observation |
 | *`perturbations`* | struct | See below. |
 

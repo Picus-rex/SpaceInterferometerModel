@@ -7,30 +7,8 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/linear_array.yml');
+data = ReadYaml('config/x_array.yml');
 data = convert_data(data);
-
-%% Parameters
-
-% Creation of the grid for the response
-[data.simulation.theta_range, data.simulation.theta_x, ...
-    data.simulation.theta_y] = define_range(data.simulation.angular_extension);
-
-% Positions (x, y) of the apertures 
-data.instrument.positions = define_array(data.instrument.array, ...
-    data.instrument.baseline, data.instrument.apertures_ratio);
-
-% Type conversion (from cell to matrix)
-data.instrument.intensities = cell2mat(data.instrument.intensities);
-
-% Plot array
-if data.outputs.plot_array
-    data.instrument.diameter = plot_apertures(data.instrument.positions, ...
-        data.instrument.intensities, true);
-else
-    data.instrument.diameter = plot_apertures(data.instrument.positions, ...
-        data.instrument.intensities, false);
-end
 
 %% Analysis
 

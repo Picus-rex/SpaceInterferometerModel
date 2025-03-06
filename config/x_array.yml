@@ -4,9 +4,13 @@ instrument:
     apertures_ratio: 2
     array: "X-Array"
     intensities:
-     - [1, 1, 1, 1]
+     - [0.5, 0.5, 0.5, 0.5]
 
     wavelength: 10e-6
+
+    efficiencies:
+        beam_combiner: 0.25
+        optical_line: 0.2
 
     instrumental_leakage:               # [1]
         intensity: 2e-6
@@ -15,25 +19,25 @@ instrument:
 
 
 environment:
-    stellar_angular_radius: 1e-9        # [rad]
+
+    target_distance: 15                 # [pc]
+    star_radius: 696340000              # [m]
+    star_temperature: 5770              # [K]
+
+    exoplanet_radius: 6378000           # [m]
     exoplanet_position:                 # x, y in [rad]
-        - 2.27e-7
-        - 0
+        - [2.27e-7, 0]
 
     disturbances:                       # [1]
 
         star_flux: 7.5e5                # Stellar flux [photons/s/m^2]
         planet_flux: 0.0775             # Planet flux [photons/s/m^2]
-        exozodiacal_flux: 22.07         # EZ flux [photons/s/m^2]
-        localzodiacal_flux: 7.1e12      # LZ flux [photons/s/m^2]
-
-        exozodiacal_extension: 3.2318e-07 # TBD
 
         effective_solid_angle: 8.75e-12 # sterad
 
         perturbations:
-            intensity: 1e-3
-            phase: 1e-3
+            intensity: 1e-2
+            phase: 1e-2
             x_position: 1e-3
             y_position: 1e-3
 

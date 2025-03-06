@@ -23,8 +23,15 @@ function epsilon = add_external_sensitivity(instrument, environment)
 % NOTES:
 %   - This function is part of Monte Carlo analysis.
 %
+% TO-DO:
+%   - Star luminosity factor set to 1.
+%   - BLZ depends on observation direction, must be set.
+%
 % VERSION HISTORY:
 %   2025-02-27 -------- 1.0
+%   2025-03-06 -------- 1.1
+%                     - Add real models for EZ and LZ
+%                     - Fixed errors in star models
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,13 +40,13 @@ function epsilon = add_external_sensitivity(instrument, environment)
 positions = instrument.positions;
 lambda = instrument.wavelength;
 diameter = instrument.diameter(1);
-phi = instrument.phase_shifts;
+phi = instrument.phase_shifts';
 N = instrument.apertures;
 A = instrument.intensities';
 throughput = instrument.throughput;
 
 % Extract data from perturbations
-Fstar = environment.disturbances.star_flux / diameter;       
+Fstar = environment.disturbances.star_flux;       
 theta_star = environment.stellar_angular_radius; 
 target_dist = environment.target_distance;
 star_radius = environment.star_radius;
@@ -49,10 +56,6 @@ Fplanet = environment.disturbances.planet_flux;
 theta_planet_x = cell2mat(environment.exoplanet_position(1));
 theta_planet_y = cell2mat(environment.exoplanet_position(2));
 
-FEZ = environment.disturbances.exozodiacal_flux; 
-theta_ez = environment.disturbances.exozodiacal_extension;
-
-BLZ = environment.disturbances.localzodiacal_flux;
 DeltaOmega = environment.disturbances.effective_solid_angle;
 
 % Perturbations
@@ -88,7 +91,7 @@ for j = 1:N
 end
 
 [C_A, C_phi, C_x, C_y, C_AA, C_Aphi, C_phiphi] = ...
-    compute_coefficients(A, phi, B_star, dB_dx, dB_dy, diameter);
+    compute_sensitivity_coefficients(A, phi, B_star, dB_dx, dB_dy);
 
 N_star_ideal = 0;
 for j = 1:N
@@ -123,19 +126,21 @@ for j = 1:N
         xjk = positions(j,1) - positions(k,1);
         yjk = positions(j,2) - positions(k,2);
         b_jk = sqrt(xjk^2 + yjk^2);
-        arg = 2*pi * b_jk * theta_ez / lambda;
         
-        % SET 0 LATITUDE TEMP! ############################################
-        [~, B_EZ(j,k)] = compute_background_emissions(lambda, diameter, ...
-            b_jk, 0, target_dist, star_radius, star_temperature, 1, throughput);
+        if j ~= k
+            B_EZ(j,k) = compute_exozodiac_contribution(lambda, diameter, ...
+                target_dist, 1, star_temperature, b_jk, star_radius, throughput);
         
-        dB_dx(j,k) = 0;
- 
+        else
+            B_EZ(j,k) = compute_exozodiac_contribution(lambda, diameter, ...
+                target_dist, 1, star_temperature, 60, star_radius, 1);
+        end
+        
     end
 end
 
 [C_A_EZ, C_phi_EZ, C_x_EZ, C_y_EZ, C_AA_EZ, C_Aphi_EZ, C_phiphi_EZ] = ...
-    compute_coefficients(A, phi, B_EZ, dB_dx, dB_dy, diameter);
+    compute_sensitivity_coefficients(A, phi, B_EZ, dB_dx, dB_dy);
 
 N_EZ_ideal = 0;
 for j = 1:N
@@ -156,6 +161,7 @@ for j = 1:N
 end
 
 deltaN_EZ = deltaN_EZ_1 + deltaN_EZ_2;
+BLZ = compute_local_zodiac_contribution(deg2rad(60), pi, lambda, 1);
 
 % Local Zodiacal Contributions
 
@@ -180,88 +186,10 @@ end
 N_planet_ideal = Fplanet * N_planet_ideal;
 
 % Total
-
 N0 = N_star_ideal + N_EZ_ideal + N_LZ_ideal + N_planet_ideal;
 deltaN_total = deltaN_star + deltaN_EZ + deltaN_LZ;
 
 % Fractional (relative) perturbation
 epsilon = deltaN_total / N0;
-
-
-end
-
-
-
-
-
-function [C_A, C_phi, C_x, C_y, C_AA, C_Aphi, C_phiphi] = ...
-    compute_coefficients(A, phi, B, dB_dx, dB_dy, diameter)
-
-N = length(A);
-
-% 1st order
-C_A = zeros(N,1);
-C_phi = zeros(N,1);
-C_x = zeros(N,1);
-C_y = zeros(N,1);
-
-for j = 1:N
-
-    sumA = 0; 
-    sumPhi = 0; 
-    sumX = 0; 
-    sumY = 0;
-    
-    for k = 1:N
-        sumA = sumA + A(k) * cos(phi(j)-phi(k)) * B(j,k);
-        if j ~= k 
-            sumPhi = sumPhi + A(k) * sin(phi(j)-phi(k)) * B(j,k);
-        end
-        sumX = sumX + A(j)*A(k)*cos(phi(j)-phi(k)) * dB_dx(j,k);
-        sumY = sumY + A(j)*A(k)*cos(phi(j)-phi(k)) * dB_dy(j,k);
-    end
-
-    C_A(j) = 2 * A(j) * sumA;
-    C_phi(j) = -2 * A(j) * sumPhi;
-    C_x(j) = 2 * sumX;
-    C_y(j) = 2 * sumY;
-end
-
-% 2nd order
-C_AA = zeros(N,N);
-C_Aphi = zeros(N,N);
-C_phiphi = zeros(N,N);
-
-for j = 1:N
-    for k = 1:N
-        
-        C_AA(j,k) = A(j) * A(k) * cos(phi(j)-phi(k)) * B(j,k);
-
-        if j ~= k
-            
-            C_Aphi(j,k) = 2 * A(j) * A(k) * sin(phi(j)-phi(k)) * B(j,k);
-            C_phiphi(j,k) = A(j) * A (k) * cos(phi(j)-phi(k)) * B(j,k);
-
-        else
-
-            tempAphi = 0;
-            tempPhiPhi = 0;
-
-            for l = 1:N
-                if l ~= j
-                    tempAphi = tempAphi + A(l)*sin(phi(j)-phi(l)) * B(k,l);
-                    tempPhiPhi = tempPhiPhi + A(l)*cos(phi(j)-phi(l))*B(j,l);
-                end
-            end
-
-            C_Aphi(j,j) = -2 * A(j) * tempAphi;
-            C_phiphi(j,j) = -A(j) * tempPhiPhi;
-        end
-    end
-end
-
-C_AA = C_AA * diameter;
-C_Aphi = C_Aphi * diameter;
-C_phiphi = C_phiphi * diameter;
 
 end

@@ -59,7 +59,7 @@ theta_planet_y = cell2mat(environment.exoplanet_position(2));
 DeltaOmega = environment.disturbances.effective_solid_angle;
 
 % Perturbations
-perturbations = environment.disturbances.perturbations;
+perturbations = environment.disturbances.external_perturbations;
 delta_a   = perturbations.intensity * randn(N,1);      
 delta_phi = perturbations.phase * randn(N,1);      
 delta_x   = perturbations.x_position * randn(N,1);     

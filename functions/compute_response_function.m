@@ -51,6 +51,12 @@ function [T_standard, T_chopped, T_real, T_real_chopped, data] = ...
 %                     - Not retrocompatible with older versions.
 %   2025-03-03 -------- 2.1
 %                     - Added "real" chopped signal as output.
+%   2025-03-07 -------- 2.2
+%                     - Normalisation is performed only respect to the
+%                       perfect signal.
+%                     - Some operations are performed only if the number of
+%                       outputs requires them.
+%                     - The two sensitivity analysis are now exclusive.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,9 +102,9 @@ if ~isfield(data, "data")
 
     if data.N_MC > 0
          
-        data.instrument.instrumental_leakage.phase = data.sigma_phase;
-        data.instrument.instrumental_leakage.intensity = data.sigma_intensity;
-        data.instrument.instrumental_leakage.polarisation = data.sigma_pol;
+        data.environment.disturbances.instrumental_leakage.phase = data.sigma_phase;
+        data.environment.disturbances.instrumental_leakage.intensity = data.sigma_intensity;
+        data.environment.disturbances.instrumental_leakage.polarisation = data.sigma_pol;
 
     end
 
@@ -121,12 +127,14 @@ combination = instrument.combination;
 theta_x = simulation.theta_x;
 theta_y = simulation.theta_y;
 
-if isfield(data.simulation, "monte_carlo_iterations") && simulation.monte_carlo_iterations > 0
+if isfield(data.simulation, "monte_carlo_iterations") && simulation.monte_carlo_iterations > 0 && nargout > 2
     N_MC = simulation.monte_carlo_iterations;
     
-    sigma_phase = instrument.instrumental_leakage.phase;
-    sigma_intensity = instrument.instrumental_leakage.intensity;
-    sigma_pol = instrument.instrumental_leakage.polarisation;
+    if isfield(data.simulation, "model") && strcmp(data.simulation.model, "instrumental_leakage")
+        sigma_phase = environment.disturbances.instrumental_leakage.phase;
+        sigma_intensity = environment.disturbances.instrumental_leakage.intensity;
+        sigma_pol = environment.disturbances.instrumental_leakage.polarisation;
+    end
 else
     N_MC = 0;
 end
@@ -146,9 +154,9 @@ R_chopped = 0.5 * abs(R_standard - R_negated);
 
 % Normalize to max value
 T_standard = R_standard / max(R_standard(:));
-T_chopped = R_chopped / max(R_chopped(:));
+T_chopped = R_chopped / max(R_standard(:));
 
-if N_MC > 0
+if N_MC > 0 && nargout > 2
 
     % Preallocate for MC analysis 
     R_MC = zeros(ny, nx, N_MC);
@@ -157,21 +165,27 @@ if N_MC > 0
     
     % Monte Carlo simulation loop
     for mc = 1:N_MC
-    
-        % Perturb amplitude
-        A_err = A .* (1 + sigma_intensity * randn(size(A)));
         
-        % Perturb phase: independent errors for phase and polarization
-        phase_err = phase_shifts + sigma_phase * randn(size(phase_shifts)) ...
-            + sigma_pol * randn(size(phase_shifts));
+        if isfield(data.simulation, "model") && strcmp(data.simulation.model, "instrumental_leakage")
 
-        R_MC(:,:,mc) = create_field(theta_x, theta_y, N, lambda, ...
-            positions, A_err, combination, phase_err);
+            % Perturb amplitude
+            A_err = A .* (1 + sigma_intensity * randn(size(A)));
+            
+            % Perturb phase: independent errors for phase and polarization
+            phase_err = phase_shifts + sigma_phase * randn(size(phase_shifts)) ...
+                + sigma_pol * randn(size(phase_shifts));
+    
+            R_MC(:,:,mc) = create_field(theta_x, theta_y, N, lambda, ...
+                positions, A_err, combination, phase_err);
+    
+            R_MC_neg(:,:,mc) = create_field(theta_x, theta_y, N, lambda, ...
+                positions, A_err, combination, -phase_err);
 
-        R_MC_neg(:,:,mc) = create_field(theta_x, theta_y, N, lambda, ...
-            positions, A_err, combination, -phase_err);
+        elseif isfield(data.simulation, "model") && strcmp(data.simulation.model, "external_perturbations")
+            
+            R_MC(:,:,mc) = R_standard;
+            R_MC_neg(:,:,mc) = R_negated;
 
-        if ~isempty(fieldnames(environment))
             eps_MC(mc) = add_external_sensitivity(instrument, environment);
         end
 
@@ -184,28 +198,25 @@ if N_MC > 0
     epsilon = mean(eps_MC);
     epsilon_std = std(eps_MC, 0);
     
-    % Normalize the responses
-    norm_factor = max(R_mean(:));
-    
-    T_real = R_mean * (1 + epsilon) / norm_factor;
-    T_real_std = R_std / norm_factor;
+    T_real = R_mean * (1 + epsilon) / max(R_standard(:));
+    T_real_std = R_std / max(R_standard(:));
 
     R_real_chopped = 0.5 * abs(R_mean - R_mean_neg);
-    T_real_chopped = R_real_chopped / max(R_real_chopped(:));
-
-
-end
-
-% Group results
-data.simulation.T_standard = T_standard;
-data.simulation.T_chopped = T_chopped;
-data.simulation.T_real = T_real;
-data.simulation.T_real_chopped = T_real_chopped;
-data.simulation.T_read_std = T_real_std;
-data.simulation.epsilon_std = epsilon_std;
+    T_real_chopped = R_real_chopped / max(R_standard(:));
 
 end
 
+if nargout > 2
+    % Group results
+    data.simulation.T_standard = T_standard;
+    data.simulation.T_chopped = T_chopped;
+    data.simulation.T_real = T_real;
+    data.simulation.T_real_chopped = T_real_chopped;
+    data.simulation.T_read_std = T_real_std;
+    data.simulation.epsilon_std = epsilon_std;
+end
+
+end
 
 
 

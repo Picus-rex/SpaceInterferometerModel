@@ -7,7 +7,7 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/x_array.yml');
+data = ReadYaml('config/temp_lin.yml');
 data = convert_data(data);
 
 %% Analysis
@@ -30,6 +30,15 @@ if data.simulation.consider_non_ideal
 else
     [T, T_chopped] = compute_response_function("data", data);
 end
+
+% Verify modulation of the signal
+[modulation, efficiency] = planet_modulation(data);
+
+% Find nulling ratio
+[ratio, rejection] = ...
+    compute_nulling_ratio(data.instrument.apertures, ...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.environment.stellar_angular_radius, data.instrument.wavelength);
 
 %% Plot
 

@@ -12,12 +12,6 @@ instrument:
         beam_combiner: 0.25
         optical_line: 0.2
 
-    instrumental_leakage:               # [1]
-        intensity: 2e-6
-        phase: 1e-5
-        polarisation: 1e-5
-
-
 environment:
 
     target_distance: 15                 # [pc]
@@ -35,16 +29,24 @@ environment:
 
         effective_solid_angle: 8.75e-12 # sterad
 
-        perturbations:
+        external_perturbations:
             intensity: 1e-2
             phase: 1e-2
             x_position: 1e-3
             y_position: 1e-3
 
+        instrumental_leakage:
+            intensity: 2e-6
+            phase: 1e-5
+            polarisation: 1e-5
+
 
 simulation:
     consider_non_ideal: true                # If false, fields with [1] are optional
+    model: "instrumental_leakage"           # [1] Model to use
     monte_carlo_iterations: 1000            # [1]
+
+    planet_modulation_positions: 500    # Number of rotations of the array to consider for the modulation
 
     angular_extension:
         theta_x: [-0.1e-6, 0.1e-6, 2000]    # start, end, number of points

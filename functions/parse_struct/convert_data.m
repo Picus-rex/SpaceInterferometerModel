@@ -2,9 +2,10 @@ function data = convert_data(data)
 %CONVERT_DATA Convert specific entries of configuration files from human
 %readable to S.I. units. and compute some missing values.
 
-% Conversions
+% Conversions factors
 pc2m = 3.0857e16;
 
+% Conver fields
 if isfield(data.environment, "target_distance")
     data.environment.target_distance = data.environment.target_distance * pc2m;
 end
@@ -22,8 +23,7 @@ end
 
 data.instrument.intensities = cell2mat(data.instrument.intensities);
 
-% COMPUTE ELEMENTS
-
+% Compute elements
 if isfield(data.environment, "target_distance") && isfield(data.environment, "star_radius")
     
     if isfield(data.environment, "stellar_angular_radius")

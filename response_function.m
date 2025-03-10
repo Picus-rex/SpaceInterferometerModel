@@ -7,7 +7,7 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/temp_lin.yml');
+data = ReadYaml('config/bracewell_array.yml');
 data = convert_data(data);
 
 %% Analysis
@@ -56,6 +56,7 @@ plot_star = data.outputs.plot_star;
 angles = linspace(0, 2*pi, 10000); 
 conversion_rad2mas = 1e3 * (3600 * 180) / pi;
 theta_range = data.simulation.theta_range * conversion_rad2mas;
+theta_planets = theta_planets * conversion_rad2mas;
 
 figure; hold on;
 imagesc(theta_range, theta_range, T);
@@ -109,7 +110,7 @@ if plot_planets == 1
     for p = 1:Np
         % Simulate planet motion
         theta_p = theta_planets(p);
-        planet_response = NaN(size(theta_x));
+        planet_response = NaN(size(data.simulation.theta_x));
         
         x_points = [];
         y_points = [];

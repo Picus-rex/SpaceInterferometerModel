@@ -31,6 +31,13 @@ elseif strcmp(type, "Diamond")
                   0,    -x1/2;
                  -x2/2,     0];
 
+elseif strcmp(type, "Bracewell")
+    
+    x = baseline/ratio;
+
+    positions = [x/2, 0,
+                -x/2, 0];
+
 else
 
     error("Array does not exist.")

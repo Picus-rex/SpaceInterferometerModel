@@ -18,6 +18,9 @@ function [modulation, efficiency] = planet_modulation(data)
 %
 % VERSION HISTORY:
 %   2025-03-07 -------- 1.0
+%   2025-03-10 -------- 1.1
+%                     - If planet_modulation_positions = 0, skip function
+%                     - Typo in error function.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,24 +29,29 @@ function [modulation, efficiency] = planet_modulation(data)
 planet_x = data.environment.exoplanet_position{1}(1);
 planet_y = data.environment.exoplanet_position{2}(1);
 
-% Theta grid
-theta_x = data.simulation.theta_x;
-theta_y = data.simulation.theta_y;
-
-if planet_x > max(theta_x, [], "all") || planet_x < min(theta_x, [], "all") || ...
-        planet_y > max(theta_y, [], "all") || planet_y < min(theta_y, [], "all")
-    eror("The exoplanet is outside the angular extension of the simulation")
-end
-
-% Initialize modulation vector
+% Initialize modulation vector; leave function if no rotations
 if isfield(data.simulation, "planet_modulation_positions")
     n_rotation = data.simulation.planet_modulation_positions;
+    if n_rotation == 0
+        modulation = NaN;
+        efficiency = NaN;
+        return
+    end
 else
     n_rotation = 1;
 end
 modulation = zeros(1, n_rotation);
 if isfield(data.simulation, "monte_carlo_iterations") && data.simulation.monte_carlo_iterations > 0
     modulation_err = zeros(1, n_rotation);
+end
+
+% Theta grid
+theta_x = data.simulation.theta_x;
+theta_y = data.simulation.theta_y;
+
+if planet_x > max(theta_x, [], "all") || planet_x < min(theta_x, [], "all") || ...
+        planet_y > max(theta_y, [], "all") || planet_y < min(theta_y, [], "all")
+    error("The exoplanet is outside the angular extension of the simulation")
 end
 
 % Number of plots to do

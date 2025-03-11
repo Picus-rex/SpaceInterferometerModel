@@ -1,11 +1,12 @@
 function [ratio, rejection] = ...
-    compute_nulling_ratio(N, phases, positions, theta_star, lambda)
+    compute_nulling_ratio(N, amplitudes, phases, positions, theta_star, lambda)
 %COMPUTE_NULLING_RATIO Computation of the nulling ratio and rejection
 %fraction for a given array.
 %
 % INPUTS:
 %   N[1]                Number of apertures. [-]
-%   phases[Nx1]         Vector of phase shifts for each aperture
+%   amplitudes[Nx1]     Amplitudes associated to each aperture.
+%   phases[Nx1]         Vector of phase shifts for each aperture.
 %   positions[Nx2]      Matrix of (x, y) positions of the apertures. [m]
 %   theta_star[1]       Angular dimension of the star. [rad]
 %   lambda[1]           Wavelength of observation. [m]
@@ -26,27 +27,37 @@ function [ratio, rejection] = ...
 %
 % VERSION HISTORY:
 %   2025-02-28 -------- 1.0
+%   2025-03-11 -------- 1.1
+%                     - Use of the base formula to address the possible
+%                       amplitudes interferences.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sum = N;  
+% Geometric leakage
+N_g = 0;
 for j = 1:N
-    for k = 1:N        
+    for k = 1:N
+        
         if j ~= k
-            Delta_x = positions(j,1) - positions(k,1);
-            Delta_y = positions(j,2) - positions(k,2);
-            dcphi = cos(phases(j) - phases(k));
-            b_jk = sqrt(Delta_x^2 + Delta_y^2);
-            arg = 2*pi * b_jk * theta_star / lambda;
-
-            sum = sum + dcphi * (2 * besselj(1, arg) / arg);
+            % Baseline b_jk
+            b_jk = norm(positions(j,:) - positions(k,:));
+    
+            % Stellar brightness B_star_jk
+            B_star_jk = 2 * besselj(1, 2 * pi * b_jk * theta_star / lambda) / (2 * pi * b_jk * theta_star / lambda);
+        else
+            B_star_jk = 1;
         end
+
+        N_g = N_g + amplitudes(j) * amplitudes(k) * cos(phases(j) - phases(k)) * B_star_jk;
     end
 end
 
-ratio = sum / N;
+% Denominator
+sum_N_star = sum(amplitudes.^2);
 
+% Nulling ratio and rejection factor
+ratio = N_g / sum_N_star;
 rejection = 1/ratio;
 
 end

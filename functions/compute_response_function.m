@@ -137,6 +137,11 @@ if isfield(data.simulation, "monte_carlo_iterations") && simulation.monte_carlo_
     end
 else
     N_MC = 0;
+
+    T_real = NaN;
+    T_real_chopped = NaN;
+    T_real_std = NaN;
+    epsilon_std = NaN;
 end
 
 
@@ -212,7 +217,7 @@ if nargout > 2
     data.simulation.T_chopped = T_chopped;
     data.simulation.T_real = T_real;
     data.simulation.T_real_chopped = T_real_chopped;
-    data.simulation.T_read_std = T_real_std;
+    data.simulation.T_real_std = T_real_std;
     data.simulation.epsilon_std = epsilon_std;
 end
 

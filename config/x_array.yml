@@ -44,9 +44,9 @@ environment:
 simulation:
     consider_non_ideal: true                # If false, fields with [1] are optional
     model: "instrumental_leakage"           # [1] Model to use
-    monte_carlo_iterations: 1000            # [1]
+    monte_carlo_iterations: 0            # [1]
 
-    planet_modulation_positions: 500        # Number of rotations of the array to consider for the modulation
+    planet_modulation_positions: 0        # Number of rotations of the array to consider for the modulation
 
     angular_extension:
         theta_x: [-0.1e-6, 0.1e-6, 500]     # start, end, number of points

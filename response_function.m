@@ -7,7 +7,7 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/bracewell_array.yml');
+data = ReadYaml('config/x_array.yml');
 data = convert_data(data);
 
 %% Analysis
@@ -32,13 +32,19 @@ else
 end
 
 % Verify modulation of the signal
-[modulation, efficiency] = planet_modulation(data);
+[data.simulation.planet_modulation, ...
+    data.simulation.planet_modulation_efficiency] = planet_modulation(data);
 
 % Find nulling ratio
-[ratio, rejection] = ...
-    compute_nulling_ratio(data.instrument.apertures, ...
+[data.simulation.nulling_ratio, data.simulation.rejection_factor] = ...
+    compute_nulling_ratio(data.instrument.apertures, data.instrument.intensities, ...
     data.instrument.phase_shifts, data.instrument.positions, ...
     data.environment.stellar_angular_radius, data.instrument.wavelength);
+
+% Solve OPDs
+find_minimum_OPD(data.instrument.apertures, data.instrument.intensities, ...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.environment.stellar_angular_radius, data.instrument.wavelength, true);
 
 %% Plot
 

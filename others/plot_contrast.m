@@ -2,7 +2,7 @@
 clear; close all; clc;
 
 % Specify the file name
-filename = 'TestPlanetPopulation.txt';
+filename = 'others/TestPlanetPopulation.txt';
 
 % Read the catalogue.
 % (Assumes whitespace‐delimited text file with header rows.)

@@ -3,8 +3,8 @@ clc; clear; close;
 % IWA, OWA from Viseurs
 
 % Read the catalogue
-opts = detectImportOptions('TestPlanetPopulation.txt', 'NumHeaderLines', 1);
-T = readtable('TestPlanetPopulation.txt', opts);
+opts = detectImportOptions('others/TestPlanetPopulation.txt', 'NumHeaderLines', 1);
+T = readtable('others/TestPlanetPopulation.txt', opts);
 
 arcsec2rad = (pi/180)/3600;
 ang_sep_rad = T.AngSep * arcsec2rad;

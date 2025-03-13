@@ -25,6 +25,7 @@ observatories = readtable(observatoryFile, opts_obs);
 % Initialize variables for results
 numUniverses = 10;
 detectablePlanets = zeros(numUniverses, height(observatories));
+detectablePlanetsT = zeros(numUniverses, height(observatories));
 
 % Loop through each observatory
 for obsIdx = 1:height(observatories)
@@ -33,7 +34,7 @@ for obsIdx = 1:height(observatories)
     maxWav = observatories{obsIdx, 'Max Wav [microm]'} * 1e-6; % Convert to meters
     baseline = observatories{obsIdx, 'Baseline [m]'};
     diameter = observatories{obsIdx, 'Aperture [m]'};
-    flux_ratio = observatories{obsIdx, 'Nulling needed'} * 1e-4;
+    flux_ratio = observatories{obsIdx, 'Nulling needed'};
     
     % Calculate mean wavelength
     lambda = (minWav + maxWav) / 2;
@@ -49,16 +50,20 @@ for obsIdx = 1:height(observatories)
         Tsub = T(rows, :);
         
         % Calculate the flux contrast
-        contrast_1 = ((Tsub.rp * R_earth).^2 .* B(Tsub.Tp, lambda1)) ./ ((Tsub.Rs * R_sun).^2 .* B(Tsub.Ts, lambda1));
+        contrast_1 = ((Tsub.rp * R_earth).^2 .* B(Tsub.Tp, lambda)) ./ ((Tsub.Rs * R_sun).^2 .* B(Tsub.Ts, lambda));
         
         % Check for detectable exoplanets
-        detectableCount = sum(Tsub.ang_sep * arcsec2rad < OWA & Tsub.ang_sep * arcsec2rad > IWA & contrast_1 > flux_ratio);
+        detectableCount = sum(Tsub.ang_sep * arcsec2rad < OWA & Tsub.ang_sep * arcsec2rad > IWA);
+        detectableCountT = sum(Tsub.ang_sep * arcsec2rad < OWA & Tsub.ang_sep * arcsec2rad > IWA & contrast_1 > flux_ratio*1e-2);
+
         detectablePlanets(universe + 1, obsIdx) = detectableCount; % Store the count
+        detectablePlanetsT(universe + 1, obsIdx) = detectableCountT; % Store the count
     end
 end
 
 % Average the results over the universes
-averageDetectablePlanets = mean(detectablePlanets, 1);
+averageDetectablePlanets = [mean(detectablePlanets, 1)', mean(detectablePlanetsT, 1)'];
+
 
 col = styling;
 
@@ -66,12 +71,16 @@ col = styling;
 figure;
 b = bar(averageDetectablePlanets);
 
-b.FaceColor = 'flat'; % Allow for individual bar colors
-b.CData = col(1:3, :); % Assign the colors from the col matrix
+b(1).FaceColor = 'flat'; % Allow for individual bar colors
+b(1).CData = col(1:3, :); % Assign the colors from the col matrix
+
+b(2).FaceColor = 'flat'; % Allow for individual bar colors
+b(2).CData = col(3:5, :); % Assign the colors from the col matrix
+
 
 set(gca, 'XTickLabel', observatories.Name, 'XTickLabelRotation', 45);
 xlabel('Observatories');
 ylabel('Detectable Exoplanets');
-grid on;
+grid minor;
 colorbar('off')
 styling(true, 10, 7, "exports/space_observatories", false);

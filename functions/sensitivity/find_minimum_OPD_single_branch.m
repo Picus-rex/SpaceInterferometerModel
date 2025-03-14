@@ -52,7 +52,7 @@ points = 1000;
 % The phases are bound to 2pi, therefore compute the maximum OPD to have
 % the period extension. After OPD_max, everything repeats. Compute the opd
 % range of points.
-OPD_max = lambda - lambda/(2*pi) * phases(2);
+OPD_max = lambda;
 opd = logspace(-16, log10(OPD_max), points);
 
 % Generate the map (i.e. compute the nulling ratio for each opd)
@@ -88,8 +88,10 @@ opd_fun = @(r) interp1(ratios_range, opd_range, r, "spline", NaN);
 % Begin plot if needed
 if autoplot
     figure; hold on; set(gca, 'XScale', 'log', 'YScale', 'log')
+    xlabel("Nulling ratios")
+    ylabel("Minimum OPD [m]")
     plot(ratios, opd, "*-", "LineWidth", 1.5);
-    plot(ratios_range, opd_range, "*-", "LineWidth", 1.5);
+    plot(ratios_range, opd_range, "-", "LineWidth", 1.5);
 end
 
 % For every desired ratio... 

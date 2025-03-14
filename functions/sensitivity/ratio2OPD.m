@@ -51,31 +51,21 @@ end
 
 if autoplot
     figure;
-    imagesc(ratios, lambdas * 1e6, OPDs' * 1e6)
-    xlabel('Ratios');
-    ylabel('Wavelengths [\mu m]');
-    
-    cb = colorbar;
-    ylabel(cb, 'OPD [\mu m]'); 
-    
-    % Set the x-axis to logarithmic scale
-    set(gca, 'XScale', 'log');
-    
-    figure;
     imagesc(ratios, lambdas, log10(OPDs' + eps)); % Add eps to avoid log(0)
     
+    style_colors;
+
     % Set the color limits for the logarithmic scale
     clim([log10(min(OPDs(:) + eps)), log10(max(OPDs(:)))]);
-    cb = colorbar; % Add colorbar again after the new imagesc call
+    colormap(darkBlueZero)
+    cb = colorbar;
     
     % Set the colorbar label again
-    ylabel(cb, 'Log10(OPD)'); % Update the label to reflect the transformation
+    ylabel(cb, 'Log10(OPD)'); 
     
     % Set axis labels
     xlabel('Ratios');
-    ylabel('Wavelengths (m)');
-    
-    % Optionally, set the axis to be logarithmic for the x-axis
+    ylabel('Wavelengths [m]');
     set(gca, 'XScale', 'log');
 end
 

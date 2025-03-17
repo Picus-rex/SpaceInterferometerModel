@@ -1,13 +1,13 @@
 %% Response Function for a 4-Aperture Nulling Interferometer
 % Following the definition of the response function, this script performs
 % the optimal splitting for the desired configuration and computes the
-% fringes images.
+% fringes imageos.
 
 clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/x_array.yml');
+data = ReadYaml('config/temp_lin.yml');
 data = convert_data(data);
 
 %% Analysis
@@ -47,6 +47,14 @@ find_minimum_OPD_single_branch(data.instrument.apertures, data.instrument.intens
     data.environment.stellar_angular_radius, data.instrument.wavelength);
 
 ratio2OPD(data.instrument.apertures, data.instrument.intensities, ...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.environment.stellar_angular_radius);
+
+OPDs2ratio(data.instrument.apertures, data.instrument.intensities, ...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.environment.stellar_angular_radius);
+
+OPD2ratio_point(data.instrument.apertures, data.instrument.intensities, ...
     data.instrument.phase_shifts, data.instrument.positions, ...
     data.environment.stellar_angular_radius);
 

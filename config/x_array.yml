@@ -46,11 +46,11 @@ simulation:
     model: "instrumental_leakage"           # [1] Model to use
     monte_carlo_iterations: 0            # [1]
 
-    planet_modulation_positions: 0        # Number of rotations of the array to consider for the modulation
+    planet_modulation_positions: 100        # Number of rotations of the array to consider for the modulation
 
     angular_extension:
-        theta_x: [-0.1e-6, 0.1e-6, 500]     # start, end, number of points
-        theta_y: [-0.1e-6, 0.1e-6, 500]     # start, end, number of points
+        theta_x: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
+        theta_y: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
 
 
 outputs:
@@ -63,3 +63,5 @@ outputs:
      - 15e-6
 
     plot_star: true
+
+    verbose: true

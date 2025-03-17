@@ -73,7 +73,7 @@ end
 % For every rotation...
 for i = 1:n_rotation
 
-    if data.outputs.verbose && ~mod(i, div_plot)
+    if isfield(data.outputs, "verbose") && data.outputs.verbose && ~mod(i, div_plot)
         fprintf("Rotation %.0f of %.0f\n", i, n_rotation)
     end
 
@@ -107,6 +107,13 @@ for i = 1:n_rotation
             subplot(L, L, j); hold on;
             for k = 1:size(data.instrument.positions, 1)
                 plot(data.instrument.positions(k, 1), data.instrument.positions(k, 2), ".", "MarkerSize", 10)
+            end
+            if strcmp(data.instrument.array, "X-Array")
+                plot([data.instrument.positions(1, 1), data.instrument.positions(3, 1)], [data.instrument.positions(1, 2), data.instrument.positions(3, 2)], "-", "LineWidth", 1.5)
+                plot([data.instrument.positions(2, 1), data.instrument.positions(4, 1)], [data.instrument.positions(2, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5)
+            else
+                plot([data.instrument.positions(1, 1), data.instrument.positions(4, 1)], [data.instrument.positions(1, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5)
+
             end
             title(sprintf("Rotation: %.2f deg", rad2deg(angles(i))))
             axis equal

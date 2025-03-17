@@ -6,6 +6,11 @@ clc; clear; close;
 opts = detectImportOptions('others/TestPlanetPopulation.txt', 'NumHeaderLines', 1);
 T = readtable('others/TestPlanetPopulation.txt', opts);
 
+universeToPlot = 0;
+rows = T.Nuniverse == universeToPlot;
+T = T(rows, :);
+
+
 arcsec2rad = (pi/180)/3600;
 ang_sep_rad = T.AngSep * arcsec2rad;
 
@@ -37,7 +42,9 @@ starTypes = unique(T.Stype);
 
 % Define markers and colors for different groups (adjust as desired)
 markers = {'o','s','^','d','v','>','<','p','h'};
-colors = lines(numel(starTypes));
+%colors = lines(numel(starTypes));
+
+style_colors;
 
 for i = 1:length(starTypes)
 
@@ -45,18 +52,27 @@ for i = 1:length(starTypes)
     idx = strcmp(T.Stype(:), {starTypes{i}});
 
     % Create a log–log scatter plot for this group
-    scatter(ang_sep_rad(idx), contrast(idx), markers{mod(i-1,length(markers))+1}, ...
-        'Color', colors(i,:), 'DisplayName', starTypes{i});
+    scatter(ang_sep_rad(idx) * 648000000/pi, contrast(idx), 40, ...
+        colours(i,:), 'filled', 'DisplayName', starTypes{i});
 
 end
 
-xline(resol, '--', "LineWidth", 1.5, "DisplayName", "Angular resolution");
-xline(IWA, 'b--', "LineWidth", 1.5, "DisplayName", "IWA");
-xline(OWA, 'r--', "LineWidth", 1.5, "DisplayName", "OWA");
+% xline(resol, '--', "LineWidth", 1.5, "DisplayName", "Angular resolution");
+% xline(IWA, 'b--', "LineWidth", 1.5, "DisplayName", "IWA");
+% xline(OWA, 'r--', "LineWidth", 1.5, "DisplayName", "OWA");
 
-xlabel('Angular Separation (radians)');
+xlabel('Angular Separation [mas]');
 ylabel('Flux Contrast at 10 \mum');
-title('Exoplanet Population: Angular Separation vs. Flux Contrast');
+% title('Exoplanet Population: Angular Separation vs. Flux Contrast');
 legend('show','Location','best');
 grid on;
 hold off;
+
+set(findall(gcf, '-property', 'FontName'), 'FontName', 'Times New Roman');
+set(findall(gcf, '-property', 'FontSize'), 'FontSize', 11);
+
+
+set(gcf, 'Units', 'centimeters', 'Position', [0, 0, 18, 8]);
+set(gcf, 'PaperUnits', 'centimeters', 'PaperSize', [18, 8]);
+set(gcf, 'PaperPositionMode', 'auto');
+print(gcf, "exports/ppop_population", '-dpdf', '-r300');

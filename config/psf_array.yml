@@ -10,6 +10,10 @@ instrument:
 
     wavelength: 10e-6
 
+    efficiencies:
+        beam_combiner: 0.25
+        optical_line: 0.1
+
 environment:
     stellar_angular_radius: 1e-9        # [rad]
     exoplanet_position:                 # x, y in [rad]

@@ -31,7 +31,7 @@ function [PSF, theta_FWHM] = ...
 N = length(A);
 
 % Compute pairwise baselines and their contributions (C values) and store
-% them in a vector where each row will be [|Delta_x|, |Delta_y|, C_pair]
+% them in a vector where each row will be [|Delta_x|, |Delta_y|, C_jk]
 baseline_list = []; 
 for j = 1:N-1
     for k = j+1:N

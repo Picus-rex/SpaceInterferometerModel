@@ -22,7 +22,6 @@ function OPDs = ratio2OPD(N, amplitudes, phases, positions, ...
 % NOTES:
 %   - OPDs are periodic, therefore each multiple of n * OPD_max, with n
 %     integer number will produce the same nulling ratio. 
-%   - Perturbations need to be introduced as phase shifts above.
 %
 % VERSION HISTORY:
 %   2025-03-13 -------- 1.0
@@ -60,12 +59,15 @@ if autoplot
     colormap(darkBlueZero)
     cb = colorbar;
     
-    % Set the colorbar label again
-    ylabel(cb, 'Log10(OPD)'); 
-    
+    % Update thicks 
+    tick_values = get(cb, 'Ticks'); 
+    tick_labels = arrayfun(@(x) sprintf('10^{%.0f}', x), tick_values, 'UniformOutput', false);
+    set(cb, 'TickLabels', tick_labels);
+
     % Set axis labels
-    xlabel('Ratios');
+    xlabel('Nulling Ratios');
     ylabel('Wavelengths [m]');
+    title("OPD")
     set(gca, 'XScale', 'log');
 end
 

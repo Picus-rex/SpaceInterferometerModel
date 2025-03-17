@@ -21,10 +21,11 @@ function ratios = OPDs2ratio(N, amplitudes, phases, positions, theta_star, ...
 % NOTES:
 %   - OPDs are periodic, therefore each multiple of n * OPD_max, with n
 %     integer number will produce the same nulling ratio. 
-%   - Perturbations need to be introduced as phase shifts above.
 %
 % VERSION HISTORY:
 %   2025-03-14 -------- 1.0
+%   2025-03-17 -------- 1.1
+%                     - Fixed plots consistency across the scripts.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,7 +43,7 @@ if isfile('exports/ratios.mat')
 
     data = load("exports/ratios.mat", "lambdas");
     if ~all(lambdas == data.lambdas)
-        fprintf("Saved data existed, but does not match input wavelengths. Regenerating...\n")
+        fprintf("Saved data existed, but do not match input wavelengths. Regenerating...\n")
     else
         regen = false;
         load("exports/ratios.mat", "lambdas", "ratios", "OPD_max", "opd");
@@ -55,6 +56,8 @@ if regen
 
     points = 1000;
     ratios = zeros(length(lambdas), points, points);
+
+    opd = zeros(length(lambdas), points);
     
     for k = 1:length(lambdas)
 
@@ -64,11 +67,11 @@ if regen
         % have the period extension. After OPD_max, everything repeats. 
         % Compute the opd range of points.
         OPD_max = lambda;
-        opd = logspace(-16, log10(OPD_max), points);
+        opd(k, :) = logspace(-16, log10(OPD_max), points);
         
         for i = 1:points
             for j = 1:points
-                opds = [opd(i), opd(j), 0, 0];
+                opds = [opd(k, i), opd(k, j), 0, 0];
                 shift_phases = wrapTo2Pi(2*pi*opds/lambda + phases);
                 ratios(k, i, j) = compute_nulling_ratio(N, amplitudes, ...
                             shift_phases, positions, theta_star, lambda);
@@ -91,16 +94,20 @@ if autoplot
     
     for i = 1:length(lambdas)
         figure; hold on;
-        imagesc(opd(1, :), opd(1, :), log10(squeeze(ratios(i, :, :)) + eps));
-        title(sprintf("Wavelength: %d", lambdas(i)));
+        imagesc(opd(i, :), opd(i, :), log10(squeeze(ratios(i, :, :)) + eps));
+        title(sprintf("OPD [%.000f \\micro m]", lambdas(i)*1e6), "Interpreter", "latex");
         xlabel("OPD difference branch 1-3 [m]");
         ylabel("OPD difference branch 2-4 [m]");
         colormap(darkBlue)
         cb = colorbar();
-        ylabel(cb, 'Log10(Nulling)');
-    
-        % Set the color limits to the global min and max
         clim([global_min global_max]);
+
+        % Update thicks 
+        tick_values = get(cb, 'Ticks'); 
+        tick_labels = arrayfun(@(x) sprintf('10^{%.0f}', x), tick_values, 'UniformOutput', false);
+        set(cb, 'TickLabels', tick_labels);
+
+        axis tight;        
     end
 
 end

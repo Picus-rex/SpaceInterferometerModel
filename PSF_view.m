@@ -44,9 +44,11 @@ title("PSF");
 
 %% Compute the IWA
 
-[D, a] = plot_apertures(positions, A, false);
+[D, a] = plot_apertures(positions, A, ...
+    data.instrument.efficiencies.optical_line, ...
+    data.instrument.efficiencies.beam_combiner, false);
 
-eta_opt = 0.85 * ones(4, 1);
+eta_opt = data.instrument.efficiencies.optical_line;
 [eta_mod, IWA] = compute_IWA(PSF, theta_range, eta_opt, a, true);
 
 fprintf("Inner working angle: \t%.10f\n", IWA);

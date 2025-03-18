@@ -21,8 +21,8 @@ data = convert_data(data);
     data.environment.stellar_angular_radius, true);
 
 % Classify baselines
-data.simulation.baselines = ...
-    classify_baselines(data.instrument.positions, data.instrument.phase_shifts, true);
+[data.simulation.baselines, data.simulation.unique_baselines] = ...
+    classify_baselines(data.instrument.apertures, data.instrument.positions, data.instrument.phase_shifts, true);
 
 % Complex Field and Response Function
 if data.simulation.consider_non_ideal

@@ -20,10 +20,17 @@ theta_range = define_range(data.simulation.angular_extension);
 
 positions = define_array(data.instrument.array, B, data.instrument.apertures_ratio);
 
+positions = [-40, 20;
+             -40, -20;
+             40, 20;
+             40, -20];
+phase_shifts = [0, pi, pi/2, 3*pi/2];
+
 conversion_rad2mas = 1e3 * (3600 * 180) / pi;
 
 %% Compute the PSF
-PSF = compute_psf(lambda, A, positions, phase_shifts, [1.453e-7, 0], theta_range);
+[PSF, ~, C_i] = compute_psf(lambda, A, positions, phase_shifts, ...
+    [1.453e-7, 0], theta_range);
 
 % The maximum of the PSF is a first index of the integration time
 % measurement that can be taken as a reference.
@@ -49,6 +56,6 @@ title("PSF");
     data.instrument.efficiencies.beam_combiner, false);
 
 eta_opt = data.instrument.efficiencies.optical_line;
-[eta_mod, IWA] = compute_IWA(PSF, theta_range, eta_opt, a, true);
+[eta_mod, IWA] = compute_IWA(PSF, theta_range, eta_opt, a, C_i, true);
 
 fprintf("Inner working angle: \t%.10f\n", IWA);

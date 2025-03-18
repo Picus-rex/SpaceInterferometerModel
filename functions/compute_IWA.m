@@ -1,5 +1,5 @@
 function [eta_mod, IWA] = ...
-    compute_IWA(PSF, theta_range, eta_opt, areas, autoplot)
+            compute_IWA(PSF, theta_range, eta_opt, areas, C_i, autoplot)
 %COMPUTE_IWA Compute the inner working angle given the PSF and the range of
 %angluar apertures.
 %
@@ -7,6 +7,7 @@ function [eta_mod, IWA] = ...
 %   PSF[MxM]            2D PSF as output from compute_psf.
 %   theta_range[Mx1]    Range of angular offsets from the star. [rad]
 %   eta_opt[Nx1]        Optical efficiency of every aperture.
+%   C_i[N1x1]           Baseline amplitude factors. [-]
 %   areas[Nx1]          Areas of every aperture. [m^2]
 %   autoplot[bool]      If true, create plot.
 %
@@ -23,16 +24,18 @@ function [eta_mod, IWA] = ...
 %
 % VERSION HISTORY:
 %   2025-02-18 -------- 1.0
+%   2025-03-18 -------- 2.0
+%                     - FIX: computation of the modulation using the
+%                       correct relation in the paper, using the new added
+%                       input as coefficients C_i. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Using formula on page 8.
-den = 0;
-for i = 1:length(eta_opt)
-    den = den + eta_opt(i) * areas(i);
-end
-eta_mod = max(PSF, [], "all") / den;
+% Using formula 15, 16 on page 8.
+num = sqrt(0.5 * sum(C_i.^2));
+den = sum(eta_opt * areas);
+eta_mod = num / den;
 
 % Extract the position of the main peak and the main depth.
 [i, j] = find(PSF == max(PSF, [], "all"));

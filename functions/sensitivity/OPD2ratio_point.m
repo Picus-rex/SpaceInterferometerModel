@@ -24,9 +24,13 @@ function ratios = OPD2ratio_point(N, amplitudes, phases, positions, ...
 %   - OPDs are periodic, therefore each multiple of n * lambda, with n
 %     integer number will produce the same nulling ratio. Therefore, for an
 %     optimal result, the point should be below the wavelength.
+%   - Default point is within range of 1 nm of quality control that can be
+%     reached by system.
 %
 % VERSION HISTORY:
 %   2025-03-17 -------- 1.0
+%   2025-03-20 -------- 1.0.1
+%                     - Plot and help enhancement
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,10 +70,11 @@ if autoplot
     
     figure; hold on;
     plot(lambdas * 1e6, ratios, "LineWidth", 1.5);
-    xlabel("Wavelength [micro m]");
+    xlabel("Wavelength [\mu m]");
     ylabel("Nulling ratio");
 
     axis tight;   
+    grid minor;
     set(gca, 'XScale', 'log', 'YScale', 'log');
 
 end

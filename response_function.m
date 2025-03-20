@@ -7,7 +7,7 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/temp_lin.yml');
+data = ReadYaml('config/x_array.yml');
 data = convert_data(data);
 
 %% Analysis
@@ -22,7 +22,7 @@ data = convert_data(data);
 
 % Classify baselines
 [data.simulation.baselines, data.simulation.unique_baselines] = ...
-    classify_baselines(data.instrument.apertures, data.instrument.positions, data.instrument.phase_shifts, true);
+    classify_baselines(data.instrument.intensities, data.instrument.positions, data.instrument.phase_shifts, true);
 
 % Complex Field and Response Function
 if data.simulation.consider_non_ideal
@@ -32,8 +32,7 @@ else
 end
 
 % Verify modulation of the signal
-[data.simulation.planet_modulation, ...
-    data.simulation.planet_modulation_efficiency] = planet_modulation(data);
+[data.simulation.planet_modulation] = planet_modulation(data);
 
 % Find nulling ratio
 [data.simulation.nulling_ratio, data.simulation.rejection_factor] = ...

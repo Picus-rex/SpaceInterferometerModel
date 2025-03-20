@@ -21,9 +21,9 @@ function [U, amplitudes, phases] = ...
 %   U[NxN]              Matrix of the beam combination, with unitary
 %                       determinant. It includes the phases delay if
 %                       necessary. [-]
-%   amplitudes[NxN]     Beam combination amplitudes for optimal nulling
+%   amplitudes[1xN]     Beam combination amplitudes for optimal nulling
 %                       (U's last row). [-]
-%   phases[NxN]         Beam combination phases for optimal nulling. [rad]
+%   phases[1xN]         Beam combination phases for optimal nulling. [rad]
 %
 % REFERENCES:
 %   Guyon O, Mennesson B, Serabyn E, Martin S. Optimal beam combiner design

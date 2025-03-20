@@ -28,14 +28,14 @@ function [eta_mod, IWA] = ...
 %                     - FIX: computation of the modulation using the
 %                       correct relation in the paper, using the new added
 %                       input as coefficients C_i. 
+%   2025-03-20 -------- 2.0.1
+%                     - Moved efficiency computation to dedicated function.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Using formula 15, 16 on page 8.
-num = sqrt(0.5 * sum(C_i.^2));
-den = sum(eta_opt * areas);
-eta_mod = num / den;
+% Extract efficiency for plot reasons.
+eta_mod = compute_modulation_efficiency(eta_opt, areas, C_i);
 
 % Extract the position of the main peak and the main depth.
 [i, j] = find(PSF == max(PSF, [], "all"));
@@ -81,6 +81,7 @@ if autoplot
 end
 
 end
+
 
 
 function delta = find_IWA(theta_scaled, theta_range, signal, eta_mod)

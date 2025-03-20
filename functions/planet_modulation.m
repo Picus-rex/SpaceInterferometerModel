@@ -1,4 +1,4 @@
-function [modulation, efficiency] = planet_modulation(data)
+function modulation = planet_modulation(data)
 %PLANET_MODULATION Computes the modulation of the planet signal by
 % rotating the array and measuring the interpolated response function at
 % the planet's position.
@@ -9,7 +9,6 @@ function [modulation, efficiency] = planet_modulation(data)
 %
 % OUTPUTS:
 %   modulation[1x n_rotation] Modulated signal values at each rotation step
-%   efficiency[1]       Modulation efficiency.
 %
 % NOTES:
 %  - If field planet_modulation_positions is not specified in simulation,
@@ -21,20 +20,23 @@ function [modulation, efficiency] = planet_modulation(data)
 %   2025-03-10 -------- 1.1
 %                     - If planet_modulation_positions = 0, skip function
 %                     - Typo in error function.
+%   2025-03-20 -------- 1.2
+%                     - Modulation removed because incorrect. Use
+%                       compute_modulation_efficiency to extract modulation 
+%                       efficiency.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Planet position
-planet_x = data.environment.exoplanet_position{1}(1);
-planet_y = data.environment.exoplanet_position{2}(1);
+planet_x = data.environment.exoplanet_position(1);
+planet_y = data.environment.exoplanet_position(2);
 
 % Initialize modulation vector; leave function if no rotations
 if isfield(data.simulation, "planet_modulation_positions")
     n_rotation = data.simulation.planet_modulation_positions;
     if n_rotation == 0
         modulation = NaN;
-        efficiency = NaN;
         return
     end
 else
@@ -130,9 +132,6 @@ for i = 1:n_rotation
         modulation_err(i) = interp2(theta_x, theta_y, T_real_rotated, planet_x, planet_y, 'linear', 0);
     end
 end
-
-% Modulation efficiency
-efficiency = mean(modulation) / max(modulation);
 
 % Plot the modulation curve
 if isfield(data.outputs, "plot_modulation") && data.outputs.plot_modulation

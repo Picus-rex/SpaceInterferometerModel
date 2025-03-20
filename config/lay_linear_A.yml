@@ -1,0 +1,34 @@
+instrument:
+    apertures: 4
+    baseline: 10.5
+    apertures_ratio: 3
+    array: "Linear"
+    intensities:
+     - [0.5, 0.5, 0.5, 0.5]
+    phase_shifts:
+     - [270, 90, 180, 0]
+
+    wavelength: 10e-6
+
+    efficiencies:
+        beam_combiner: 0.25
+        optical_line: 0.1
+
+environment:
+    stellar_angular_radius: 1e-9        # [rad]
+    exoplanet_position:                 # x, y in [rad]
+        - 1.453e-7
+        - 0
+
+
+simulation:
+    consider_non_ideal: false                # If false, fields with [1] are optional
+
+    angular_extension:
+     - [-2.90888208665724e-7, 2.90888208665724e-7, 2000]               # start, end, number of points
+
+
+outputs:
+    plot_array: false
+    plot_planets: 0
+    plot_star: false

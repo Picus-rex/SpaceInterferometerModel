@@ -37,10 +37,10 @@ function ratios = OPD2ratio_point(N, amplitudes, phases, positions, ...
 
 if nargin < 6
     lambdas = linspace(1e-6, 1e-4, 1000);
-    point = [2; 1] * 1e-7;
+    point = [2; 1] * 1e-5;
     autoplot = true;
 elseif nargin < 7
-    point = [2; 1] * 1e-7;
+    point = [2; 1] * 1e-5;
     autoplot = true;
 elseif nargin < 8
     autoplot = true;
@@ -70,7 +70,7 @@ if autoplot
     
     figure; hold on;
     plot(lambdas * 1e6, ratios, "LineWidth", 1.5);
-    xlabel("Wavelength [\mu m]");
+    xlabel("Wavelength [μm]");
     ylabel("Nulling ratio");
 
     axis tight;   

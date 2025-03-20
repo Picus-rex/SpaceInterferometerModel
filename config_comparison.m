@@ -5,11 +5,13 @@
 % IWA, FWHM (normalised by lambda/max baselien)
 
 clc; clear; close;
-
-configurations = ["lay_x_2", "lay_x_3", "lay_linear_A", "lay_linear_B", "lay_diamond"]';
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
+% Config files to consider in the analysis.
+configurations = ["lay_x_2", "lay_x_3", "lay_linear_A", "lay_linear_B", "lay_diamond"]';
+
+% Empty fields to fill
 Normalised_positions_x = [];
 Normalised_positions_y = [];
 Amplitudes = [];
@@ -19,6 +21,7 @@ Modulation_efficiency = [];
 IWA = [];
 FWHM = [];
 
+% For every configuration...
 for i = 1:length(configurations)
     data = ReadYaml(sprintf('config/%s.yml', configurations(i)));
     data = convert_data(data);
@@ -42,5 +45,8 @@ for i = 1:length(configurations)
     IWA(i, 1) = IWA(i, 1) / (data.instrument.wavelength/data.instrument.baseline);
 end
 
+% Convert into a table
 results = table(Normalised_positions_x, Normalised_positions_y, ...
     Amplitudes, Diameter, Phases, Modulation_efficiency, IWA, FWHM, RowNames=configurations);
+
+writetable(results);

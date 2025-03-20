@@ -94,13 +94,13 @@ if autoplot
     
     for i = 1:length(lambdas)
         figure; hold on;
-        imagesc(opd(i, :), opd(i, :), log10(squeeze(ratios(i, :, :)) + eps));
-        title(sprintf("OPD [%.000f \\micro m]", lambdas(i)*1e6), "Interpreter", "latex");
-        xlabel("OPD difference branch 1-3 [m]");
-        ylabel("OPD difference branch 2-4 [m]");
+        imagesc(opd(i, :)*1e6, opd(i, :)*1e6, log10(squeeze(ratios(i, :, :)) + eps));
+        title(sprintf("OPD [%.3f μm]", lambdas(i)*1e6));
+        xlabel("OPD difference branch 1-3 [μm]");
+        ylabel("OPD difference branch 2-4 [μm]");
         colormap(darkBlue)
         cb = colorbar();
-        clim([global_min global_max]);
+        clim([global_min global_max]); 
 
         % Update thicks 
         tick_values = get(cb, 'Ticks'); 

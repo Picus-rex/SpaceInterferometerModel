@@ -37,12 +37,12 @@ for i = 1:length(configurations)
         data.instrument.intensities, data.instrument.positions, ...
         data.instrument.phase_shifts, data.environment.exoplanet_position, data.simulation.theta_range);
     FWHM(i, 1) = FWHM(i, 1) / (data.instrument.wavelength/data.instrument.baseline);
-
-    [Modulation_efficiency(i, 1), IWA(i, 1)] = compute_IWA(PSF, ...
-        data.simulation.theta_range, ...
+    
+    Modulation_efficiency(i, 1) = compute_modulation_efficiency(...
         data.instrument.efficiencies.optical_line, ...
-        data.instrument.surfaces, C_i, false);
-    IWA(i, 1) = IWA(i, 1) / (data.instrument.wavelength/data.instrument.baseline);
+        data.instrument.surfaces, C_i);
+
+    IWA(i, 1) = compute_IWA(data.instrument.unique_baselines, data.instrument.wavelength) / (data.instrument.wavelength/data.instrument.baseline);
 end
 
 % Convert into a table

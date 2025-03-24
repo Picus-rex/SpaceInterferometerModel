@@ -1,4 +1,4 @@
-function modulation = planet_modulation(data)
+function [modulation, hs] = planet_modulation(data, export_settings)
 %PLANET_MODULATION Computes the modulation of the planet signal by
 % rotating the array and measuring the interpolated response function at
 % the planet's position.
@@ -6,9 +6,12 @@ function modulation = planet_modulation(data)
 % INPUTS:
 %   data[struct]        For integrated development, all the inputs can be
 %                       grouped into a single struct
+%  optional:
+%   export_setting[struct] Setting for export. 
 %
 % OUTPUTS:
 %   modulation[1x n_rotation] Modulated signal values at each rotation step
+%   hs                  Handles of figures.
 %
 % NOTES:
 %  - If field planet_modulation_positions is not specified in simulation,
@@ -24,9 +27,22 @@ function modulation = planet_modulation(data)
 %                     - Modulation removed because incorrect. Use
 %                       compute_modulation_efficiency to extract modulation 
 %                       efficiency.
+%   2025-03-21 -------- 1.3
+%                     - Added export settings to create coherent plots.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin == 1
+    export_settings = NaN;
+    exp = false;
+else
+    exp = true;
+end
+
+% Conversion factor and styling for the plots
+conversion_rad2mas = 1e3 * (3600 * 180) / pi;
+style_colors;
 
 % Planet position
 planet_x = data.environment.exoplanet_position(1);
@@ -67,8 +83,12 @@ original_positions = data.instrument.positions;
 if isfield(data.outputs, "plot_intermediate_rotations") && ...
             data.outputs.plot_intermediate_rotations
     L = ceil(floor(n_rotation/div_plot).^0.5);
-    h1 = figure;
-    h2 = figure;
+    if exp
+        hs = [];
+    else
+        h1 = figure;
+        h2 = figure;
+    end
     j = 1;
 end
 
@@ -97,28 +117,53 @@ for i = 1:n_rotation
             data.outputs.plot_intermediate_rotations
         if ~mod(i, div_plot) || i == 1
             
-            figure(h1)
-            subplot(L, L, j); hold on;
-            imagesc(theta_x(1, :), theta_y(:, 1), T_rotated);
-            plot(planet_x, planet_y, "*", "MarkerSize", 10);
-            title(sprintf("Rotation: %.2f deg", rad2deg(angles(i))))
-            axis equal
-            hold off;
-
-            figure(h2)
-            subplot(L, L, j); hold on;
-            for k = 1:size(data.instrument.positions, 1)
-                plot(data.instrument.positions(k, 1), data.instrument.positions(k, 2), ".", "MarkerSize", 10)
-            end
-            if strcmp(data.instrument.array, "X-Array")
-                plot([data.instrument.positions(1, 1), data.instrument.positions(3, 1)], [data.instrument.positions(1, 2), data.instrument.positions(3, 2)], "-", "LineWidth", 1.5)
-                plot([data.instrument.positions(2, 1), data.instrument.positions(4, 1)], [data.instrument.positions(2, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5)
+            % Figure 1: Transmission maps
+            if exp
+                hs(j) = figure(); 
+                j = j + 1;
             else
-                plot([data.instrument.positions(1, 1), data.instrument.positions(4, 1)], [data.instrument.positions(1, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5)
-
+                figure(h1)
+                subplot(L, L, j);
             end
-            title(sprintf("Rotation: %.2f deg", rad2deg(angles(i))))
-            axis equal
+            hold on; axis equal;
+            imagesc(theta_x(1, :) * conversion_rad2mas, theta_y(:, 1) * conversion_rad2mas, T_rotated);
+            colormap(darkBlue)
+            colorbar();
+            plot(planet_x * conversion_rad2mas, planet_y * conversion_rad2mas, "*", "MarkerSize", 10, "Color", ui_colours(5, :));
+            xlabel('\theta_x [mas]');
+            ylabel('\theta_y [mas]');
+            if exp
+                export_figures("embedded", export_settings, "name", export_settings.name + "_map_" + string(j))
+            else
+                title(sprintf("Rotation: %.2f deg", rad2deg(angles(i))))
+            end
+            hold off;
+            
+            % Figure 2: rotated arrays   
+            if exp
+                hs(j) = figure();
+            else
+                figure(h2)
+                subplot(L, L, j); 
+            end
+            hold on; axis equal;
+            for k = 1:size(data.instrument.positions, 1)
+                plot(data.instrument.positions(k, 1), data.instrument.positions(k, 2), ".", "MarkerSize", 10, "Color", colours(1, :))
+            end
+            xlabel('[m]');
+            ylabel('[m]');
+            if strcmp(data.instrument.array, "X-Array")
+                plot([data.instrument.positions(1, 1), data.instrument.positions(3, 1)], [data.instrument.positions(1, 2), data.instrument.positions(3, 2)], "-", "LineWidth", 1.5, "Color", colours(3, :))
+                plot([data.instrument.positions(2, 1), data.instrument.positions(4, 1)], [data.instrument.positions(2, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5, "Color", colours(3, :))
+            else
+                plot([data.instrument.positions(1, 1), data.instrument.positions(4, 1)], [data.instrument.positions(1, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5, "Color", colours(3, :))
+            end
+            if exp
+                export_figures("embedded", export_settings, "name", export_settings.name + "_array_" + string(j))
+            else
+                title(sprintf("Rotation: %.2f deg", rad2deg(angles(i))))
+            end
+
             hold off;
 
             j = j + 1;
@@ -135,17 +180,29 @@ end
 
 % Plot the modulation curve
 if isfield(data.outputs, "plot_modulation") && data.outputs.plot_modulation
-    figure; hold on;
-    plot(rad2deg(angles), modulation, '-', 'LineWidth', 2);
+    if exp
+        hs(end+1) = figure();
+    else
+        h3 = figure();
+    end
+
+    hold on;
+    plot(rad2deg(angles), modulation, '-', 'LineWidth', 2, "Color", colours(1, :));
 
     if isfield(data.simulation, "monte_carlo_iterations") && data.simulation.monte_carlo_iterations > 0
-        plot(rad2deg(angles), modulation_err, '-', 'LineWidth', 2);
+        plot(rad2deg(angles), modulation_err, '-', 'LineWidth', 2, "Color", Colours(2, :));
     end
 
     xlabel('Rotation Angle [deg]');
     ylabel('Interpolated Signal at Planet Position');
-    title('Planet Signal Modulation');
     grid minor;
+
+    if exp
+        export_figures("embedded", export_settings)
+    else
+        title('Planet Signal Modulation');
+        hs = [h1, h2, h3];
+    end
 end
 
 end

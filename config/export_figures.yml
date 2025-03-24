@@ -1,0 +1,50 @@
+figures:
+
+    - type: optimal_modes
+      chapter: 2
+      width: half
+      height: normal
+
+    - type: transmission_map
+      chapter: 2
+      width: half
+      height: normal
+
+    - type: transmission_map_planet
+      chapter: 2
+      width: half
+      height: normal
+
+    - type: transmission_map_monodirectional
+      include:
+      - T_standard
+      - T_chopped
+      names:
+      - Nominal
+      - Chopped
+      chapter: 2
+      width: half
+      height: normal
+
+    - type: modes_optimality_map
+      chapter: 2
+      width: half
+      height: normal
+
+    - type: psf_map
+      chapter: 2
+      width: full
+      height: normal
+
+chapters:
+    - name: intro
+    - name: modelling
+    - name: sensitivity
+
+sizes:
+    width:
+        full: 20
+        half: 10.5
+    height:
+        normal: 10
+    font_size: 11

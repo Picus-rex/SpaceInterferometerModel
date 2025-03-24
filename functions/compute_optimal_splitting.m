@@ -1,5 +1,5 @@
-function [U, amplitudes, phases] = ...
-        compute_optimal_splitting(N, B, lambda, x_ap, y_ap, theta_max, autoplot, export)
+function [U, amplitudes, phases, hs] = compute_optimal_splitting(N, B, ...
+    lambda, x_ap, y_ap, theta_max, autoplot, export_settings)
 %COMPUTE_OPTIMAL_SPLITTING Following the methodology illustrated in Guyon
 %O., this function computes the splitting matrix U, optimally computed
 %assuming a certain stellar angular extension.
@@ -12,7 +12,7 @@ function [U, amplitudes, phases] = ...
 %   y_ap[N]             Vector with ordinate positions of apertures [m]
 %   theta_max[1]        Angular star extension [rad]
 %   autoplot[bool]      If true, produce a plot of the different modes
-%   export[bool]        If true, save figures
+%   export_setting[struct] Setting for export. 
 %
 % [^1] The baseline is only used to compute the angular extension of the
 % star in accordance with the paper. 
@@ -32,6 +32,9 @@ function [U, amplitudes, phases] = ...
 %
 % VERSION HISTORY:
 %   2025-02-11 -------- 1.0
+%   2025-03-24 -------- 1.1
+%                     - Updated to reflect the export settings as in other
+%                       functions that create plots.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,8 +49,11 @@ if nargin < 7
     autoplot = false;
 end
 if nargin < 8
+    export_settings = NaN;
     export = false;
-end           
+else
+    export = true;
+end
 
 % Definition of vectors and empty placeholders
 theta_x = linspace(-theta_max, theta_max, 100);
@@ -74,6 +80,8 @@ phases = angle(U(:, end)).';
 
 if autoplot
     
+    style_colors;
+    hs = [];
     conversion_rad2mas = 1e3 * (3600 * 180) / pi;
     theta_x = theta_x * conversion_rad2mas;
     theta_y = theta_y * conversion_rad2mas;
@@ -84,62 +92,84 @@ if autoplot
     W_intensity = W_intensity / max(W_intensity(:));
     
     % Plot transmission maps
-    figure;
-    for m = 1:min(4, N)
-        subplot(1, 4, m);
-        imagesc(theta_x, theta_y, ...
-            reshape(abs(W_intensity(m, :)), sqrt(Npt), sqrt(Npt)));
-        colorbar; styling; % colormap winter;
-        xlabel('\theta_x [mas]');
-        ylabel('\theta_y [mas]');
-        title(['Mode ', num2str(m)]);
-    end
-    
     if export
         for m = 1:min(4, N)
-            h = figure;
+            hs(end+1) = figure;
             imagesc(theta_x, theta_y, ...
                 reshape(abs(W_intensity(m, :)), sqrt(Npt), sqrt(Npt)));
-            colorbar; styling(true, 6, 6, sprintf("exports/optimal_modes_%.0f.pdf", m+4)); % colormap winter;
+            colormap(darkBlue)
+            colorbar();
             xlabel('\theta_x [mas]');
             ylabel('\theta_y [mas]');
-
-            % set(gcf, 'Units', 'centimeters', 'Position', [2, 2, 6, 6]);
-            % set(findall(gcf, '-property', 'FontName'), 'FontName', 'Times New Roman');
-            % set(findall(gcf, '-property', 'FontSize'), 'FontSize', 11);
-            % set(gcf, 'PaperUnits', 'centimeters', 'PaperSize', [6, 6]);
-            % set(gcf, 'PaperPositionMode', 'auto');
-            % print(gcf, sprintf("exports/optimal_modes_%.0f.pdf", m+4), '-dpdf', '-r300');
-            close(h)
+            export_figures("embedded", export_settings, "name", export_settings.name + "_" + string(length(hs)))
+        end
+    else
+        hs(end+1) = figure;
+        for m = 1:min(4, N)
+            subplot(1, 4, m);
+            imagesc(theta_x, theta_y, ...
+                reshape(abs(W_intensity(m, :)), sqrt(Npt), sqrt(Npt)));
+            colorbar; styling; % colormap winter;
+            xlabel('\theta_x [mas]');
+            ylabel('\theta_y [mas]');
+            title(['Mode ', num2str(m)]);
         end
     end
-
-    % Plot intensity waves
-    figure;
+    
     i_y0 = round(length(theta_y) / 2);
-    for m = 1:min(4, N)
-        subplot(3, 2, m);
-        % Reshape W_intensity into 2D and extract the middle row
-        W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
-        intensity_profile = W_reshaped(i_y0, :);
-        plot(theta_x, intensity_profile, "LineWidth", 1.5, 'DisplayName', ['Mode ', num2str(m)]);
+    if export
+        for m = 1:min(4, N)
+            hs(end+1) = figure; hold on;
+            % Reshape W_intensity into 2D and extract the middle row
+            W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
+            intensity_profile = W_reshaped(i_y0, :);
+            plot(theta_x, intensity_profile, "LineWidth", 1.5, 'DisplayName', ['Mode ', num2str(m)]);
+            xlabel('\theta_x [mas]');
+            ylabel('Intensity profile');
+            grid minor;
+            export_figures("embedded", export_settings, "name", export_settings.name + "_mode_" + string(length(hs)))
+        end
+        
+        hs(end+1) = figure;
+        for m = 1:min(4, N)
+            W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
+            intensity_profile = W_reshaped(i_y0, :);
+            semilogy(theta_x, intensity_profile, 'DisplayName', ['Mode ', num2str(m)], "LineWidth", 1.5);
+            hold on;
+        end
         xlabel('\theta_x [mas]');
-        ylabel('Intensity profile');
-        title(['Mode ', num2str(m)]);
-    end
+        ylabel('Normalized Intensity');
+        legend;
+        grid minor; hold off;
+        export_figures("embedded", export_settings, "name", export_settings.name)
 
-    subplot(3, 2, [5, 6]);
-    for m = 1:min(4, N)
-        W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
-        intensity_profile = W_reshaped(i_y0, :);
-        semilogy(theta_x, intensity_profile, 'DisplayName', ['Mode ', num2str(m)], "LineWidth", 1.5);
-        hold on;
+    else
+        % Plot intensity waves
+        hs(end+1) = figure;
+        for m = 1:min(4, N)
+            subplot(3, 2, m);
+            % Reshape W_intensity into 2D and extract the middle row
+            W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
+            intensity_profile = W_reshaped(i_y0, :);
+            plot(theta_x, intensity_profile, "LineWidth", 1.5, 'DisplayName', ['Mode ', num2str(m)]);
+            xlabel('\theta_x [mas]');
+            ylabel('Intensity profile');
+            title(['Mode ', num2str(m)]);
+        end
+    
+        subplot(3, 2, [5, 6]);
+        for m = 1:min(4, N)
+            W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
+            intensity_profile = W_reshaped(i_y0, :);
+            semilogy(theta_x, intensity_profile, 'DisplayName', ['Mode ', num2str(m)], "LineWidth", 1.5);
+            hold on;
+        end
+    
+        xlabel('\theta_x [mas]');
+        ylabel('Normalized Intensity');
+        legend;
+        grid minor; hold off;
     end
-
-    xlabel('\theta_x [mas]');
-    ylabel('Normalized Intensity');
-    legend;
-    grid minor; hold off;
 end
 
 end

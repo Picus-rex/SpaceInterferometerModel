@@ -73,7 +73,7 @@ plot_star = data.outputs.plot_star;
 angles = linspace(0, 2*pi, 10000); 
 conversion_rad2mas = 1e3 * (3600 * 180) / pi;
 theta_range = data.simulation.theta_range * conversion_rad2mas;
-theta_planets = theta_planets * conversion_rad2mas;
+%theta_planets = theta_planets * conversion_rad2mas;
 
 figure; hold on;
 imagesc(theta_range, theta_range, T);

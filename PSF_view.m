@@ -48,14 +48,3 @@ imagesc(theta_range * conversion_rad2mas, theta_range * conversion_rad2mas, PSF)
 plot(x * conversion_rad2mas, y * conversion_rad2mas, 'r--')
 colorbar;
 title("PSF");
-
-%% Compute the IWA
-
-[D, a] = plot_apertures(positions, A, ...
-    data.instrument.efficiencies.optical_line, ...
-    data.instrument.efficiencies.beam_combiner, false);
-
-eta_opt = data.instrument.efficiencies.optical_line;
-[eta_mod, IWA] = compute_IWA(PSF, theta_range, eta_opt, a, C_i, true);
-
-fprintf("Inner working angle: \t%.10f\n", IWA);

@@ -4,6 +4,13 @@ figures:
       chapter: 2
       width: half
       height: normal
+      include:
+        modes_maps:
+            width: quart
+            height: quart
+        modes_comparison:
+            width: half
+            height: normal
 
     - type: transmission_map
       chapter: 2
@@ -12,8 +19,8 @@ figures:
 
     - type: transmission_map_planet
       chapter: 2
-      width: half
-      height: normal
+      width: quart
+      height: quart
 
     - type: transmission_map_monodirectional
       include:
@@ -26,15 +33,18 @@ figures:
       width: half
       height: normal
 
-    - type: modes_optimality_map
+    - type: psf_map
       chapter: 2
       width: half
       height: normal
 
-    - type: psf_map
+tables:
+
+    - type: unique_baselines
       chapter: 2
-      width: full
-      height: normal
+
+
+
 
 chapters:
     - name: intro
@@ -44,7 +54,9 @@ chapters:
 sizes:
     width:
         full: 20
-        half: 10.5
+        half: 12
+        quart: 5
     height:
         normal: 10
-    font_size: 11
+        quart: 4.7
+    font_size: 9

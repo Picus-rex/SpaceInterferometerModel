@@ -52,6 +52,7 @@ xlabel('\theta_x [mas]');
 ylabel('Normalized Intensity');
 legend;
 grid minor; 
+axis tight;
 set(gca, 'YScale', 'log');
 hold off;
 

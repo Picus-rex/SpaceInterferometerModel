@@ -38,7 +38,8 @@ ylabel('\theta_y [mas]');
 colormap(darkBlue)
 colorbar();
 axis xy; 
-axis equal;
+axis square;
+axis tight;
 
 if isstruct(export_settings)
     export_figures("embedded", export_settings)

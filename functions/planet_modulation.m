@@ -27,8 +27,9 @@ function [modulation, hs] = planet_modulation(data, export_settings)
 %                     - Modulation removed because incorrect. Use
 %                       compute_modulation_efficiency to extract modulation 
 %                       efficiency.
-%   2025-03-21 -------- 1.3
+%   2025-03-24 -------- 1.3
 %                     - Added export settings to create coherent plots.
+%                     - Print angles.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,7 +97,7 @@ end
 for i = 1:n_rotation
 
     if isfield(data.outputs, "verbose") && data.outputs.verbose && ~mod(i, div_plot)
-        fprintf("Rotation %.0f of %.0f\n", i, n_rotation)
+        fprintf("Rotation %.0f of %.0f at angle %.2f\n", i, n_rotation, rad2deg(angles(i)))
     end
 
     % Rotate the apertures
@@ -132,6 +133,8 @@ for i = 1:n_rotation
             plot(planet_x * conversion_rad2mas, planet_y * conversion_rad2mas, "*", "MarkerSize", 10, "Color", ui_colours(5, :));
             xlabel('\theta_x [mas]');
             ylabel('\theta_y [mas]');
+            axis square;
+            axis tight;
             if exp
                 export_figures("embedded", export_settings, "name", export_settings.name + "_map_" + string(j))
             else
@@ -152,6 +155,8 @@ for i = 1:n_rotation
             end
             xlabel('[m]');
             ylabel('[m]');
+            grid minor;
+            axis tight;
             if strcmp(data.instrument.array, "X-Array")
                 plot([data.instrument.positions(1, 1), data.instrument.positions(3, 1)], [data.instrument.positions(1, 2), data.instrument.positions(3, 2)], "-", "LineWidth", 1.5, "Color", colours(3, :))
                 plot([data.instrument.positions(2, 1), data.instrument.positions(4, 1)], [data.instrument.positions(2, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5, "Color", colours(3, :))

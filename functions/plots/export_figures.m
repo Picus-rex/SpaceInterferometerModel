@@ -32,6 +32,7 @@ if isfield(export_settings, "embedded")
     end
 
     export_settings = export_settings.embedded;
+    export_settings.name = name;
 end
 
 set(findall(gcf, '-property', 'FontName'), 'FontName', 'Times New Roman');
@@ -40,7 +41,7 @@ set(findall(gcf, '-property', 'FontSize'), 'FontSize', export_settings.font_size
 set(gcf, 'Units', 'centimeters', 'Position', [2, 2, export_settings.width, export_settings.height]);
 set(gcf, 'PaperUnits', 'centimeters', 'PaperSize', [export_settings.width, export_settings.height]);
 set(gcf, 'PaperPositionMode', 'auto');
-print(gcf, name, '-dpdf', '-r300');
+print(gcf, export_settings.name, '-dpdf', '-r300');
 
 
 end

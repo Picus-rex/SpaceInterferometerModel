@@ -1,5 +1,5 @@
-function [OPD, OPD_max] = find_minimum_OPD_single_branch(N, amplitudes, ...
-           phases, positions, theta_star, lambda, desired_ratios, autoplot)
+function [OPD, OPD_max, h] = find_minimum_OPD_single_branch(N, amplitudes, ...
+           phases, positions, theta_star, lambda, desired_ratios, export_settings)
 %FIND_MINIMUM_OPD_SINGLE_BRANCH Set up an optimisation problem to find, for
 %each target nulling depth, the OPD that the second branch should maximally
 %display.
@@ -13,13 +13,14 @@ function [OPD, OPD_max] = find_minimum_OPD_single_branch(N, amplitudes, ...
 %   lambda[1]           Wavelength of observation. [m]
 %   desired_ratios[Mx1] Desired nulling ratio(s) at which to compute the
 %                       response. If not given, internal values are used.
-%   autoplot[bool]      If given and true, create plots. Default: true
+%   export_setting[struct] Setting for export. 
 %
 % OUTPUTS:
 %   OPD[Mx1]            Vector of OPDs differences for the second branch.
 %                       This is the minimum value (see below for 
 %                       periodicity).
 %   OPD_max[1]          Period.
+%   h[1]                Figure handle
 %
 % NOTES:
 %   - OPDs are periodic, therefore each multiple of n * OPD_max, with n
@@ -31,6 +32,8 @@ function [OPD, OPD_max] = find_minimum_OPD_single_branch(N, amplitudes, ...
 %   2025-03-13 -------- 2.0
 %                     - Function rewritten to use look up tables instead of
 %                       numerical solvers. Now works only on single branch.
+%   2025-03-27 -------- 2.1
+%                     - Adapted to the export settings to save plots.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,9 +45,11 @@ function [OPD, OPD_max] = find_minimum_OPD_single_branch(N, amplitudes, ...
                                         positions, theta_star, lambda);
 if nargin < 7
     desired_ratios = logspace(log10(min_ratio), 0, 10);
-    autoplot = true;
+    export_settings = NaN;
+    h = NaN;
 elseif nargin < 8
-    autoplot = true;
+    export_settings = NaN;
+    h = NaN;
 end
 OPD = zeros(length(desired_ratios), 1);
 points = 1000;
@@ -86,12 +91,12 @@ opd_range = opd_range(~non_unique_indices_in_ratios);
 opd_fun = @(r) interp1(ratios_range, opd_range, r, "spline", NaN);
 
 % Begin plot if needed
-if autoplot
-    figure; hold on; set(gca, 'XScale', 'log', 'YScale', 'log')
+if isstruct(export_settings)
+    h = figure; hold on; set(gca, 'XScale', 'log', 'YScale', 'log')
     xlabel("Nulling ratios")
-    ylabel("Minimum OPD [m]")
-    plot(ratios, opd, "*-", "LineWidth", 1.5);
-    plot(ratios_range, opd_range, "-", "LineWidth", 1.5);
+    ylabel("Minimum OPD [µm]")
+    plot(ratios, opd*1e6, "*-", "LineWidth", 1.5);
+    plot(ratios_range, opd_range*1e6, "-", "LineWidth", 1.5);
 end
 
 % For every desired ratio... 
@@ -109,12 +114,15 @@ for i = 1:length(desired_ratios)
                                         positions, theta_star, lambda);
     
     % Continue plot
-    if autoplot
+    if isstruct(export_settings)
         xline(desired_ratio, '--g', "LineWidth", 1.5);
         xline(rr, '--k', "LineWidth", 1.5)
-        yline(req_opd, '--r', "LineWidth", 1.5);
+        yline(req_opd * 1e6, '--r', "LineWidth", 1.5);
     end
+end
 
+if isstruct(export_settings)
+    export_figures("embedded", export_settings);
 end
 
 end

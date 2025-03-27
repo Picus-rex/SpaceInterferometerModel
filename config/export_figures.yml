@@ -1,5 +1,10 @@
 figures:
 
+    - type: configuration
+      chapter: 2
+      width: half
+      height: normal
+
     - type: optimal_modes
       chapter: 2
       width: half
@@ -38,6 +43,27 @@ figures:
       width: half
       height: normal
 
+    - type: nullratio_single_branch_single_wavelenth
+      chapter: 3
+      width: half
+      height: normal
+
+    - type: nullratio_single_branch
+      chapter: 3
+      width: half
+      height: normal
+
+    - type: nullratio_double_branch_discrete
+      wavelengths: [0.1e-6, 1e-6, 10e-6]
+      chapter: 3
+      width: third
+      height: normal
+
+    - type: nullratio_double_branch
+      chapter: 3
+      width: full
+      height: normal
+
 tables:
 
     - type: unique_baselines
@@ -55,8 +81,9 @@ sizes:
     width:
         full: 20
         half: 12
+        third: 8
         quart: 5
     height:
         normal: 10
         quart: 4.7
-    font_size: 9
+    font_size: 10

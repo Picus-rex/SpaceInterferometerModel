@@ -1,6 +1,6 @@
 instrument:
     apertures: 4
-    baseline: 10
+    baseline: 10.5
     apertures_ratio: 3
     array: "Linear"
     intensities:

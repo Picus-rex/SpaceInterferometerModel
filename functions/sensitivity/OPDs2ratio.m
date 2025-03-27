@@ -1,5 +1,5 @@
-function ratios = OPDs2ratio(N, amplitudes, phases, positions, theta_star, ...
-                                                        lambdas, autoplot)
+function [ratios, h] = OPDs2ratio(N, amplitudes, phases, positions, ...
+                                    theta_star, lambdas, export_settings)
 %OPDS2RATIO By varying the OPDs on the two branches of a double Bracewell
 %telescopes, find the resulting nulling ratios for the given interval of
 %wavelengths.
@@ -12,11 +12,12 @@ function ratios = OPDs2ratio(N, amplitudes, phases, positions, theta_star, ...
 %   theta_star[1]       Angular dimension of the star. [rad]
 %   lambdas[Mx1]        Wavelengths of observation. By default, a single 
 %                       observation at 10e-6 is performed. [m]
-%   autoplot[bool]      If given and true, create plots. Default: true
+%   export_setting[struct] Setting for export. 
 %
 % OUTPUTS:
 %   ratios[Mx1000x1000] Nulling ratios for each wavelength and for each
 %                       combination of shifts on the axes.
+%   h[1]                Figure handle
 %
 % NOTES:
 %   - OPDs are periodic, therefore each multiple of n * OPD_max, with n
@@ -26,15 +27,19 @@ function ratios = OPDs2ratio(N, amplitudes, phases, positions, theta_star, ...
 %   2025-03-14 -------- 1.0
 %   2025-03-17 -------- 1.1
 %                     - Fixed plots consistency across the scripts.
+%   2025-03-27 -------- 1.2
+%                     - Added export settings
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 6
     lambdas = 10e-6;
-    autoplot = true;
+    export_settings = NaN;
+    h = NaN;
 elseif nargin < 7
-    autoplot = true;
+    export_settings = NaN;
+    h = NaN;
 end
 
 regen = true;
@@ -85,7 +90,7 @@ if regen
 
 end
 
-if autoplot
+if isstruct(export_settings)
     
     style_colors;
 
@@ -93,11 +98,15 @@ if autoplot
     global_max = max(log10(squeeze(ratios(:, :, :)) + eps), [], 'all');
     
     for i = 1:length(lambdas)
-        figure; hold on;
+        h = figure; hold on;
         imagesc(opd(i, :)*1e6, opd(i, :)*1e6, log10(squeeze(ratios(i, :, :)) + eps));
-        title(sprintf("OPD [%.3f μm]", lambdas(i)*1e6));
-        xlabel("OPD difference branch 1-3 [μm]");
-        ylabel("OPD difference branch 2-4 [μm]");
+
+        if isfield(export_settings, "display_title") && export_settings.display_title
+            title(sprintf("OPD [%.3f µm]", lambdas(i)*1e6));
+        end
+
+        xlabel("OPD difference branch 1-3 [µm]");
+        ylabel("OPD difference branch 2-4 [µm]");
         colormap(darkBlue)
         cb = colorbar();
         clim([global_min global_max]); 
@@ -107,7 +116,9 @@ if autoplot
         tick_labels = arrayfun(@(x) sprintf('10^{%.0f}', x), tick_values, 'UniformOutput', false);
         set(cb, 'TickLabels', tick_labels);
 
-        axis tight;        
+        axis tight;   
+
+        export_figures("embedded", export_settings, "name", export_settings.name + "_" + string(i));
     end
 
 end

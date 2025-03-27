@@ -1,5 +1,5 @@
-function ratios = OPD2ratio_point(N, amplitudes, phases, positions, ...
-    theta_star, lambdas, point, autoplot)
+function [ratios, h] = OPD2ratio_point(N, amplitudes, phases, positions, ...
+    theta_star, lambdas, point, export_settings)
 %OPD2RATIO_POINT By varying the wavelength with defined shifts on the two
 %branches of a double Bracewell telescopes, find the resulting nulling
 %ratios for the given interval of wavelengths.
@@ -14,11 +14,12 @@ function ratios = OPD2ratio_point(N, amplitudes, phases, positions, ...
 %                       between 0.1 and 10 micro m are chosen. [m]
 %   point[2x1]          Shift to impose on the 1-3 and 2-4 branch
 %                       respectively. By default, 2, 1 micro m. [m]
-%   autoplot[bool]      If given and true, create plots. Default: true
+%   export_setting[struct] Setting for export. 
 %
 % OUTPUTS:
 %   ratios[M]           Nulling ratios for each wavelength in the specified
 %                       point.
+%   h[1]                Figure handle
 %
 % NOTES:
 %   - OPDs are periodic, therefore each multiple of n * lambda, with n
@@ -31,19 +32,24 @@ function ratios = OPD2ratio_point(N, amplitudes, phases, positions, ...
 %   2025-03-17 -------- 1.0
 %   2025-03-20 -------- 1.0.1
 %                     - Plot and help enhancement
+%   2025-03-27 -------- 1.1
+%                     - Added export settings
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if nargin < 6
     lambdas = linspace(1e-6, 1e-4, 1000);
-    point = [2; 1] * 1e-5;
-    autoplot = true;
+    point = [2; 1] * 1e-7;
+    export_settings = NaN;
+    h = NaN;
 elseif nargin < 7
-    point = [2; 1] * 1e-5;
-    autoplot = true;
+    point = [2; 1] * 1e-7;
+    export_settings = NaN;
+    h = NaN;
 elseif nargin < 8
-    autoplot = true;
+    export_settings = NaN;
+    h = NaN;
 end
 
 points = length(lambdas);
@@ -64,18 +70,20 @@ for k = 1:points
 end
 
 
-if autoplot
+if isstruct(export_settings)
     
     style_colors;
     
-    figure; hold on;
+    h = figure; hold on;
     plot(lambdas * 1e6, ratios, "LineWidth", 1.5);
-    xlabel("Wavelength [μm]");
+    xlabel("Wavelength [µm]");
     ylabel("Nulling ratio");
 
     axis tight;   
     grid minor;
     set(gca, 'XScale', 'log', 'YScale', 'log');
+
+    export_figures("embedded", export_settings);
 
 end
 

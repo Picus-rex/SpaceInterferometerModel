@@ -1,5 +1,5 @@
-function OPDs = ratio2OPD(N, amplitudes, phases, positions, ...
-                                   theta_star, ratios, lambdas, autoplot)
+function [OPDs, h] = ratio2OPD(N, amplitudes, phases, positions, ...
+                             theta_star, ratios, lambdas, export_settings)
 %RATIO2OPD Compute the minimum optical path distance to have in order to
 %have a desired nulling ratio for the given wavelengths interval. 
 %
@@ -12,12 +12,13 @@ function OPDs = ratio2OPD(N, amplitudes, phases, positions, ...
 %   lambdas[M1x1]       Wavelengths at which verify the analysis. [m]
 %   ratios[M2x1]        Desired nulling ratio(s) at which to compute the
 %                       response. [-]
-%   autoplot[bool]      If given and true, create plots. Default: true
+%   export_setting[struct] Setting for export. 
 %
 % OUTPUTS:
 %   OPDs[M1xM2]         Vector of OPDs differences for the second branch 
 %                       with respect to the first branch (minimum value,
 %                       there is a period as stated in find_minimum_OPD...
+%   h[1]                Figure handle
 %
 % NOTES:
 %   - OPDs are periodic, therefore each multiple of n * OPD_max, with n
@@ -25,6 +26,8 @@ function OPDs = ratio2OPD(N, amplitudes, phases, positions, ...
 %
 % VERSION HISTORY:
 %   2025-03-13 -------- 1.0
+%   2025-03-27 -------- 1.1
+%                     - Added export settings
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,12 +35,18 @@ function OPDs = ratio2OPD(N, amplitudes, phases, positions, ...
 % Input management
 if nargin < 6
     ratios = logspace(-11, 0, 100);
+    lambdas = linspace(1e-6, 20e-6, 100);
+    export_settings = NaN;
+    h = NaN;
 end
 if nargin < 7
     lambdas = linspace(1e-6, 20e-6, 100);
+    export_settings = NaN;
+    h = NaN;
 end
 if nargin < 8
-    autoplot = true;
+    export_settings = NaN;
+    h = NaN;
 end
 
 % Allocate output and compute the response by changing the wavelength
@@ -48,9 +57,9 @@ for i = 1:length(lambdas)
                phases, positions, theta_star, lambdas(i), ratios, false);
 end
 
-if autoplot
-    figure;
-    imagesc(ratios, lambdas, log10(OPDs' + eps)); % Add eps to avoid log(0)
+if isstruct(export_settings)
+    h = figure;
+    imagesc(ratios, lambdas * 1e6, log10(OPDs' + eps)); % Add eps to avoid log(0)
     
     style_colors;
 
@@ -66,9 +75,10 @@ if autoplot
 
     % Set axis labels
     xlabel('Nulling Ratios');
-    ylabel('Wavelengths [m]');
-    title("OPD")
+    ylabel('Wavelengths [µm]');
     set(gca, 'XScale', 'log');
+
+    export_figures("embedded", export_settings);
 end
 
 end

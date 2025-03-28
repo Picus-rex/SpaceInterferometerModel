@@ -3,41 +3,20 @@
 % is derived, assuming a perfect signal). The procedure is generalisable to
 % any N-apertures interferometer.
 
-clc; clear; close;
+clc; clear; close all;
+addpath(genpath("."))
+set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-%% Data
+data = ReadYaml('config/x_array.yml');
+data = convert_data(data);
 
-N = 4;                              % Aperture number
+[optical_path, x_coords, y_coords] = load_opd(data.simulation.code_v_opd_file);
 
-% For each aperture (3rd dimension), define the phase vector for the ideal 
-% case (unperturbed). This should be optimised using the
-% compute_optimal_splitting function. 
-phases(:, :, 1) = pi * ones(1000);
-phases(:, :, 2) = 0 * ones(1000);
-phases(:, :, 3) = -pi * ones(1000);
-phases(:, :, 4) = 0 * ones(1000);
+phases = opd2phase(optical_path, data.instrument.wavelength);
 
-%% Intesity
+%%
 
-% The intensity is half the square of the amplitude
-I = 0;
-
-for i = 1:N
-    for j = 1:N
-        
-        I = I + cos(phases(:, :, i) - phases(:, :, j));
-
-    end
+for i = 1:3
+    h = plot_value_on_image_plane(optical_path(:, i), x_coords(:, i), y_coords(:, i));
+    h = plot_value_on_image_plane(phases(:, i), x_coords(:, i), y_coords(:, i));
 end
-
-I = 0.5 * I;
-
-%% Representation
-
-figure;
-imagesc(I);
-xlabel('x');
-ylabel('y');
-title('Intensity Function for 4-Aperture Interferometer');
-colorbar;
-axis xy; axis equal;

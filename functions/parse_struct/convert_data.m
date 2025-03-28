@@ -22,6 +22,8 @@ for i = 1:length(fields_inst)
             data.instrument.throughput = data.instrument.efficiencies.beam_combiner * data.instrument.efficiencies.optical_line;
         case "intensities"
             data.instrument.intensities = cell2mat(data.instrument.intensities);
+        case "combination"
+            data.instrument.combination = cell2mat(data.instrument.combination);
         case "array"
             data.instrument.positions = define_array(data.instrument.array, data.instrument.baseline, data.instrument.apertures_ratio);
     end

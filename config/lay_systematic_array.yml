@@ -1,10 +1,14 @@
 instrument:
     apertures: 4
     baseline: 10.5
-    apertures_ratio: 2
-    array: X-Array
+    apertures_ratio: 3
+    array: Linear
     intensities:
-     - [0.5, 0.5, 0.5, 0.5]
+     - [0.56, 0.56, 0.56, 0.56]
+    phase_shifts:
+     - [270, 180, 90, 0]
+    combination:
+     - [1, 1, 1, 1]
 
     wavelength: 10e-6
 
@@ -14,13 +18,13 @@ instrument:
 
 environment:
 
-    target_distance: 15                 # [pc]
+    target_distance: 10                 # [pc]
     star_radius: 696340000              # [m]
     star_temperature: 5770              # [K]
 
     exoplanet_radius: 6378000           # [m]
     exoplanet_position:                 # x, y in [rad]
-        - [2.27e-7, 0]
+        - [2.42407e-7, 0]
 
     disturbances:                       # [1]
 
@@ -43,16 +47,14 @@ environment:
 
 simulation:
     consider_non_ideal: true                # If false, fields with [1] are optional
-    model: instrumental_leakage             # [1] Model to use
-    monte_carlo_iterations: 0               # [1]
+    model: external_perturbations           # [1] Model to use
+    monte_carlo_iterations: 1              # [1]
 
-    planet_modulation_positions: 100        # Number of rotations of the array to consider for the modulation
+    planet_modulation_positions: 0    # Number of rotations of the array to consider for the modulation
 
     angular_extension:
-        theta_x: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
-        theta_y: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
-
-    code_v_opd_file: "code_v/out.txt"
+        theta_x: [-0.1e-6, 0.1e-6, 2000]    # start, end, number of points
+        theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
 
 outputs:
@@ -65,5 +67,3 @@ outputs:
      - 15e-6
 
     plot_star: true
-
-    verbose: true

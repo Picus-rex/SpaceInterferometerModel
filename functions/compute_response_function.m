@@ -1,5 +1,4 @@
-function [T_standard, T_chopped, T_real, T_real_chopped, data] = ...
-    compute_response_function(data)
+function [Maps, data] = compute_response_function(data)
 %COMPUTE_RESPONSE_FUNCTION Computes the response function and the phase 
 % chopping response function for a system of N apertures.
 %
@@ -14,7 +13,8 @@ function [T_standard, T_chopped, T_real, T_real_chopped, data] = ...
 %   N_MC[1]             Number of MC simulations to perform
 %   sigma_phase[1]      Standard deviation for the phase errors [rad]
 %   sigma_intensity[1]  Standard deviation for relative intensity errors 
-%   sigma_pol[1]        Standard deviation for polarisation-induced phase errors [rad]
+%   sigma_pol[1]        Standard deviation for polarisation-induced phase 
+%                       errors [rad]
 %   environment[struct] External perturbations (see configuration)
 %
 %   OR
@@ -23,14 +23,14 @@ function [T_standard, T_chopped, T_real, T_real_chopped, data] = ...
 %                       grouped into a single struct
 %
 % OUTPUTS:
-%   T_standard          Normalised response function 
-%   T_chopped           Normalised phase chopping response function
-%   data[struct]        For integrated development, group all the results                
-% 
-%   With specific inputs:
-%
-%   T_real              Normalized mean intensity response with errors
-%   T_real_chopped      Norm. mean int. response with errors and chopped
+%   Maps[table]         Table with the following columns (each column is a 
+%                       matrix). Depending on the provided inputs, not all
+%                       columns are present. 
+%       T_standard      Normalised response function 
+%       T_chopped       Normalised phase chopping response function
+%       T_real          Normalized mean intensity response with errors
+%       T_real_chopped  Norm. mean int. response with errors and chopped
+%   data[struct]        Add fields to a struct.
 %
 % REFERENCES:
 %   Lay OP. Imaging properties of rotating nulling interferometers. 2005;
@@ -57,6 +57,10 @@ function [T_standard, T_chopped, T_real, T_real_chopped, data] = ...
 %                     - Some operations are performed only if the number of
 %                       outputs requires them.
 %                     - The two sensitivity analysis are now exclusive.
+%   2025-03-28 -------- 3.0
+%                     - Output rewritten to accomodate better workflow.
+%                     - Added systematic coefficients as output when 
+%                       external_perturbations are considered.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -127,7 +131,7 @@ combination = instrument.combination;
 theta_x = simulation.theta_x;
 theta_y = simulation.theta_y;
 
-if isfield(data.simulation, "monte_carlo_iterations") && simulation.monte_carlo_iterations > 0 && nargout > 2
+if isfield(data.simulation, "monte_carlo_iterations") && simulation.monte_carlo_iterations > 0
     N_MC = simulation.monte_carlo_iterations;
     
     if isfield(data.simulation, "model") && strcmp(data.simulation.model, "instrumental_leakage")
@@ -161,7 +165,9 @@ R_chopped = 0.5 * abs(R_standard - R_negated);
 T_standard = R_standard / max(R_standard(:));
 T_chopped = R_chopped / max(R_standard(:));
 
-if N_MC > 0 && nargout > 2
+Maps = table(T_standard, T_chopped);
+
+if N_MC > 0
 
     % Preallocate for MC analysis 
     R_MC = zeros(ny, nx, N_MC);
@@ -191,7 +197,7 @@ if N_MC > 0 && nargout > 2
             R_MC(:,:,mc) = R_standard;
             R_MC_neg(:,:,mc) = R_negated;
 
-            eps_MC(mc) = add_external_sensitivity(instrument, environment);
+            [eps_MC(mc), coefficients] = add_external_sensitivity(instrument, environment);
         end
 
     end
@@ -209,9 +215,13 @@ if N_MC > 0 && nargout > 2
     R_real_chopped = 0.5 * abs(R_mean - R_mean_neg);
     T_real_chopped = R_real_chopped / max(R_standard(:));
 
+    Maps.T_real = T_real;
+    Maps.T_real_chopped = T_real_chopped;
+
 end
 
-if nargout > 2
+
+if nargout > 1
     % Group results
     data.simulation.T_standard = T_standard;
     data.simulation.T_chopped = T_chopped;
@@ -219,6 +229,10 @@ if nargout > 2
     data.simulation.T_real_chopped = T_real_chopped;
     data.simulation.T_real_std = T_real_std;
     data.simulation.epsilon_std = epsilon_std;
+
+    if isfield(data.simulation, "model") && strcmp(data.simulation.model, "external_perturbations")
+        data.environment.systematic_coefficients = coefficients;
+    end
 end
 
 end

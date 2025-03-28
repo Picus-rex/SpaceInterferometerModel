@@ -7,7 +7,7 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
 
-data = ReadYaml('config/x_array.yml');
+data = ReadYaml('config/lay_systematic_array.yml');
 data = convert_data(data);
 
 %% Analysis
@@ -25,11 +25,11 @@ data = convert_data(data);
     classify_baselines(data.instrument.intensities, data.instrument.positions, data.instrument.phase_shifts, true);
 
 % Complex Field and Response Function
-if data.simulation.consider_non_ideal
-    [T, T_chopped, T_real, T_real_chopped, data] = compute_response_function("data", data);
-else
-    [T, T_chopped] = compute_response_function("data", data);
-end
+[Maps, data] = compute_response_function("data", data);
+T = Maps.T_standard;
+T_chopped = Maps.T_chopped; 
+T_real = Maps.T_real; 
+T_real_chopped = Maps.T_real_chopped;
 
 % Verify modulation of the signal
 [data.simulation.planet_modulation] = planet_modulation(data);

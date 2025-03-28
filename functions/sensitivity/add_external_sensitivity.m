@@ -1,4 +1,5 @@
-function epsilon = add_external_sensitivity(instrument, environment)
+function [epsilon, coefficients] = ...
+                    add_external_sensitivity(instrument, environment)
 %ADD_EXTERNAL_SENSITIVITY Consider the effects of environmental leakage on
 %the behaviour of a nulling interferometer. This function requires inputs
 %structured following the configuration files.
@@ -16,6 +17,8 @@ function epsilon = add_external_sensitivity(instrument, environment)
 %
 % OUTPUTS:
 %   epsilon[1]          Perturbation associated to the response function.
+%   coefficients[table] Sensitivity coefficients with all the parameters as
+%                       defined in Lay (see Table 2 and 3).
 %
 % REFERENCES:
 %   Lay OP. Systematic errors in nulling interferometers. 2004;  
@@ -32,6 +35,10 @@ function epsilon = add_external_sensitivity(instrument, environment)
 %   2025-03-06 -------- 1.1
 %                     - Add real models for EZ and LZ
 %                     - Fixed errors in star models
+%   2025-03-28 -------- 1.2
+%                     - Corrected an error in the conversion of an element
+%                       that was already a matrix. 
+%                     - Added coefficients as output of the analysis.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -53,8 +60,8 @@ star_radius = environment.star_radius;
 star_temperature = environment.star_temperature;
 
 Fplanet = environment.disturbances.planet_flux; 
-theta_planet_x = cell2mat(environment.exoplanet_position(1));
-theta_planet_y = cell2mat(environment.exoplanet_position(2));
+theta_planet_x = environment.exoplanet_position(1);
+theta_planet_y = environment.exoplanet_position(2);
 
 DeltaOmega = environment.disturbances.effective_solid_angle;
 
@@ -191,5 +198,9 @@ deltaN_total = deltaN_star + deltaN_EZ + deltaN_LZ;
 
 % Fractional (relative) perturbation
 epsilon = deltaN_total / N0;
+
+% Define table for export
+coefficients = table(C_A, C_phi, C_x, C_y, C_AA, C_Aphi, C_phiphi, ...
+    C_A_EZ, C_phi_EZ, C_x_EZ, C_y_EZ, C_AA_EZ, C_Aphi_EZ, C_phiphi_EZ, C_A_LZ);
 
 end

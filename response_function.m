@@ -1,12 +1,13 @@
 %% Response Function for a 4-Aperture Nulling Interferometer
 % Following the definition of the response function, this script performs
 % the optimal splitting for the desired configuration and computes the
-% fringes imageos.
+% fringes images in the ideal case or with simulated disturbances.
 
 clc; clear; close all;
 addpath(genpath("."))
-set(0, 'DefaultFigureWindowStyle', 'docked') % Change to NORMAL to export
+set(0, 'DefaultFigureWindowStyle', 'docked')
 
+% Change here the name of the file to run
 data = ReadYaml('config/lay_systematic_array.yml');
 data = convert_data(data);
 

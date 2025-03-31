@@ -52,7 +52,7 @@ simulation:
         theta_x: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
         theta_y: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
 
-    code_v_opd_file: "code_v/out.txt"
+    code_v_opd_file: "code_v/simulation_0327.txt"
 
 
 outputs:

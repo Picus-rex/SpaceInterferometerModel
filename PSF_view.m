@@ -15,10 +15,7 @@ data = ReadYaml('config/psf_array.yml');
 lambda = data.instrument.wavelength;
 B = data.instrument.baseline;
 A = cell2mat(data.instrument.intensities);
-phase_shifts = cell2mat(data.instrument.phase_shifts);
 theta_range = define_range(data.simulation.angular_extension);
-
-positions = define_array(data.instrument.array, B, data.instrument.apertures_ratio);
 
 positions = [-40, 20;
              -40, -20;

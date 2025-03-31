@@ -57,5 +57,5 @@ end
 results = table(Normalised_positions_x, Normalised_positions_y, ...
     Amplitudes, Diameter, Phases, Modulation_efficiency, IWA, FWHM, Ratio, RowNames=configurations);
 
-
+% Export table on the latex format.
 export_comparison_table(results, names, filename)

@@ -17,6 +17,9 @@ ui_colours = [
 % Create a custom colormap with more interpolated points
 darkBlue = interp1(linspace(0, 1, size(colours,1)), colours, linspace(0, 1, 256), 'linear');
 
+angle_darkBlue = [interp1(linspace(0, 1, size(colours, 1)), colours, linspace(0, 1, 128), 'linear'); ...
+    interp1(linspace(0, 1, size(colours, 1)), colours, linspace(1, 0, 128), 'linear')];
+
 % Create a new colormap with dark red at the zero position
 % and interpolate the rest of the colors
 darkBlueZero = zeros(256, 3);

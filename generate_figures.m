@@ -1,5 +1,7 @@
 %% GENERATE_FIGURES This script generates all the figures within the thesis
-% allowing for easiness of reproduction and substitution.
+% allowing for easiness of reproduction and substitution. This script
+% relies on the the export_figures.yml configuration file that must be
+% modified accordingly. 
 
 clc; clear; close all;
 addpath(genpath("."))

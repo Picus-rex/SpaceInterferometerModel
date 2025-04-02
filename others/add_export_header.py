@@ -12,8 +12,11 @@ def add_headers_to_file(input_file, output_file, interval):
         modified_lines.append(f"== {header_count}")
         header_count += 1
 
-        # Add the specified number of lines
-        modified_lines.extend(line.strip() for line in lines[i:i + interval])
+        # Add the specified number of lines, transforming them into CSV format
+        for line in lines[i:i + interval]:
+            # Split the line into elements and join them with commas
+            csv_line = ','.join(line.strip().split())
+            modified_lines.append(csv_line)
 
     # Write the modified lines to the output file
     with open(output_file, 'w') as file:

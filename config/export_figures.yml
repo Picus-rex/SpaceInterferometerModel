@@ -24,8 +24,12 @@ figures:
 
     - type: transmission_map_planet
       chapter: 2
-      width: quart
-      height: quart
+      include:
+        array_plots:
+            width: quart
+            height: quart
+      width: half
+      height: normal
 
     - type: transmission_map_monodirectional
       include:
@@ -82,8 +86,8 @@ sizes:
         full: 20
         half: 12
         third: 8
-        quart: 5
+        quart: 5.5
     height:
         normal: 10
-        quart: 4.7
+        quart: 5
     font_size: 10

@@ -19,7 +19,7 @@ function h = plot_transmission_map_monodirectional(theta_range, maps, names, exp
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin == 2
+if nargin == 3
     export_settings = NaN;
 end
 
@@ -35,7 +35,7 @@ T = maps.(maps_names{1});
 
 h = figure; 
 hold on;
-for i = 1:length(maps_names)
+for i = 1:length(maps_names)-3
     semilogy(theta_range, maps.(maps_names{i})(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", names{i}, "Color", cols(i, :)); 
 end
 

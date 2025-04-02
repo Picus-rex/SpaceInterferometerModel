@@ -12,7 +12,7 @@ warning("Always pull the last version from the system!")
 path = "/Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/";
 export_data = ReadYaml('config/export_figures.yml');
 data_matrices = ["exports/data_linear", "exports/data_xarray"];
-skip_chapt = [2];
+skip_chapt = [3];
 
 for i = 1:length(data_matrices)
 
@@ -40,6 +40,8 @@ for i = 1:length(data_matrices)
                 h = plot_transmission_map(data.simulation.theta_range, data.simulation.T_standard, export_settings);
             
             case "transmission_map_planet"
+                export_settings.include = figure{1}.include;
+                export_settings.sizes = export_data.sizes;
                 [~, h] = planet_modulation(data, export_settings);
     
             case "transmission_map_monodirectional"

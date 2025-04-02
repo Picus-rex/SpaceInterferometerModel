@@ -30,6 +30,12 @@ function [modulation, hs] = planet_modulation(data, export_settings)
 %   2025-03-24 -------- 1.3
 %                     - Added export settings to create coherent plots.
 %                     - Print angles.
+%   2025-03-29 -------- 1.3.1
+%                     - Fixed extraction of map following changes in
+%                       compute_response_function and fixed problem with
+%                       exporting of figures.
+%                     - Planet signal modulation capped at 360° along the x
+%                       axis on the plot. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -107,10 +113,10 @@ for i = 1:n_rotation
     data.instrument.positions = (rotation_matrix * original_positions')';
 
     % Compute the new response function
+    [Maps] = compute_response_function("data", data);
+    T_rotated = Maps.T_standard;
     if isfield(data.simulation, "monte_carlo_iterations") && data.simulation.monte_carlo_iterations > 0
-        [T_rotated, ~, T_real_rotated] = compute_response_function("data", data);
-    else
-        T_rotated = compute_response_function("data", data);
+        T_real_rotated = Maps.T_real;
     end
 
     % Plot intermediate maps
@@ -136,7 +142,9 @@ for i = 1:n_rotation
             axis square;
             axis tight;
             if exp
-                export_figures("embedded", export_settings, "name", export_settings.name + "_map_" + string(j))
+                export_figures("width", export_settings.sizes.width.(export_settings.include.array_plots.width), ...
+                    "height", export_settings.sizes.height.(export_settings.include.array_plots.height), ...
+                    "name", export_settings.name + "_map_" + string(j))
             else
                 title(sprintf("Rotation: %.2f deg", rad2deg(angles(i))))
             end
@@ -164,7 +172,9 @@ for i = 1:n_rotation
                 plot([data.instrument.positions(1, 1), data.instrument.positions(4, 1)], [data.instrument.positions(1, 2), data.instrument.positions(4, 2)], "-", "LineWidth", 1.5, "Color", colours(3, :))
             end
             if exp
-                export_figures("embedded", export_settings, "name", export_settings.name + "_array_" + string(j))
+                export_figures("width", export_settings.sizes.width.(export_settings.include.array_plots.width), ...
+                    "height", export_settings.sizes.height.(export_settings.include.array_plots.height), ...
+                    "name", export_settings.name + "_array_" + string(j))
             else
                 title(sprintf("Rotation: %.2f deg", rad2deg(angles(i))))
             end
@@ -197,7 +207,8 @@ if isfield(data.outputs, "plot_modulation") && data.outputs.plot_modulation
     if isfield(data.simulation, "monte_carlo_iterations") && data.simulation.monte_carlo_iterations > 0
         plot(rad2deg(angles), modulation_err, '-', 'LineWidth', 2, "Color", Colours(2, :));
     end
-
+    
+    xlim([0, 360]);
     xlabel('Rotation Angle [deg]');
     ylabel('Interpolated Signal at Planet Position');
     grid minor;

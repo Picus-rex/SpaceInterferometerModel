@@ -52,6 +52,8 @@ simulation:
         theta_x: [-0.1e-6, 0.1e-6, 2000]    # start, end, number of points
         theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
+    code_v_opd_file: "code_v/simulation_0401.txt"
+
 
 outputs:
     plot_array: true

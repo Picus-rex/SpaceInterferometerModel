@@ -8,7 +8,7 @@ addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked')
 
 % Change here the name of the file to run
-data = ReadYaml('config/lay_systematic_array.yml');
+data = ReadYaml('config/x_array.yml');
 data = convert_data(data);
 
 %% Analysis

@@ -1,6 +1,7 @@
-function [ratios, Maps] = perturbate_system(N, amplitudes_nominal, ...
+function [ratios, Maps, PSFs] = perturbate_system(N, amplitudes_nominal, ...
     phases_nominal, positions_nominal, theta_star, lambda, ...
-    phases_perturbed, combinations, theta_x, theta_y, export_setup)
+    phases_perturbed, combinations, theta_x, theta_y, ...
+    exoplanet_position, export_setup)
 %PERTURBATE_SYSTEM From the nominal characteristics of the system, computes
 %the variations based on the provided phases shift. 
 %
@@ -14,9 +15,12 @@ function [ratios, Maps] = perturbate_system(N, amplitudes_nominal, ...
 %   phases_pert[NxNs]   Resulting perturbed phases for one aperture over
 %                       all the rays (N points) over Ns simulations
 %   combinations[Nx1]   Vector of beam combiner coefficients
+%
+% OPTIONAL INPUTS: 
 %   theta_x, theta_y    Meshgrid of angular coordinates
+%   exoplanet_position  Position of the exoplanet for PSF computation
 % 
-% ARGUMENT INPUTS:
+% ARGUMENT OPTINAL INPUTS:
 %   create_plots[bool]  If true, creates several plots.
 %   type[string]        String following "%unit_%de(+-)%d",
 %                       where the exponential number is reversed and
@@ -30,9 +34,16 @@ function [ratios, Maps] = perturbate_system(N, amplitudes_nominal, ...
 %   Maps[TX x TY x Ns]  3D matrix where the first two dimensions are the
 %                       standard normalised response function along the
 %                       angular coordinates provided.
+%   PSFs[TX x TY x Ns]  3D matrix where the first two dimensions are the
+%                       PSFs along the angular coordinates provided.
 %
 % VERSION HISTORY:
 %   2025-04-02 -------- 1.0
+%   2025-04-03 -------- 1.1
+%                     - Added support for PSF with integration of inputs
+%                       and outputs.
+%                     - Moved the plots of variation maps to a dedicated
+%                       function.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,6 +58,7 @@ arguments
     combinations (:, :) {mustBeNumeric}
     theta_x = load_grid("x")
     theta_y = load_grid("y")
+    exoplanet_position = [1.453e-7, 0]
     export_setup.create_plots = true
     export_setup.type = "m_1e-6"
     export_setup.perturbed_map_plotting_number = 3
@@ -60,12 +72,15 @@ nom_table = compute_response_function("lambda", lambda, "N", N, ...
         "phase_shifts", phases_nominal, "combinations", combinations, ...
         "theta_x", theta_x, "theta_y", theta_y);
 Nominal_Map = nom_table(:, :).T_standard;
+Nominal_PSF = compute_psf(lambda, amplitudes_nominal, positions_nominal, ...
+                    phases_nominal, exoplanet_position, theta_x(1, :));
 
 % Allocation and reordering of the vector
 phases_perturbed_all = reshape(phases_perturbed, [], 1);
 ratios = zeros(length(phases_perturbed_all), 1);
 perturbed_vect = zeros(size(phases_nominal));
 Maps = zeros(length(theta_x), length(theta_y), Ns);
+PSFs = zeros(length(theta_x), length(theta_y), Ns);
 
 % Add the single perturbation to the phases to compute the nulling ratio
 for i = 1:length(phases_perturbed_all)
@@ -89,22 +104,21 @@ for i = 1:Ns
 
     Maps(:, :, i) = map_table(:, :).T_standard;
 
+    PSFs(:, :, i) = compute_psf(lambda, amplitudes_nominal, ...
+        positions_nominal, phases, exoplanet_position, theta_x(1, :));
+
 end
 
 % Reformat the vector 
 ratios = reshape(ratios, [], Ns);
 
 if export_setup.create_plots
-    
-    % Conversion factor and colours where needed
-    style_colors;
-    rad2mas = 1e3 * (3600 * 180) / pi;
 
     % Get visualisation style
     [scale, scale_tag] = get_scale_plots(export_setup.type);
     elem_label = sprintf("OPD [%s]", scale_tag);
     
-    % FIGURE 1
+    % OPDs
     figure; hold on;
     cols = get_colours(Ns);
     for i = 1:Ns
@@ -116,101 +130,21 @@ if export_setup.create_plots
     legend("Location","best");
     grid minor;
     set(gca, "YScale", "log");
-    
-    % FIGURES 2
-    % Extract random maps
-    permute_data = randperm(Ns);
-    for i = 1:export_setup.perturbed_map_plotting_number
-        plot_transmission_map(theta_x(1, :), Maps(:, :, permute_data(i)));
-    end
 
-    % FIGURE 3
-    % Compute the difference maps elements-wise without doing a for, then
-    % calculate the standard deviation (variability) across simulations
-    diffMaps = bsxfun(@minus, Maps, Nominal_Map);
-    stdMap = std(diffMaps, 0, 3);  % 0 indicates normalization by N-1
-    
-    figure;
-    %contourf(theta_x, theta_y, stdMap, 20, 'LineColor', 'none'); 
-    contourf(theta_x*rad2mas, theta_y*rad2mas, stdMap, 20); 
-    colormap(darkBlue); colorbar;
-    title('Standard Deviation Map of Transmission Variability');
-    xlabel('\theta_x [mas]');
-    ylabel('\theta_y [mas]');
-    axis square;
+    % Transmission maps
+    plot_variation_map(Ns, theta_x, theta_y, Maps, Nominal_Map, export_setup);
 
-    % FIGURE 4
-    % Determine the size of the maps
-    [m, n, ~] = size(Maps);
-    
-    % Each simulation is vectorized to form a row vector.
-    dataMatrix = reshape(Maps, [m*n, Ns])';  % dimensions: Ns x (m*n)
-    
-    % Remove the mean from each pixel across simulations and erform PCA on 
-    % the centered data, then reshape the first principal mode into 2D map
-    meanMapVec = mean(dataMatrix, 1);
-    dataMatrix_centered = dataMatrix - meanMapVec;
-    [coeff, score, ~] = pca(dataMatrix_centered);
-    pc1 = reshape(coeff(:,1), [m, n]);
-    
-    % Plot the first principal component mode as a contour map
-    figure;
-    contourf(theta_x*rad2mas, theta_y*rad2mas, pc1, 20);
-    colormap(darkBlue); colorbar;
-    title('First Principal Component Mode');
-    xlabel('\theta_x [mas]');
-    ylabel('\theta_y [mas]');
-    axis square;
-    
-    % FIGURE 5
-    % Plot the PC1 scores for each simulation
-    figure;
-    plot(score(:,1), 'o-', "LineWidth", 1.5, "Color", colours(1, :));
-    xlabel('Simulation Number');
-    ylabel('PC1 Score');
-    title('PC1 Scores Across Simulations');
-    grid minor;
-    
-    % FIGURE 6
-    % Plot a few representative difference maps
-    figure;
-    nPlots = min(4, Ns);  % choose up to 4 maps to display
-    for i = 1:nPlots
-        subplot(2,2,i);
-        contourf(theta_x*rad2mas, theta_y*rad2mas, diffMaps(:,:,permute_data(i)), 20);
-        colormap(darkBlue); colorbar;
-        title(['Difference Map, Simulation ', num2str(permute_data(i))]);
-        xlabel('\theta_x [mas]');
-        ylabel('\theta_y [mas]');
-        axis square;
-    end
-    
-    % FIGURE 7
-    % Plot the cumulative distribution for a selected pixel
-    % Choose pixel coordinates, e.g., the center of the map
-    ix = round(m/2);
-    iy = round(n/2);
-    pixelDiffs = squeeze(diffMaps(ix, iy, :));  % differences at the selected pixel
-    
-    % Sort the differences and calculate the empirical CDF
-    [sortedDiffs, ~] = sort(pixelDiffs);
-    cdfValues = (1:Ns) / Ns;
-    
-    figure;
-    plot(sortedDiffs, cdfValues, 'o-', "LineWidth", 1.5, "Color", colours(1, :));
-    xlabel('Difference Value at Pixel');
-    ylabel('Cumulative Distribution');
-    title(['CDF of Differences at Pixel (', num2str(ix), ', ', num2str(iy), ')']);
-    grid minor;
+    % PSF
+    plot_variation_map(Ns, theta_x, theta_y, PSFs, Nominal_PSF, export_setup);
 
-    % FIGURE 8
+    % Monodirectional transmission maps
     maps_named = table();
     names_plot = strings(Ns, 1);
     for i = 1:Ns
         names_plot(i) = sprintf("Simulation %d", i);
         maps_named.(names_plot(i)) = Maps(:, :, i);
     end
-    plot_transmission_map_monodirectional(theta_x(1, :), maps_named, names_plot);
+    plot_transmission_map_monodirectional(theta_x(1, :), maps_named, names_plot, NaN, "tendencies", 2);
 
 end
 

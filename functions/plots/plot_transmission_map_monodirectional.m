@@ -1,4 +1,4 @@
-function h = plot_transmission_map_monodirectional(theta_range, maps, names, export_settings)
+function h = plot_transmission_map_monodirectional(theta_range, maps, names, embedded, export_settings)
 %PLOT_TRANSMISSION_MAP_MONODIRECTIONAL Create the transmission map along
 %the horizontal axis given the map as computed by compute_response_function 
 %with settings for exporting.
@@ -15,12 +15,18 @@ function h = plot_transmission_map_monodirectional(theta_range, maps, names, exp
 %
 % VERSION HISTORY:
 %   2025-03-24 -------- 1.0
+%   2025-04-03 -------- 1.1
+%                     - Added arguments and possibility to change the
+%                       number of tendencies lines within the plot. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-if nargin == 3
-    export_settings = NaN;
+arguments
+    theta_range (:, :)
+    maps {mustBeA(maps, "table")}
+    names {mustBeA(names, "string")}
+    embedded = NaN
+    export_settings.tendencies = [2, 4, 6];
 end
 
 % Call styling
@@ -35,18 +41,19 @@ T = maps.(maps_names{1});
 
 h = figure; 
 hold on;
-for i = 1:length(maps_names)-3
-    semilogy(theta_range, maps.(maps_names{i})(floor(size(T, 1)/2), :), "LineWidth", 1.5, "DisplayName", names{i}, "Color", cols(i, :)); 
+for i = 1:length(names)
+    semilogy(theta_range, maps.(maps_names{i})(floor(size(T, 1)/2), :), ...
+        "LineWidth", 1.5, "DisplayName", names{i}, "Color", cols(i, :)); 
 end
 
 % Scaling factor C for theta^2 and theta^4
-C2 = T(floor(size(T, 1)/2), floor(size(T, 1)/2)) / theta_range(floor(size(T, 1)/2))^2;
-C4 = T(floor(size(T, 1)/2), floor(size(T, 1)/2)) / theta_range(floor(size(T, 1)/2))^4;
-C6 = T(floor(size(T, 1)/2), floor(size(T, 1)/2)) / theta_range(floor(size(T, 1)/2))^6;
-
-semilogy(theta_range, C2 * theta_range.^(2), "--", 'DisplayName', "\theta^{2}", "LineWidth", 1.5, "Color", ui_colours(1, :));
-semilogy(theta_range, C4 * theta_range.^(4), "--", 'DisplayName', "\theta^{4}", "LineWidth", 1.5, "Color", ui_colours(2, :));
-semilogy(theta_range, C6 * theta_range.^(6), "--", 'DisplayName', "\theta^{6}", "LineWidth", 1.5, "Color", ui_colours(3, :));
+for i = 1:length(export_settings.tendencies)
+    C = T(floor(size(T, 1)/2), floor(size(T, 1)/2)) / ...
+        theta_range(floor(size(T, 1)/2))^export_settings.tendencies(i);
+    name = sprintf("\\theta^{%d}", export_settings.tendencies(i));
+    semilogy(theta_range, C * theta_range.^(export_settings.tendencies(i)), ...
+     "--", 'DisplayName', name, "LineWidth", 1.5, "Color", ui_colours(i, :));
+end
 
 xlabel('\theta_x [mas]');
 ylabel('Normalized Intensity');
@@ -56,8 +63,8 @@ axis tight;
 set(gca, 'YScale', 'log');
 hold off;
 
-if isstruct(export_settings)
-    export_figures("embedded", export_settings)
+if isstruct(embedded)
+    export_figures("embedded", embedded)
 end
 
 end

@@ -6,11 +6,11 @@ function cols = get_colours(n)
 style_colors;
 
 % Define original indices
-numColours = size(colours, 1);
+numColours = size(colours_contrast, 1);
 originalIndices = linspace(1, numColours, numColours);
 targetIndices = linspace(1, numColours, n);
 
 % Interpolate each RGB channel separately
-cols = interp1(originalIndices, colours, targetIndices, 'linear');
+cols = interp1(originalIndices, colours_contrast, targetIndices, 'linear');
 
 end

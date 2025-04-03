@@ -12,7 +12,7 @@ The config file is a yaml file that is parsed by MATLAB using the external libra
 
 #### Instrument properties
 
-Fields in italic are optional. 
+Fields in italic are optional. This struct contains all the related information on the instrument and some fields may be computed by provided functions, otherwise they can be manually specified.
 
 | **Name** | **Unit** | **Description** |
 | -------- | -------- | --------------- |
@@ -20,19 +20,13 @@ Fields in italic are optional.
 | `apertures_ratio` | - | Ratio among the maximum and minimum baselines of the system^[In general, it depends on the selected array] | 
 | `array` | string    | Name of the used array, either `Diamond`, `Linear` or `X-Array` |
 | `baseline` | m      | Maximum baseline of the system |
-| `efficiencies` | struct | Includes fields `beam_combiner` and `optical_line` |
-| *`instrumental_leakage`* | struct | See below. All these fields are optional. |
+| *`combination`* | - | Vector of intersity percentage to take from each apertures. Can be derived by other functions. | 
+| `efficiencies` | struct | Includes fields `beam_combiner` and `optical_line` as float values |
 | `intensities` | -   | Vector of the intensities associated to each aperture |
 | *`phase_shifts`* | rad | Can be specified manually or derived using appropriate functions |
 | `wavelength` | m    | Wavelength of measurement of the system |
 
-Where `instrumental_leakage` includes:
-
-| **Name** | **Unit** | **Description** |
-| -------- | -------- | --------------- |
-| `intensity` | -     | 1-Sigma error associated to the aperture |
-| `phase`     | -     | 1-Sigma error associated to the phase    |
-| `polarisation` | -  | 1-Sigma error associated to the polarisation |
+In particular, `combination` and `phase_shifts` are better derived using the provided `compute_optimal_splitting` function but can be manually specified by following the requirements specified on the combinations of apertures conditions to get a nulling interferometer.
 
 #### Environment properties
 
@@ -40,12 +34,12 @@ Fields in italic are optional.
 
 | **Name** | **Unit** | **Description** |
 | -------- | -------- | --------------- |
-| `stellar_angular_radius` | rad | Angular radius of the star |
+| *`disturbances`* | struct | See below. All these fields are optional. |
 | `exoplanet_position` | rad | Position of the exoplanet in the sky, given as a vector of x and y coordinates |
 | `exoplanet_radius` | m | Radius of the exoplanet |
-| *`disturbances`* | struct | See below. All these fields are optional. |
-| `star_radius` | m   | Radius of the star. |
+| *`star_radius`* | m   | Radius of the star. Can be computed provided angular radius and distances are provided by other functions. |
 | `star_temperature` | K | Star effective temperature. |
+| `stellar_angular_radius` | rad | Angular radius of the star |
 | `target_distance` | pc | Distance to the study element. |
 
 Where `disturbances` includes:
@@ -55,9 +49,10 @@ Where `disturbances` includes:
 | `star_flux` | photons/s/m² | Stellar flux received from the star |
 | `planet_flux` | photons/s/m² | Flux received from the exoplanet |
 | `effective_solid_angle` | sterad | Effective solid angle of the observation |
-| *`perturbations`* | struct | See below. |
+| *`external_perturbations`* | struct | See below. |
+| *`instrumental_leakage`* | struct | See below. |
 
-Where `perturbations` includes:
+Where `external_perturbations` includes:
 
 | **Name** | **Unit** | **Description** |
 | -------- | -------- | --------------- |
@@ -66,15 +61,23 @@ Where `perturbations` includes:
 | `x_position` | - | Perturbation x position |
 | `y_position` | - | Perturbation y position |
 
+Where `instrumental_leakage` includes:
+
+| **Name** | **Unit** | **Description** |
+| -------- | -------- | --------------- |
+| `intensity` | -     | 1-Sigma error associated to the aperture |
+| `phase`     | -     | 1-Sigma error associated to the phase    |
+| `polarisation` | -  | 1-Sigma error associated to the polarisation |
+
 #### Simulation properties
 
 Fields in italic are optional.
 
 | **Name** | **Unit** | **Description** |
 | -------- | -------- | --------------- |
+| `angular_extension` | multiple | Vector of start, end points [rad] and number of points to consider. Otherwise, is a struct, as described below. |
 | `consider_non_ideal` | - | Flag indicating whether to consider non-ideal conditions |
 | *`monte_carlo_iterations`* | - | Number of iterations for the Monte Carlo simulation |
-| `angular_extension` | multiple | Vector of start, end points [rad] and number of points to consider. Otherwise, is a struct, as described below. |
 
 If non square arrays are desired (to increase the angular resolution on the x axis for linear arrays, for example, without exceeding resources), then `angular_extension` must be an array with the following fields:
 

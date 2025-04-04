@@ -62,6 +62,7 @@ arguments
     export_setup.create_plots = true
     export_setup.type = "m_1e-6"
     export_setup.perturbed_map_plotting_number = 3
+    export_setup.compute_PSF = true
 end
 
 % Number of series, obtain OPDs as well as the nominal map
@@ -103,9 +104,11 @@ for i = 1:Ns
         theta_x, "theta_y", theta_y);
 
     Maps(:, :, i) = map_table(:, :).T_standard;
-
-    PSFs(:, :, i) = compute_psf(lambda, amplitudes_nominal, ...
-        positions_nominal, phases, exoplanet_position, theta_x(1, :));
+    
+    if export_setup.compute_PSF
+        PSFs(:, :, i) = compute_psf(lambda, amplitudes_nominal, ...
+            positions_nominal, phases, exoplanet_position, theta_x(1, :));
+    end
 
 end
 

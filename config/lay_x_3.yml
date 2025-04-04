@@ -25,7 +25,7 @@ simulation:
     consider_non_ideal: false                # If false, fields with [1] are optional
 
     angular_extension:
-     - [-2.90888208665724e-7, 2.90888208665724e-7, 2000]               # start, end, number of points
+     - [-2.90888208665724e-7, 2.90888208665724e-7, 500]               # start, end, number of points
 
 
 outputs:

@@ -29,37 +29,39 @@ xlabel('\theta_x [mas]');
 ylabel('\theta_y [mas]');
 axis square;
 
-% FIGURE 4
 % Determine the size of the maps
 [m, n, ~] = size(Maps);
 
-% Each simulation is vectorized to form a row vector.
-dataMatrix = reshape(Maps, [m*n, Ns])';  % dimensions: Ns x (m*n)
-
-% Remove the mean from each pixel across simulations and erform PCA on 
-% the centered data, then reshape the first principal mode into 2D map
-meanMapVec = mean(dataMatrix, 1);
-dataMatrix_centered = dataMatrix - meanMapVec;
-[coeff, score, ~] = pca(dataMatrix_centered);
-pc1 = reshape(coeff(:,1), [m, n]);
-
-% Plot the first principal component mode as a contour map
-figure;
-contourf(theta_x*rad2mas, theta_y*rad2mas, pc1, 20);
-colormap(darkBlue); colorbar;
-title('First Principal Component Mode');
-xlabel('\theta_x [mas]');
-ylabel('\theta_y [mas]');
-axis square;
-
-% FIGURE 5
-% Plot the PC1 scores for each simulation
-figure;
-plot(score(:,1), 'o-', "LineWidth", 1.5, "Color", colours(1, :));
-xlabel('Simulation Number');
-ylabel('PC1 Score');
-title('PC1 Scores Across Simulations');
-grid minor;
+if Ns > 1
+    % FIGURE 4
+    % Each simulation is vectorized to form a row vector.
+    dataMatrix = reshape(Maps, [m*n, Ns])';  % dimensions: Ns x (m*n)
+    
+    % Remove the mean from each pixel across simulations and erform PCA on 
+    % the centered data, then reshape the first principal mode into 2D map
+    meanMapVec = mean(dataMatrix, 1);
+    dataMatrix_centered = dataMatrix - meanMapVec;
+    [coeff, score, ~] = pca(dataMatrix_centered);
+    pc1 = reshape(coeff(:,1), [m, n]);
+    
+    % Plot the first principal component mode as a contour map
+    figure;
+    contourf(theta_x*rad2mas, theta_y*rad2mas, pc1, 20);
+    colormap(darkBlue); colorbar;
+    title('First Principal Component Mode');
+    xlabel('\theta_x [mas]');
+    ylabel('\theta_y [mas]');
+    axis square;
+    
+    % FIGURE 5
+    % Plot the PC1 scores for each simulation
+    figure;
+    plot(score(:,1), 'o-', "LineWidth", 1.5, "Color", colours(1, :));
+    xlabel('Simulation Number');
+    ylabel('PC1 Score');
+    title('PC1 Scores Across Simulations');
+    grid minor;
+end
 
 % FIGURE 6
 % Plot a few representative difference maps

@@ -7,10 +7,10 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') 
 
-data = ReadYaml('config/x_array.yml');
+data = ReadYaml('config/linear_array.yml');
 data = convert_data(data);
 
-[optical_path, OPD, x_coords, y_coords] = load_opd(data.simulation.code_v_opd_file);
+[optical_path, OPD, x_coords, y_coords] = load_opd("code_v/perturbed_100sim_1961points.txt");
 
 phases = opd2phase(optical_path, data.instrument.wavelength);
 
@@ -40,6 +40,27 @@ end
 [ratios, ~, PSFs]  = perturbate_system(data.instrument.apertures, ...
     data.instrument.intensities, data.instrument.phase_shifts, ...
     data.instrument.positions, data.environment.stellar_angular_radius, ...
-    data.instrument.wavelength, phases, data.instrument.combination);
+    data.instrument.wavelength, phases, data.instrument.combination, perturbed_map_plotting_number=1, compute_PSF=false, create_plots=false);
 
 perform_statistics(ratios, "label", "Nulling ratio", "type", "_1e0", "scale", "log")
+
+%%
+
+Ns = size(ratios, 2);
+
+perturbed_vect = zeros(size(data.instrument.phase_shifts));
+IWAs = zeros(Ns, 1);
+
+for i = 1:Ns
+    perturbed_vect(1) = rms(phases(:, i));
+    pp = data.instrument.phase_shifts + perturbed_vect;
+    aa = data.instrument.intensities .* data.instrument.combination;
+
+    [~, unique_baselines] = classify_baselines(aa, data.instrument.positions, pp, false);
+
+    IWAs(i) = compute_IWA(unique_baselines, data.instrument.wavelength);
+end
+
+OWA = data.instrument.wavelength / data.instrument.diameter(1);
+
+[yields, candidates] = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength);

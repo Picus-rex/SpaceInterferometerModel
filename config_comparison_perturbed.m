@@ -14,7 +14,7 @@ names = ["X-Array 2:1", "X-Array 3:1", "Linear DCB A", "Linear DCB B", "Diamond 
 filename = '/Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/tables/modelling/comparison';
 
 % Config file for disturbances analysis and extraction phases
-optical_paths = load_opd("code_v/simulation_0401.txt");
+optical_paths = load_opd("code_v/perturbed_100sim_1961points.txt");
 Ns = size(optical_paths, 2);
 
 % Empty fields to fill
@@ -30,6 +30,7 @@ Ratio = [];
 
 % For every configuration...
 for i = 1:length(configurations)
+    fprintf("Config %d\n", i);
     data = ReadYaml(sprintf('config/%s.yml', configurations(i)));
     data = convert_data(data);
 
@@ -53,14 +54,14 @@ for i = 1:length(configurations)
         data.instrument.intensities, phases, data.instrument.positions, ...
         data.environment.stellar_angular_radius, data.instrument.wavelength);
 
-    [PSF, FWHM(i, j), C_i] = compute_psf(data.instrument.wavelength, ...
+        [PSF, FWHM(i, j), C_i] = compute_psf(data.instrument.wavelength, ...
         data.instrument.intensities, data.instrument.positions, ...
-        phases, data.environment.exoplanet_position, data.simulation.theta_range);
-    FWHM(i, j) = FWHM(i, j) / (data.instrument.wavelength/data.instrument.baseline);
+            phases, data.environment.exoplanet_position, data.simulation.theta_range);
+            FWHM(i, j) = FWHM(i, j) / (data.instrument.wavelength/data.instrument.baseline);
     
-    Modulation_efficiency(i, j) = compute_modulation_efficiency(...
-        data.instrument.efficiencies.optical_line, ...
-        data.instrument.surfaces, C_i);
+        Modulation_efficiency(i, j) = compute_modulation_efficiency(...
+            data.instrument.efficiencies.optical_line, ...
+            data.instrument.surfaces, C_i);
     end
 
     IWA(i, 1) = compute_IWA(data.instrument.unique_baselines, data.instrument.wavelength) / (data.instrument.wavelength/data.instrument.baseline);

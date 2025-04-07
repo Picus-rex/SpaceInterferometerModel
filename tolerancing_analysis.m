@@ -63,4 +63,4 @@ end
 
 OWA = data.instrument.wavelength / data.instrument.diameter(1);
 
-[yields, candidates] = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength);
+exotable = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength);

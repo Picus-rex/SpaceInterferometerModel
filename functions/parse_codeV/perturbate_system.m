@@ -121,7 +121,7 @@ if export_setup.create_plots
     [scale, scale_tag] = get_scale_plots(export_setup.type);
     elem_label = sprintf("OPD [%s]", scale_tag);
     
-    % OPDs
+    % OPDs and nulling ratios
     figure; hold on;
     cols = get_colours(Ns);
     for i = 1:Ns

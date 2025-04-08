@@ -27,6 +27,10 @@ function perform_statistics(element, analysis, export_setup)
 %   2025-04-03 -------- 1.1
 %                     - If type has no prefix (like for the nulling ratio),
 %                       then, change a bit the way the units are displayed.
+%   2025-04-03 -------- 1.1.1
+%                     - Numerically, some elements may be complex,
+%                       therefore in plotting only the real part must be
+%                       considered.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -125,7 +129,7 @@ if export_setup.create_plots
     % Plot histogram of all OPD values
     figure;
     if strcmp(export_setup.scale, "log")
-        histogram(log10(all_OPD_values), edges, 'Normalization', 'pdf', 'FaceAlpha', 0.6, 'DisplayStyle', 'bar');
+        histogram(real(log10(all_OPD_values)), real(edges), 'Normalization', 'pdf', 'FaceAlpha', 0.6, 'DisplayStyle', 'bar');
     else
         histogram(all_OPD_values, edges, 'Normalization', 'pdf', 'FaceAlpha', 0.6, 'DisplayStyle', 'bar');
     end

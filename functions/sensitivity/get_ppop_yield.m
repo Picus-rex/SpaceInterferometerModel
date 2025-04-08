@@ -10,7 +10,7 @@ function T = get_ppop_yield(IWAs, OWA, ratios, lambda, sim_options, export_setup
 %                       ray tracing and for each simulation [-]
 %   lambda[1]           Wavelength [m]
 % 
-% ARGUMENT OPTINAL INPUTS:
+% ARGUMENT OPTIONAL INPUTS:
 %   integration_time    Integration time for incoming spectral radiance [s]
 %   create_plots        Flag for plot generations
 %
@@ -24,6 +24,9 @@ function T = get_ppop_yield(IWAs, OWA, ratios, lambda, sim_options, export_setup
 %
 % VERSION HISTORY:
 %   2025-04-07 -------- 1.0
+%   2025-04-08 -------- 1.1
+%                     - Added debug printing information and slightly
+%                       changed the way rms ratios are addressed for plots.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,6 +36,7 @@ arguments
     ratios (:, :)
     lambda (1, 1)
     sim_options.integration_time = 1 * 24 * 3600;
+    sim_options.verbose = false;
     export_setup.create_plots = true;
 end
 
@@ -73,19 +77,25 @@ T.contrast = thermal_contrast + reflected_contrast;
 % Allocate space
 T.yields = zeros(size(T, 1), Ns);
 T.candidates = zeros(size(T, 1), Ns);
+rms_ratios = zeros(Ns, 1);
 
 % For every simulation...
 for i = 1:Ns
     IWA = IWAs(i);
-    ratio = rms(ratios(:, i));
+    rms_ratios(i) = rms(ratios(:, i));
 
     T.candidates(:, i) = T.ang_sep_rad(:) > IWA & T.ang_sep_rad(:) < OWA;
-    T.yields(:, i) = T.ang_sep_rad(:) > IWA & T.ang_sep_rad(:) < OWA & T.contrast(:) > ratio;
+    T.yields(:, i) = T.ang_sep_rad(:) > IWA & T.ang_sep_rad(:) < OWA & T.contrast(:) > rms_ratios(i) ;
+    
+    % For debug
+    if sim_options.verbose
+        fprintf("%d\t%.3e\t%d\n", i, rms_ratios(i), sum(T.yields(:, i)))
+    end
 end
 
 % PLOT SECTION
 if export_setup.create_plots
-    plot_ppop_yield(T, mean(IWAs), OWA, export_setup);
+    plot_ppop_yield(T, mean(IWAs), OWA, min(rms_ratios), export_setup);
 end
 
 end

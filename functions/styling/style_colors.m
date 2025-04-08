@@ -22,6 +22,9 @@ ui_colours = [
         255, 127, 17   % Orange (wheel)
     ] / 255;
 
+
+colours = xml2matrix("others/autumn_night.xml");
+
 % Create a custom colormap with more interpolated points
 darkBlue = interp1(linspace(0, 1, size(colours,1)), colours, linspace(0, 1, 256), 'linear');
 

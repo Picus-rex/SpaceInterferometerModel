@@ -1,6 +1,8 @@
 %% INTERFEROGRAM ARMS
-% See how the response depends on the phases on the x, y found rays from
-% CODE V response.
+% See how the response depends on the phases on the x, y found rays
+% positions from CODE V response. This script offers a way to see how the
+% interfogram occurs on the lenses space and is auxiliary to the other
+% processes.
 
 clc; clear; close all;
 addpath(genpath("."))
@@ -10,8 +12,8 @@ set(0, 'DefaultFigureWindowStyle', 'docked')
 data = ReadYaml('config/linear_array.yml');
 data = convert_data(data);
 
-[optical_path, OPD, x_coords, y_coords] = load_opd("code_v/TestLens_21804_convex.txt");
-[optical_path_n, OPD_n, x_coords_n, y_coords_n] = load_opd("code_v/TestLens_21804.txt");
+[optical_path, OPD, x_coords, y_coords] = load_opd("code_v/perturbed_21804_100sims_0804.txt");
+[optical_path_n, OPD_n, x_coords_n, y_coords_n] = load_opd("code_v/nominal_100sim_21804points.txt");
 
 delta_phi = opd2phase(OPD(:, 1), data.instrument.wavelength);
 delta_phi_n = opd2phase(OPD_n(:, 1), data.instrument.wavelength);
@@ -24,52 +26,39 @@ delta_phi_n = opd2phase(OPD_n(:, 1), data.instrument.wavelength);
     data.instrument.positions(:, 2), ...
     data.environment.stellar_angular_radius, false);
 
+% Define custom interval for this script
 theta = linspace(-700, 700, 1000) * ((pi/180)/3600 / 1e3);
-R = zeros(length(x_coords), length(theta));
-ty = 0;
-positions = data.instrument.positions;
-lambda = data.instrument.wavelength;
-nominal_phases = data.instrument.phase_shifts;
-combination = data.instrument.combination;
-A = data.instrument.intensities;
-N = size(positions, 1);
 
-for i = 1:length(theta)
-    
-    t = theta(i);
-    E = zeros(length(x_coords), 1);
+% Allocate space for perturbations
+phase_perturbations = zeros(length(x_coords), length(theta));
 
-    for k = 1:N
-    
-        xk = positions(k,1);
-        yk = positions(k,2);
-        
-        % Perturb first arm, leave others unchanged
-        if k == 1
-            phase_shifts = nominal_phases(k) + delta_phi;
-        else
-            phase_shifts = nominal_phases(k) + delta_phi_n;
-        end
-        
-        % Phase term
-        phase_k = 2 * pi * (xk * t + yk * ty) / lambda + phase_shifts;
-        
-        % Add contribution from each aperture
-        E = E + combination(k) * A(k) * exp(1i * phase_k);
-    
+% Perturb first arm, leave others unchanged
+for k = 1:data.instrument.apertures
+    if k == 1
+        phase_perturbations(:, k) = data.instrument.phase_shifts(k) + delta_phi;
+    else
+        phase_perturbations(:, k) = data.instrument.phase_shifts(k) + delta_phi_n;
     end
-    
-    R(:, i) = abs(E).^2;
-
 end
+
+% Compute the response function for all the points in the analysis
+[R, RF] = create_interferogram(data.instrument.positions, ...
+    data.instrument.intensities, data.instrument.combination, ...
+    phase_perturbations, data.instrument.wavelength, theta);
+
+% Compute nulling ratio for each point on the screen
+ratio = compute_nulling_ratio(data.instrument.apertures, ...
+    data.instrument.intensities, phase_perturbations, ...
+    data.instrument.positions, data.environment.stellar_angular_radius, ...
+    data.instrument.wavelength);
+
+%% Representation of the results
 
 for i = [1, 10, 100, 200, 250]
-    h = plot_value_on_image_plane(R(:, i), x_coords(:, 1), y_coords(:, 1), title="Intensity response", type="linear_1e0");
+    label = sprintf("Intensity response at observation angle of %.2f mas", rad2mas(theta(i)));
+    h = plot_value_on_image_plane(R(:, i), x_coords(:, 1), y_coords(:, 1), title=label, type="_1e0");
 end
 
-RF = sum(R, 1);
+h = plot_value_on_image_plane(ratio, x_coords(:, 1), y_coords(:, 1), title="Nulling ratio", type="log");
 
-figure;
-plot(theta / ((pi/180)/3600 / 1e3), RF, "LineWidth", 1.5);
-xlabel("Observation angle [mas]")
-ylabel("Response function")
+h = plot_response_function_theta(theta, RF);

@@ -14,9 +14,11 @@ function h = plot_value_on_image_plane(values, x_coords, y_coords, ...
 %                       degrees or a string following "linear_%de(+-)%d",
 %                       where the exponential number is reversed and
 %                       recognised as a scale (if 1e-6 is given, for
-%                       example, the string is converted to micro m). 
+%                       example, the string is converted to micro m). If no
+%                       prefix is given (like _1e0), then the [-] unit is
+%                       chosen.
 %   distance_units[string] Conversion to apply to the X, Y values. Can be
-%                       either [m] or [cm].
+%                       chosen from "m" and "cm".
 %   title[string]       Title of the plot. The unit of the plotted value is
 %                       automatically added. 
 %
@@ -28,6 +30,11 @@ function h = plot_value_on_image_plane(values, x_coords, y_coords, ...
 %   2025-03-31 -------- 1.1
 %                     - Added several plot settings, including type and
 %                       scale of values and titles. 
+%   2025-04-09 -------- 1.2
+%                     - Introduced possibility of having no unit on the
+%                       title.
+%                     - Added possibility of logarithmic plots with the use
+%                       of contourf.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,6 +52,11 @@ end
 % Call styling
 style_colors;
 
+% If logarithmic plot is desired, conversion is needed
+if strcmp(export_settings.type, "log")
+    values = log10(values);
+end
+
 % Create scattered interpolant
 F = scatteredInterpolant(x_coords, y_coords, values, 'natural', 'none');
 
@@ -58,7 +70,9 @@ Z = F(X, Y);
 if strcmp(export_settings.type, "angles")
     Z = rad2deg(Z);
     selected_colormap = angle_darkBlue;
-elseif startsWith(export_settings.type, "linear")
+elseif strcmp(export_settings.type, "log")
+    selected_colormap = darkBlue;
+else
     matches = regexp(export_settings.type, '_(\d+e[+-]?\d+)', 'tokens');
     if ~isempty(matches)
         scale = str2double(matches{1}{1});
@@ -87,13 +101,22 @@ end
 
 h = figure;
 hold on;
-pcolor(X, Y, Z);
-shading interp; % Smooth interpolation
-set(gca, 'YDir', 'normal'); % Correct axis orientation
+colormap(selected_colormap);
+c = colorbar();
+
+if ~startsWith(export_settings.type, "log")
+    pcolor(X, Y, Z);
+    shading interp; % Smooth interpolation
+    set(gca, 'YDir', 'normal'); % Correct axis orientation
+else
+    contourf(X, Y, Z, 20, 'LineColor', 'none');
+    ticks = c.Ticks;
+    tickLabels = arrayfun(@(x) sprintf('10^{%.1f}', x), ticks, 'UniformOutput', false);
+    c.TickLabels = tickLabels;
+end
+
 xlabel('X Coordinate ' + unit_string);
 ylabel('Y Coordinate '+ unit_string);
-colormap(selected_colormap);
-colorbar();
 axis tight;
 axis square;
 
@@ -105,8 +128,19 @@ if ~strcmp(export_settings.title, "")
             otherwise
                 scale_name = sprintf(" [%.0d m]", scale);
         end
+    elseif startsWith(export_settings.type, "_")
+        switch scale
+            case 1
+                scale_name = " [-]";
+            case 1e-6
+                scale_name = " [µ]";
+            otherwise
+                scale_name = sprintf(" [%.0d]", scale);
+        end
     elseif strcmp(export_settings.type, "angles")
         scale_name = " [deg]";
+    elseif startsWith(export_settings.type, "log")
+        scale_name = "";
     else
         scale_name = " [m]";
     end

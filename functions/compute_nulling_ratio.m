@@ -1,19 +1,21 @@
-function [ratio, rejection] = ...
-    compute_nulling_ratio(N, amplitudes, phases, positions, theta_star, lambda)
+function [ratio, rejection] = compute_nulling_ratio(N, amplitudes, ...
+                                    phases, positions, theta_star, lambda)
 %COMPUTE_NULLING_RATIO Computation of the nulling ratio and rejection
 %fraction for a given array.
 %
 % INPUTS:
 %   N[1]                Number of apertures. [-]
 %   amplitudes[Nx1]     Amplitudes associated to each aperture.
-%   phases[Nx1]         Vector of phase shifts for each aperture.
+%   phases  [Nx1]       Vector of phase shifts for each aperture OR
+%           [Np x N]    Matrix of phase shifts associated to apertures and
+%                       poisitons points on the aperture.
 %   positions[Nx2]      Matrix of (x, y) positions of the apertures. [m]
 %   theta_star[1]       Angular dimension of the star. [rad]
 %   lambda[1]           Wavelength of observation. [m]
 %
 % OUTPUTS:
-%   ratio[1]            Nulling ratio of the array.
-%   rejection[1]        Rejection fraction of the array.
+%   ratio   [1] or [Np] Nulling ratio of the array.
+%   rejection[1]or [Np] Rejection fraction of the array.
 %
 % REFERENCES:
 %   Defrère D. Characterizing extrasolar planetary systems 
@@ -30,12 +32,21 @@ function [ratio, rejection] = ...
 %   2025-03-11 -------- 1.1
 %                     - Use of the base formula to address the possible
 %                       amplitudes interferences.
+%   2025-04-09 -------- 1.2
+%                     - Introduced possibility to accept matrices for
+%                       phases in the case of spatial positions considered.
+%                     - rejection computed only if required to speed up.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Geometric leakage
-N_g = 0;
+% Allocate space for geometric leakage depending on the shape
+if isvector(phases)
+    N_g = 0;
+else
+    N_g = zeros(size(phases, 1), 1);
+end
+
 for j = 1:N
     for k = 1:N
         
@@ -48,16 +59,22 @@ for j = 1:N
         else
             B_star_jk = 1;
         end
-
-        N_g = N_g + amplitudes(j) * amplitudes(k) * cos(phases(j) - phases(k)) * B_star_jk;
+        
+        if isvector(phases)
+            N_g = N_g + amplitudes(j) * amplitudes(k) * cos(phases(j) - phases(k)) * B_star_jk;
+        else
+            N_g = N_g + amplitudes(j) * amplitudes(k) * cos(phases(:, j) - phases(:, k)) * B_star_jk;
+        end
     end
 end
 
 % Denominator
 sum_N_star = sum(amplitudes.^2);
 
-% Nulling ratio and rejection factor
+% Nulling ratio and rejection factor (only if required)
 ratio = N_g / sum_N_star;
-rejection = 1/ratio;
+if nargout == 2
+    rejection = ratio.^(-1);
+end
 
 end

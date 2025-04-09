@@ -237,27 +237,3 @@ if nargout > 1
 end
 
 end
-
-
-
-function R = create_field(theta_x, theta_y, N, lambda, positions, A, ...
-    combination, phase_shifts)
-
-E = zeros(size(theta_y, 1), size(theta_x, 2));
-
-for k = 1:N
-
-    xk = positions(k,1);
-    yk = positions(k,2);
-    
-    % Phase term
-    phase_k = 2 * pi * (xk * theta_x + yk * theta_y) / lambda + phase_shifts(k);
-    
-    % Add contribution from each aperture
-    E = E + combination(k) * A(k) * exp(1i * phase_k);
-
-end
-
-R = abs(E).^2;
-
-end

@@ -14,6 +14,8 @@ function plot_ppop_yield(exotable, IWA, OWA, ratio, export_setup)
 %   2025-04-07 -------- 1.0
 %   2025-04-08 -------- 1.1
 %                     - Added several new plots to the analysis.
+%   2025-04-10 -------- 1.2
+%                     - Added option for universes_to_plot to reduce plots.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,9 +27,16 @@ rad2mas = ((pi/180)/3600 / 1e3)^(-1);
 markers = {'o','s','^','d','v','>','<','p','h'};
 unique_types = unique(exotable.Stype);
 
-for i = 1:Nu
+if isfield(export_setup, "universes_to_plot")
+    selection = randi(Nu, export_setup.universes_to_plot);
+else
+    selection = randi(Nu, 5);
+end
+selection = selection(1, :);
 
-    T = exotable(exotable.Nuniverse == universes(i), :);
+for i = 1:length(selection)
+
+    T = exotable(exotable.Nuniverse == universes(selection(i)), :);
 
     figure; hold on;
 
@@ -100,15 +109,16 @@ if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.fi
     export_figures("embedded", export_settings.figures.total_yield)
 end
 
-
-figure;
-boxplot(mean_yield_matrix, 'Labels', string(1:Ns));
-xlabel('Simulation Index');
-ylabel('Mean Yield Across Universes');
-title('Boxplot of Mean Yields per Simulation');
-grid minor;
-if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.figures.boxplot
-    export_figures("embedded", export_settings.figures.boxplot)
+if Nu > 1
+    figure;
+    boxplot(mean_yield_matrix, 'Labels', string(1:Ns));
+    xlabel('Simulation Index');
+    ylabel('Mean Yield Across Universes');
+    title('Boxplot of Mean Yields per Simulation');
+    grid minor;
+    if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.figures.boxplot
+        export_figures("embedded", export_settings.figures.boxplot)
+    end
 end
 
 figure;

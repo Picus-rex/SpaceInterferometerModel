@@ -12,11 +12,8 @@ set(0, 'DefaultFigureWindowStyle', 'docked')
 data = ReadYaml('config/linear_array.yml');
 data = convert_data(data);
 
-[optical_path, OPD, x_coords, y_coords] = load_opd("code_v/perturbed_21804_100sims_0804.txt");
-[optical_path_n, OPD_n, x_coords_n, y_coords_n] = load_opd("code_v/nominal_100sim_21804points.txt");
-
-delta_phi = opd2phase(OPD(:, 1), data.instrument.wavelength);
-delta_phi_n = opd2phase(OPD_n(:, 1), data.instrument.wavelength);
+% Extract coordinates for plot
+[~, ~, x_coords, y_coords] = load_opd("code_v/perturbed_21804_100sims_0804.txt");
 
 % Computing of optimal splitting for analysis
 [data.simulation.U, data.instrument.combination, ...
@@ -29,36 +26,42 @@ delta_phi_n = opd2phase(OPD_n(:, 1), data.instrument.wavelength);
 % Define custom interval for this script
 theta = linspace(-700, 700, 1000) * ((pi/180)/3600 / 1e3);
 
-% Allocate space for perturbations
-phase_perturbations = zeros(length(x_coords), length(theta));
+[RFs, RFn, R, ratio] = interferogram_sensitivity("code_v/nominal_100sim_21804points.txt", ...
+    "code_v/perturbed_21804_100sims_0804.txt", data.instrument.intensities,...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.instrument.combination, data.instrument.wavelength);
 
-% Perturb first arm, leave others unchanged
-for k = 1:data.instrument.apertures
-    if k == 1
-        phase_perturbations(:, k) = data.instrument.phase_shifts(k) + delta_phi;
-    else
-        phase_perturbations(:, k) = data.instrument.phase_shifts(k) + delta_phi_n;
-    end
+% Representation of the results
+maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
+
+for i = 1:size(R, 3)
+    label = sprintf("Intensity response at observation angle of %.2f mas", rad2mas(theta(maps_to_compute(i))));
+    h = plot_value_on_image_plane(R(:, i, 1), x_coords(:, 1), y_coords(:, 1), title=label, type="_1e0");
 end
 
-% Compute the response function for all the points in the analysis
-[R, RF] = create_interferogram(data.instrument.positions, ...
-    data.instrument.intensities, data.instrument.combination, ...
-    phase_perturbations, data.instrument.wavelength, theta);
+h = plot_value_on_image_plane(ratio(:, 2), x_coords(:, 1), y_coords(:, 1), title="Nulling ratio", type="log");
 
-% Compute nulling ratio for each point on the screen
-ratio = compute_nulling_ratio(data.instrument.apertures, ...
-    data.instrument.intensities, phase_perturbations, ...
-    data.instrument.positions, data.environment.stellar_angular_radius, ...
-    data.instrument.wavelength);
+RFp = [RFn; RFs];
 
-%% Representation of the results
+h = plot_response_function_theta(theta, RFp, "Normalize", true);
 
-for i = [1, 10, 100, 200, 250]
-    label = sprintf("Intensity response at observation angle of %.2f mas", rad2mas(theta(i)));
-    h = plot_value_on_image_plane(R(:, i), x_coords(:, 1), y_coords(:, 1), title=label, type="_1e0");
+%% Perturbate multiple branches with random picks
+
+[RFs, RFn, R, ratio] = interferogram_sensitivity_multiple_branches("code_v/nominal_100sim_21804points.txt", ...
+    "code_v/perturbed_21804_100sims_0804.txt", data.instrument.intensities,...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.instrument.combination, data.instrument.wavelength);
+
+% Representation of the results
+maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
+
+for i = 1:size(R, 3)
+    label = sprintf("Intensity response at observation angle of %.2f mas", rad2mas(theta(maps_to_compute(i))));
+    h = plot_value_on_image_plane(R(:, i, 1), x_coords(:, 1), y_coords(:, 1), title=label, type="_1e0");
 end
 
-h = plot_value_on_image_plane(ratio, x_coords(:, 1), y_coords(:, 1), title="Nulling ratio", type="log");
+h = plot_value_on_image_plane(ratio(:, 2), x_coords(:, 1), y_coords(:, 1), title="Nulling ratio", type="log");
 
-h = plot_response_function_theta(theta, RF);
+RFp = [RFn; RFs];
+
+h = plot_response_function_theta(theta, RFp, "Normalize", true);

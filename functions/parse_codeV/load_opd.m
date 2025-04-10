@@ -32,65 +32,66 @@ function [optical_path, OPD, x_coords, y_coords] = load_opd(filename)
 %                       that reflect on the way the input is splitted into
 %                       a matrix. 
 %                     - Output of OPD as well as the optical path.
+%   2025-04-10 -------- 1.2
+%                     - Completely rewritten to be significantly faster.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Initialize cell arrays to store data for each series
-optical_path = [];
-x_coords = [];
-y_coords = [];
 
-% Open the file for reading
-fid = fopen(filename, 'r');
-if fid == -1
-    error('Cannot open the file: %s', filename);
-end
+% Read all lines from the file
+lines = readlines(filename);
 
-% Read the file line by line
-current_series = [];
-i = 0;
-while ~feof(fid)
-    line = fgetl(fid);
-    if startsWith(line, '==')
-        i = i + 1;
-        % If a new series starts, store the previous series data
-        if ~isempty(current_series)
-            optical_path(:, i-1) = current_series(:, 1);
-            x_coords(:, i-1) = current_series(:, 2);
-            y_coords(:, i-1) = current_series(:, 3);
-        end
-        % Start a new series
-        current_series = [];
-    elseif ~isempty(line) && ~startsWith(line, '==')
-        % Read the data points
-        data = strsplit(line, ',');
-        data = str2double(data); 
-        if length(data) == 3
-            current_series(end+1, :) = data;
-        end
+% Identify series start markers
+markerIdx = find(startsWith(lines, '=='));
+Ns_est = numel(markerIdx);
+
+% Store all valid series temporarily
+temp_series = cell(1, Ns_est);
+Np_list = zeros(1, Ns_est);
+
+% First pass: collect parsed data and count points
+for s = 1:Ns_est
+    if s < Ns_est
+        dataBlock = lines(markerIdx(s)+1 : markerIdx(s+1)-1);
+    else
+        dataBlock = lines(markerIdx(s)+1 : end);
     end
+
+    % Remove empty lines
+    dataBlock = dataBlock(strlength(dataBlock) > 0);
+
+    % Parse block
+    combinedStr = join(dataBlock, newline);
+    parsedData = sscanf(combinedStr, '%f,%f,%f');
+    parsedData = reshape(parsedData, 3, []);
+    
+    temp_series{s} = parsedData';
+    Np_list(s) = size(parsedData, 1);
 end
 
-% Store the last series data
-if ~isempty(current_series)
-    optical_path(:, i) = current_series(:, 1);
-    x_coords(:, i) = current_series(:, 2);
-    y_coords(:, i) = current_series(:, 3);
+% Find most common length (mode) across all series
+Np = size(temp_series{1}, 1);
+Ns = numel(temp_series);
+
+if Ns < Ns_est
+    warning('%d series discarded due to inconsistent point count.', Ns_est - Ns);
 end
 
-% Close the file
-fclose(fid);
+% Preallocate output matrices
+optical_path = zeros(Np, Ns);
+x_coords     = zeros(Np, Ns);
+y_coords     = zeros(Np, Ns);
 
-% Conversion to S.I. units
-optical_path = optical_path * 1e-2;
-x_coords = x_coords * 1e-2;
-y_coords = y_coords * 1e-2;
-
-% Compute the OPD with respect to the center value. Preallocatr and compute
-OPD = optical_path;
-for i = 1:size(optical_path, 2)
-    OPD(:, i) = optical_path(:, i) - optical_path(ceil(size(optical_path, 1)/2), i);
+% Fill the matrices
+for j = 1:Ns
+    parsedData = temp_series{j};
+    optical_path(:, j) = parsedData(:, 1) * 1e-2;
+    x_coords(:, j)     = parsedData(:, 2) * 1e-2;
+    y_coords(:, j)     = parsedData(:, 3) * 1e-2;
 end
 
+% Compute OPD
+center_index = ceil(Np / 2);
+OPD = optical_path - optical_path(center_index, :);
 end

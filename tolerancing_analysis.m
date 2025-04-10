@@ -32,6 +32,13 @@ phases_n = opd2phase(optical_path_n, data.instrument.wavelength);
     data.instrument.wavelength, phases, data.instrument.combination, ...
     perturbed_map_plotting_number=1, compute_PSF=false, create_plots=true);
 
+% Computing of nulling ratios and statistical plots
+[ratios_n, ~, ~]  = perturbate_system(data.instrument.apertures, ...
+    data.instrument.intensities, data.instrument.phase_shifts, ...
+    data.instrument.positions, data.environment.stellar_angular_radius, ...
+    data.instrument.wavelength, phases_n, data.instrument.combination, ...
+    perturbed_map_plotting_number=1, compute_PSF=false, create_plots=false);
+
 %% Create few plots and statistic
 
 for i = 1:3
@@ -67,7 +74,17 @@ end
 OWA = data.instrument.wavelength / data.instrument.diameter(1);
 
 % Get yield from PPOP
-exotable = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true);
+% exotable = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true);
+exotable2 = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true, "population", "NASA");
+
+% Get yield from PPOP for the nominal case
+perturbed_vect = zeros(size(data.instrument.phase_shifts));
+perturbed_vect(1) = rms(phases_n);
+pp = data.instrument.phase_shifts + perturbed_vect;
+aa = data.instrument.intensities .* data.instrument.combination;
+[~, unique_baselines] = classify_baselines(aa, data.instrument.positions, pp, false);
+IWA = compute_IWA(unique_baselines, data.instrument.wavelength);
+exotable_n = get_ppop_yield(IWA, OWA, ratios_n, data.instrument.wavelength, "verbose", true);
 
 %% Improved cases
 

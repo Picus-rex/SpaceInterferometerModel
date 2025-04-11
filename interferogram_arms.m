@@ -45,6 +45,40 @@ RFp = [RFn; RFs];
 
 h = plot_response_function_theta(theta, RFp, "Normalize", true);
 
+% Mean, Median, Max across Ns simulations
+log_mean = mean(ratio, 2);
+log_median = median(ratio, 2);
+log_max = max(ratio, [], 2); % worst nulling per point
+
+% Plot them
+plot_value_on_image_plane(log_mean, x_coords(:, 1), y_coords(:, 1), ...
+    title="Mean Log Nulling Ratio", type="log");
+
+plot_value_on_image_plane(log_median, x_coords(:, 1), y_coords(:, 1), ...
+    title="Median Log Nulling Ratio", type="log");
+
+plot_value_on_image_plane(log_max, x_coords(:, 1), y_coords(:, 1), ...
+    title="Worst-case Log Nulling Ratio", type="log");
+
+% Threshold for "good" nulling in log10 scale
+threshold = 1e-4;
+Ns = size(ratio, 2);
+Np = size(ratio, 1);
+
+% Count good cases for each pupil point
+good_counts = sum(ratio < threshold, 2);
+fraction_good = good_counts / Ns;
+
+% Plot how frequently each position is "good"
+plot_value_on_image_plane(fraction_good, x_coords(:, 1), y_coords(:, 1), ...
+    title="Fraction of Good Nulling Simulations", type="linear");
+
+% What % of the pupil is reliably good
+good_pupil_fraction = sum(fraction_good > 0.9) / Np;  % e.g., 90% of sims are good
+fprintf("Fraction of pupil with consistently good nulling: %.2f%%\n", 100 * good_pupil_fraction);
+
+
+
 %% Perturbate multiple branches with random picks
 
 [RFs, RFn, R, ratio] = interferogram_sensitivity_multiple_branches("code_v/nominal_100sim_21804points.txt", ...

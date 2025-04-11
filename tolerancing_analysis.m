@@ -49,8 +49,6 @@ end
 OPD_all = reshape(OPD, [], 1);
 
 perform_statistics(OPD);
-perform_statistics(OPD_all, create_plots=false);
-perform_statistics(ratios, "label", "Nulling ratio", "type", "_1e0", "scale", "log")
 
 %% Verify exoplanet yield
 
@@ -88,17 +86,3 @@ aa = data.instrument.intensities .* data.instrument.combination;
 [~, unique_baselines] = classify_baselines(aa, data.instrument.positions, pp, false);
 IWA = compute_IWA(unique_baselines, data.instrument.wavelength);
 exotable_n = get_ppop_yield(IWA, OWA, ratios_n, data.instrument.wavelength, "verbose", true);
-
-%% Improved cases
-
-optical_path_b = optical_path(:, [44, 62, 99]);
-optical_path_b(:, 4) = optical_path_n;
-
-phases_b = opd2phase(optical_path_b, data.instrument.wavelength);
-
-[ratios_b, ~, ~]  = perturbate_system(data.instrument.apertures, ...
-    data.instrument.intensities, data.instrument.phase_shifts, ...
-    data.instrument.positions, data.environment.stellar_angular_radius, ...
-    data.instrument.wavelength, phases_b, data.instrument.combination, perturbed_map_plotting_number=4, compute_PSF=false, create_plots=true);
-
-perform_statistics(ratios_b, "label", "Nulling ratio", "type", "_1e0", "scale", "log")

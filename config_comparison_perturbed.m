@@ -80,5 +80,6 @@ save exports/pert_results.mat results;
 
 nominal = load("exports/results.mat", "results");
 perturbed = load("exports/pert_results.mat", "results");
+names = ["X-Array 2:1", "X-Array 3:1", "Linear DCB A", "Linear DCB B", "Diamond DCB"];
 
 compare_configurations(nominal.results, perturbed.results, names)

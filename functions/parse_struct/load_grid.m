@@ -15,7 +15,7 @@ function points = load_grid(direction)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Generation of the meshgrid
-theta_range = linspace(-1e-6, 1e-6, 1000); 
+theta_range = linspace(-3.5e-6, 3.5e-6, 1000); 
 [points_x, points_y] = meshgrid(theta_range, theta_range);
 
 switch direction

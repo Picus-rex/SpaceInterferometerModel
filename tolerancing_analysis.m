@@ -74,7 +74,10 @@ end
 OWA = data.instrument.wavelength / data.instrument.diameter(1);
 
 % Get yield from PPOP
-% exotable = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true);
+exotable = get_ppop_yield(0.5 * IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true);
+
+%% 
+
 exotable2 = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true, "population", "NASA");
 
 % Get yield from PPOP for the nominal case

@@ -65,19 +65,17 @@ c = 3e8;                        % Speed of light [m/s]
 k = 1.381e-23;                  % Boltzmann constant [J/K]
 R_earth = 6.371e6;              % Earth radius [m]
 R_sun   = 6.957e8;              % Solar radius [m]
-arcsec2rad = (pi/180)/3600;     % arcsec to radians conversion factor
 
 if strcmp(sim_options.population, "PPOP")
     % Extract the exoplanets from the table
     opts = detectImportOptions('others/TestPlanetPopulation.txt', 'NumHeaderLines', 1);
     T = readtable('others/TestPlanetPopulation.txt', opts);
-    T.ang_sep_rad = T.AngSep * arcsec2rad;
+    T.ang_sep_rad = arcsec2rad(T.AngSep);
 else
     % Fill needed rows
     T = load_NASA_archive();
     T.Nuniverse(:) = 0;
     T.ang_sep_rad = T.AngSep;
-    T.Stype(:) = "Real exoplanets";
     T.AgeomVIS(:) = 0.2;
     export_setup.universes_to_plot = 1;
 end
@@ -133,6 +131,7 @@ end
 if sim_options.verbose
     fprintf("\nAverage for universe in the best case:\t%.2f planets\n", max(mean(total_yield_matrix, 1)));
     fprintf("Average for universe in the mean case:\t%.2f planets\n", mean(mean(total_yield_matrix, 2)));
+    fprintf("Average for all universes:\t%.2f planets\n", mean(sum(total_yield_matrix, 1)));
 end
 
 

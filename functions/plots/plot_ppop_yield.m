@@ -45,19 +45,39 @@ for i = 1:length(selection)
         current_type = unique_types{j};
         type_rows = strcmp(T.Stype, current_type);
         
-        % Plot all points in blue
-        scatter(T.ang_sep_rad(type_rows) * rad2mas, T.contrast(type_rows), ...
-                [], 'b', markers{j}, 'filled', 'DisplayName', current_type);
+        if strcmp(current_type, "")
+            current_type = "N.A.";
+        end
+        
+        if length(unique_types) < length(markers)
+            % Plot all points in blue
+            scatter(T.ang_sep_rad(type_rows) * rad2mas, T.contrast(type_rows), ...
+                    [], 'b', markers{j}, 'filled', 'DisplayName', current_type);
+        else
+            scatter(T.ang_sep_rad(type_rows) * rad2mas, T.contrast(type_rows), ...
+                    [], 'filled', 'DisplayName', current_type);
+        end
     end
 
     for j = 1:length(unique_types)
         current_type = unique_types{j};
         type_rows = strcmp(T.Stype, current_type);
-
-        % Overlay resulting points
-        yield_one_rows = max(type_rows & (T.yields == 1), [], 2);
-        scatter(T.ang_sep_rad(yield_one_rows) * rad2mas, T.contrast(yield_one_rows), ...
-                [], 'r', markers{j}, 'filled', 'DisplayName', [current_type ' (Detected)']);
+        
+        if strcmp(current_type, "")
+            current_type = 'N.A.';
+        end
+        
+        if length(unique_types) < length(markers)
+            % Overlay resulting points
+            yield_one_rows = max(type_rows & (T.yields == 1), [], 2);
+            scatter(T.ang_sep_rad(yield_one_rows) * rad2mas, T.contrast(yield_one_rows), ...
+                    [], 'r', markers{j}, 'filled', 'DisplayName', [current_type ' (Detected)']);
+        else
+            % Overlay resulting points
+            yield_one_rows = max(type_rows & (T.yields == 1), [], 2);
+            scatter(T.ang_sep_rad(yield_one_rows) * rad2mas, T.contrast(yield_one_rows), ...
+                    [], 'r', 'filled', 'DisplayName', [current_type ' (Detected)']);
+        end
     end
 
     xline(IWA * rad2mas, '--', "DisplayName", "IWA (Mean value)")

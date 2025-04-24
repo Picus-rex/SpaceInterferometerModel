@@ -12,6 +12,8 @@ instrument:
         beam_combiner: 0.25
         optical_line: 0.2
 
+    name: linear
+
 environment:
 
     target_distance: 15                     # [pc]
@@ -55,8 +57,8 @@ simulation:
         theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
     code_v_opd_file:
-        nominal:    "code_v/nominal_100sim_21804points.txt"
-        perturbed:  "code_v/perturbed_100sim_21804points.txt"
+        nominal:    "code_v/nominal_0424.txt"
+        perturbed:  "code_v/perturbed_0424_100sims.txt"
 
 
 outputs:

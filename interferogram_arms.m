@@ -76,20 +76,17 @@ fprintf("Fraction of pupil with consistently good nulling: %.2f%%\n", 100 * good
 
 %% Perturbate multiple branches with random picks
 
-[RFs, RFn, R, ratio] = interferogram_sensitivity_multiple_branches("code_v/nominal_100sim_21804points.txt", ...
-    "code_v/perturbed_21804_100sims_0804.txt", data.instrument.intensities,...
+[RFs, RFn, R, ratio] = interferogram_sensitivity_multiple_branches(data.simulation.code_v.nominal.opd, ...
+    data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
     data.instrument.phase_shifts, data.instrument.positions, ...
-    data.instrument.combination, data.instrument.wavelength);
-
-% Representation of the results
-maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
+    data.instrument.combination, data.instrument.wavelength, theta, maps_to_compute);
 
 for i = 1:size(R, 3)
     label = sprintf("Intensity response at observation angle of %.2f mas", rad2mas(theta(maps_to_compute(i))));
-    h = plot_value_on_image_plane(R(:, i, 1), x_coords(:, 1), y_coords(:, 1), title=label, type="_1e0");
+    h = plot_value_on_image_plane(R(:, i, 1),  data.simulation.code_v.perturbed.x(:, 1),  data.simulation.code_v.perturbed.y(:, 1), title=label, type="_1e0");
 end
 
-h = plot_value_on_image_plane(ratio(:, 2), x_coords(:, 1), y_coords(:, 1), title="Nulling ratio", type="log");
+h = plot_value_on_image_plane(ratio(:, 2),  data.simulation.code_v.perturbed.x(:, 1),  data.simulation.code_v.perturbed.y(:, 1), title="Nulling ratio", type="log");
 
 RFp = [RFn; RFs];
 

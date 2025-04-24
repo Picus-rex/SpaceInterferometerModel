@@ -1,14 +1,14 @@
-function [RFs, RFn, R, ratio] = ...
-    interferogram_sensitivity_multiple_branches(nominal_file, ...
-    perturbed_file, intensities, nominal_phases, positions, combination,...
-    lambda, theta, stellar_angular_radius, maps_to_compute, simulations)
+function [RFs, RFn, R, ratio] = interferogram_sensitivity_multiple_branches(OPD_n, ...
+    OPD, intensities, nominal_phases, positions, combination,...
+    lambda, theta, maps_to_compute, simulations, stellar_angular_radius)
 %INTERFEROGRAM_SENSITIVITY_MULTIPLE_BRANCHESE Computes the nominal and
 %perturbed response functions for interferogram sensitivity analysis, by
 %applying a random perturbation to each aperture.
 %
 % ARGUMENT INPUTS:
-%   nominal_file[string] Path to the nominal CSV file from CODE V.
-%   perturbed_file[string] Path to the perturbed CSV from CODE V.
+%   OPD_n[Np x 1]       OPD in the nominal case for all the Np points [m]
+%   OPD[Np x Ns]        OPD in the perturbed cases for all points and
+%                       simulations [m]
 %   intensities[Nx1]    Vector of aperture intensities [V/m]
 %   nominal_phases[Nx1] Vector of nom. phase shifts for each aperture [rad]
 %   positions[Nx2]      Matrix of (x, y) positions of the apertures [m]
@@ -31,33 +31,35 @@ function [RFs, RFn, R, ratio] = ...
 %
 % VERSION HISTORY:
 %   2025-04-09 -------- 1.0
+%   2025-04-24 -------- 1.1
+%                     - Inputs improved: now, instead of the file, the
+%                       function requires information that is already
+%                       available in the main script. Order updated.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 arguments
-    nominal_file {mustBeFile}
-    perturbed_file {mustBeFile}
+    OPD_n
+    OPD
     intensities 
     nominal_phases 
     positions 
     combination 
     lambda = 1e-5
     theta = mas2rad(linspace(-700, 700, 1000))
-    stellar_angular_radius = 1.50444523662918e-09
     maps_to_compute = 1 : floor(length(theta) / 4) : length(theta)
     simulations = 100
+    stellar_angular_radius = 1.50444523662918e-09
 end
 
-% Load data from CODE V
-[~, OPD, ~, ~] = load_opd(perturbed_file);     % size: Np x Ns
-[~, OPD_n, ~, ~] = load_opd(nominal_file);     % size: Np x 1
-
-% Setup
+% Compute nominal phase
 delta_phi_n = opd2phase(OPD_n(:, 1), lambda);  % Np x 1
+
+% Extract number of simulations
 Np = size(OPD, 1);
 N = size(positions, 1);
 Nt = length(theta);
-Ns = size(OPD, 2);  % Total available precomputed perturbations
+Ns = size(OPD, 2);  
 
 % Nominal response
 phases_nominal = nominal_phases + delta_phi_n;

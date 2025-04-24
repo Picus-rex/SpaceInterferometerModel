@@ -12,6 +12,8 @@ instrument:
         beam_combiner: 0.25
         optical_line: 0.2
 
+    name: xarray
+
 environment:
 
     target_distance: 15                 # [pc]

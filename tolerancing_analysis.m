@@ -11,8 +11,8 @@ set(0, 'DefaultFigureWindowStyle', 'docked')
 data = ReadYaml('config/linear_array.yml');
 data = convert_data(data);
 
-[optical_path, OPD, x_coords, y_coords] = load_opd("code_v/perturbed_100sim_21804points.txt");
-[optical_path_n, OPD_n, x_coords_n, y_coords_n] = load_opd("code_v/nominal_100sim_21804points.txt");
+[optical_path, OPD, x_coords, y_coords] = load_opd("code_v/perturbed_0424_100sims.txt");
+[optical_path_n, OPD_n, x_coords_n, y_coords_n] = load_opd("code_v/nominal_0424.txt");
 
 phases = opd2phase(optical_path, data.instrument.wavelength);
 phases_n = opd2phase(optical_path_n, data.instrument.wavelength);
@@ -45,8 +45,6 @@ for i = 1:3
     h = plot_value_on_image_plane(OPD(:, i), x_coords(:, i), y_coords(:, i), title="OPD");
     h = plot_value_on_image_plane(phases(:, i), x_coords(:, i), y_coords(:, i), [], type="angles", title="Phase");
 end
-
-OPD_all = reshape(OPD, [], 1);
 
 perform_statistics(OPD);
 

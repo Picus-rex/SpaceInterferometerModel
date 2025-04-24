@@ -6,25 +6,72 @@
 clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'normal') 
+
+%% PART 1: GENERATE FILES FOR THE ANALYSIS
+
+data = convert_data('config/x_array.yml');
+
+% Compute optimal splitting
+[data.simulation.U, data.instrument.combination, ...
+    data.instrument.phase_shifts] = compute_optimal_splitting(...
+    data.instrument.apertures, data.instrument.baseline, ...
+    data.instrument.wavelength, data.instrument.positions(:, 1), ...
+    data.instrument.positions(:, 2), ...
+    data.environment.stellar_angular_radius, false);
+
+% Classify baselines
+[data.instrument.baselines, data.instrument.unique_baselines] = ...
+    classify_baselines(data.instrument.intensities, data.instrument.positions, data.instrument.phase_shifts, true);
+
+% Complex Field and Response Function
+[~, data] = compute_response_function("data", data);
+
+% Verify modulation of the signal
+[data.simulation.planet_modulation] = planet_modulation(data);
+
+% Find nulling ratio
+[data.simulation.nulling_ratio, data.simulation.rejection_factor] = ...
+    compute_nulling_ratio(data.instrument.apertures, data.instrument.intensities, ...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.environment.stellar_angular_radius, data.instrument.wavelength);
+
+% Point Spread Function
+[data.simulation.PSF, ~, ~] = compute_psf(data.instrument.wavelength, ...
+    data.instrument.intensities, data.instrument.positions, data.instrument.phase_shifts, ...
+    data.environment.exoplanet_position, data.simulation.theta_range);
+
+% Interferometer sensitivity - single arm
+[data.simulation.interferogram.RFp, data.simulation.interferogram.RFn, ...
+ data.simulation.interferogram.R, data.simulation.interferogram.nulling] = ...
+    interferogram_sensitivity(data.simulation.code_v.nominal.opd, data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.instrument.combination, data.instrument.wavelength);
+
+% Interferometer sensitivity - multiple arms
+[data.simulation.interferogram_multi.RFp, data.simulation.interferogram_multi.RFn, ...
+ data.simulation.interferogram_multi.R, data.simulation.interferogram_multi.nulling] = ...
+ interferogram_sensitivity_multiple_branches(data.simulation.code_v.nominal.opd, ...
+    data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
+    data.instrument.phase_shifts, data.instrument.positions, ...
+    data.instrument.combination, data.instrument.wavelength);
+
+clc;
+save("exports/data_"+data.instrument.name+".mat", "data", "-v7.3");
+
+%% PART 2: LOAD AND EXPORT IMAGES
+
 warning("Always pull the last version from the system!")
 
 % Specify path of the git to export images following the convention adopted
 export_data = ReadYaml('config/export_figures.yml');
 data_matrices = ["exports/data_linear", "exports/data_xarray"];
-data_matrices = ["exports/data_linear"];
 skip_chapt = [1, 2, 3];
-
-[optical_path_p, OPD_p, x_coords_p, y_coords_p] = load_opd("code_v/perturbed_21804_100sims_0804.txt");
-[optical_path_n, OPD_n, x_coords_n, y_coords_n] = load_opd("code_v/nominal_100sim_21804points.txt");
 
 for i = 1:length(data_matrices)
 
     datas(i) = load(data_matrices(i)).data;
     data = datas(i);
     suffix = "_" + data.instrument.name;
-
-    phases_p = opd2phase(OPD_p, data.instrument.wavelength);
-    phases_n = opd2phase(OPD_n, data.instrument.wavelength);
 
     theta = mas2rad(linspace(-100, 100, 1000));
     maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
@@ -104,21 +151,21 @@ for i = 1:length(data_matrices)
             
             case "opd_pupil_plane_system"
                 export_settings.name = label_name + "_nominal";
-                plot_value_on_image_plane(OPD_n(:, 1), x_coords_n(:, 1), y_coords_n(:, 1), title="OPD", embedded=export_settings);
+                plot_value_on_image_plane(data.simulation.code_v.nominal.opd(:, 1), data.simulation.code_v.nominal.x(:, 1), data.simulation.code_v.nominal.y(:, 1), title="OPD", embedded=export_settings);
                 
                 export_settings.name = label_name + "_pert1";
-                plot_value_on_image_plane(OPD_p(:, 1), x_coords_p(:, 1), y_coords_p(:, 1), title="OPD", embedded=export_settings);
+                plot_value_on_image_plane(data.simulation.code_v.perturbed.opd(:, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), title="OPD", embedded=export_settings);
                 export_settings.name = label_name + "_pert2";
-                plot_value_on_image_plane(OPD_p(:, 2), x_coords_p(:, 2), y_coords_p(:, 2), title="OPD", embedded=export_settings);
+                plot_value_on_image_plane(data.simulation.code_v.perturbed.opd(:, 2), data.simulation.code_v.perturbed.x(:, 2), data.simulation.code_v.perturbed.y(:, 2), title="OPD", embedded=export_settings);
             
             case "phase_pupil_plane_system"     
                 export_settings.name = label_name + "_nominal";
-                plot_value_on_image_plane(phases_n(:, 1), x_coords_n(:, 1), y_coords_n(:, 1), [], type="angles", title="Phase", embedded=export_settings);
+                plot_value_on_image_plane(data.simulation.code_v.nominal.phase(:, 1), data.simulation.code_v.nominal.x(:, 1), data.simulation.code_v.nominal.y(:, 1), [], type="angles", title="Phase", embedded=export_settings);
                 
                 export_settings.name = label_name + "_pert1";
-                plot_value_on_image_plane(phases_p(:, 1), x_coords_p(:, 1), y_coords_p(:, 1), [], type="angles", title="Phase", embedded=export_settings);
+                plot_value_on_image_plane(data.simulation.code_v.perturbed.phase(:, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), [], type="angles", title="Phase", embedded=export_settings);
                 export_settings.name = label_name + "_pert2";
-                plot_value_on_image_plane(phases_p(:, 2), x_coords_p(:, 2), y_coords_p(:, 2), [], type="angles", title="Phase", embedded=export_settings);
+                plot_value_on_image_plane(data.simulation.code_v.perturbed.phase(:, 2), data.simulation.code_v.perturbed.x(:, 2), data.simulation.code_v.perturbed.y(:, 2), [], type="angles", title="Phase", embedded=export_settings);
             
             case "sensitivity_opd_system"
                 
@@ -133,26 +180,17 @@ for i = 1:length(data_matrices)
                     exp_figs{5}.name = label_name + "_rms_std";
                 end
 
-                perform_statistics(OPD_p, "embedded", exp_figs);
+                perform_statistics(data.simulation.code_v.perturbed.opd, "embedded", exp_figs);
             
             case "interferogram"
-                theta = mas2rad(linspace(-100, 100, 2000));
-                maps_to_compute = 1 : floor(length(theta) / figure{1}.maps_to_compute) : length(theta);
-                
-                % [RFp, RFn, R, Inulling] = ...
-                %     interferogram_sensitivity(OPD_n, OPD_p, data.instrument.intensities,...
-                %     data.instrument.phase_shifts, data.instrument.positions, ...
-                %     data.instrument.combination, data.instrument.wavelength, theta, maps_to_compute);
-
-                load("exports/interferogram_sensitivity.mat", "RFp", "Inulling", "RFn", "R");
                 
                 if isfield(figure{1}.include, "interferometer_response_angles")
-                    for j = 1:size(R, 3)
+                    for j = 1:size(data.simulation.interferogram.R, 3)
                         export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_angles.width), ...
                                 "height", export_data.sizes.height.(figure{1}.include.interferometer_response_angles.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_angles_%d", j));
-                        plot_value_on_image_plane(R(:, j, 1), x_coords_p(:, 1), y_coords_p(:, 1), type="_1e0", embedded=export_settings);
+                        plot_value_on_image_plane(data.simulation.interferogram.R(:, j, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="_1e0", embedded=export_settings);
                     end
                 end
 
@@ -162,15 +200,15 @@ for i = 1:length(data_matrices)
                                 "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_angles.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_nulling_%d", j));
-                        plot_value_on_image_plane(Inulling(:, j), x_coords_p(:, 1), y_coords_p(:, 1), type="log", embedded=export_settings);
+                        plot_value_on_image_plane(data.simulation.interferogram.nulling(:, j), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
                     end
                 end
                 
                 if isfield(figure{1}.include, "interferometer_nulling_statistics")
-                    log_mean = mean(Inulling, 2);
-                    log_median = median(Inulling, 2);
-                    log_max = max(Inulling, [], 2); 
-                    fraction_good = sum(Inulling < 1e-4, 2) / size(Inulling, 2);
+                    log_mean = mean(data.simulation.interferogram.nulling, 2);
+                    log_median = median(data.simulation.interferogram.nulling, 2);
+                    log_max = max(data.simulation.interferogram.nulling, [], 2); 
+                    fraction_good = sum(data.simulation.interferogram.nulling < 1e-4, 2) / size(data.simulation.interferogram.nulling, 2);
 
                     export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_nulling_statistics.width), ...
                                 "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_statistics.height), ...
@@ -178,21 +216,78 @@ for i = 1:length(data_matrices)
                                 "name", label_name);
 
                     export_settings.name = label_name + sprintf("_nullingmean_%d", j);
-                    plot_value_on_image_plane(log_mean, x_coords_p(:, 1), y_coords_p(:, 1), type="log", embedded=export_settings);
+                    plot_value_on_image_plane(log_mean, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
 
                     export_settings.name = label_name + sprintf("_nullingmedian_%d", j);
-                    plot_value_on_image_plane(log_median, x_coords_p(:, 1), y_coords_p(:, 1), type="log", embedded=export_settings);
+                    plot_value_on_image_plane(log_median, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
 
                     export_settings.name = label_name + sprintf("_nullingmax_%d", j);
-                    plot_value_on_image_plane(log_max, x_coords_p(:, 1), y_coords_p(:, 1), type="log", embedded=export_settings);
+                    plot_value_on_image_plane(log_max, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
 
                     export_settings.name = label_name + sprintf("_nullinggood_%d", j);
-                    plot_value_on_image_plane(fraction_good, x_coords_p(:, 1), y_coords_p(:, 1), type="linear", embedded=export_settings);
+                    plot_value_on_image_plane(fraction_good, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="linear", embedded=export_settings);
                 end
 
 
                 if isfield(figure{1}.include, "interferometer_response_function")
-                    RFp = [RFn; RFp];
+                    RFp = [data.simulation.interferogram.RFn; data.simulation.interferogram.RFp];
+                    export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_function.width), ...
+                                "height", export_data.sizes.height.(figure{1}.include.interferometer_response_function.height), ...
+                                "font_size", export_data.sizes.font_size, ...
+                                "name", label_name + sprintf("_rf_%d", j));
+                    plot_response_function_theta(theta, RFp, "Normalize", true, "embedded", export_settings);
+
+                end
+
+            case "interferogram_multiple"
+                
+                if isfield(figure{1}.include, "interferometer_response_angles")
+                    for j = 1:size(data.simulation.interferogram_multi.R, 3)
+                        export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_angles.width), ...
+                                "height", export_data.sizes.height.(figure{1}.include.interferometer_response_angles.height), ...
+                                "font_size", export_data.sizes.font_size, ...
+                                "name", label_name + sprintf("_angles_%d", j));
+                        plot_value_on_image_plane(data.simulation.interferogram_multi.R(:, j, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="_1e0", embedded=export_settings);
+                    end
+                end
+
+                if isfield(figure{1}.include, "interferometer_nulling_angles")
+                    for j = 1:3
+                        export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_nulling_angles.width), ...
+                                "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_angles.height), ...
+                                "font_size", export_data.sizes.font_size, ...
+                                "name", label_name + sprintf("_nulling_%d", j));
+                        plot_value_on_image_plane(data.simulation.interferogram_multi.nulling(:, j), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
+                    end
+                end
+                
+                if isfield(figure{1}.include, "interferometer_nulling_statistics")
+                    log_mean = mean(data.simulation.interferogram_multi.nulling, 2);
+                    log_median = median(data.simulation.interferogram_multi.nulling, 2);
+                    log_max = max(data.simulation.interferogram_multi.nulling, [], 2);
+                    fraction_good = sum(data.simulation.interferogram_multi.nulling < 1e-4, 2) / size(data.simulation.interferogram_multi.nulling, 2);
+
+                    export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_nulling_statistics.width), ...
+                                "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_statistics.height), ...
+                                "font_size", export_data.sizes.font_size, ...
+                                "name", label_name);
+
+                    export_settings.name = label_name + sprintf("_nullingmean_%d", j);
+                    plot_value_on_image_plane(log_mean, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
+
+                    export_settings.name = label_name + sprintf("_nullingmedian_%d", j);
+                    plot_value_on_image_plane(log_median, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
+
+                    export_settings.name = label_name + sprintf("_nullingmax_%d", j);
+                    plot_value_on_image_plane(log_max, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
+
+                    export_settings.name = label_name + sprintf("_nullinggood_%d", j);
+                    plot_value_on_image_plane(fraction_good, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="linear", embedded=export_settings);
+                end
+
+
+                if isfield(figure{1}.include, "interferometer_response_function")
+                    RFp = [data.simulation.interferogram_multi.RFn; data.simulation.interferogram.RFp];
                     export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_function.width), ...
                                 "height", export_data.sizes.height.(figure{1}.include.interferometer_response_function.height), ...
                                 "font_size", export_data.sizes.font_size, ...

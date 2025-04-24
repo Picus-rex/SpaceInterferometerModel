@@ -105,6 +105,10 @@ for i = 1:length(fields_simu)
                  data.simulation.code_v.nominal.opd, ...
                  data.simulation.code_v.nominal.x, ...
                  data.simulation.code_v.nominal.y] = load_opd(data.simulation.code_v_opd_file.nominal);
+
+                if isfield(data.instrument, "wavelength")
+                    data.simulation.code_v.nominal.phase = opd2phase(data.simulation.code_v.nominal.opd, data.instrument.wavelength);
+                end
             end
 
             if isfield(data.simulation.code_v_opd_file, "perturbed")
@@ -112,6 +116,10 @@ for i = 1:length(fields_simu)
                  data.simulation.code_v.perturbed.opd, ...
                  data.simulation.code_v.perturbed.x, ...
                  data.simulation.code_v.perturbed.y] = load_opd(data.simulation.code_v_opd_file.perturbed);
+
+                if isfield(data.instrument, "wavelength")
+                    data.simulation.code_v.perturbed.phase = opd2phase(data.simulation.code_v.perturbed.opd, data.instrument.wavelength);
+                end
             end
     end
 end

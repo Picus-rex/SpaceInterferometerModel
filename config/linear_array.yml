@@ -2,7 +2,7 @@ instrument:
     apertures: 4
     baseline: 10.5
     apertures_ratio: 3
-    array: "Linear"
+    array: Linear
     intensities:
      - [0.5, 0.5, 0.5, 0.5]
 
@@ -14,20 +14,20 @@ instrument:
 
 environment:
 
-    target_distance: 15                 # [pc]
-    star_radius: 696340000              # [m]
-    star_temperature: 5770              # [K]
+    target_distance: 15                     # [pc]
+    star_radius: 696340000                  # [m]
+    star_temperature: 5770                  # [K]
 
-    exoplanet_radius: 6378000           # [m]
-    exoplanet_position:                 # x, y in [rad]
+    exoplanet_radius: 6378000               # [m]
+    exoplanet_position:                     # x, y in [rad]
         - [2.27e-7, 0]
 
-    disturbances:                       # [1]
+    disturbances:                           # [1]
 
-        star_flux: 7.5e5                # Stellar flux [photons/s/m^2]
-        planet_flux: 0.0775             # Planet flux [photons/s/m^2]
+        star_flux: 7.5e5                    # Stellar flux [photons/s/m^2]
+        planet_flux: 0.0775                 # Planet flux [photons/s/m^2]
 
-        effective_solid_angle: 8.75e-12 # sterad
+        effective_solid_angle: 8.75e-12     # sterad
 
         external_perturbations:
             intensity: 1e-2
@@ -42,17 +42,21 @@ environment:
 
 
 simulation:
-    consider_non_ideal: true                # If false, fields with [1] are optional
-    model: "instrumental_leakage"           # [1] Model to use
-    monte_carlo_iterations: 0            # [1]
+    phases: optimal                         # If optimal, compute phases using SVD
 
-    planet_modulation_positions: 0    # Number of rotations of the array to consider for the modulation
+    consider_non_ideal: true                # If false, fields with [1] are optional
+    model: instrumental_leakage             # [1] Model to use
+    monte_carlo_iterations: 0               # [1]
+
+    planet_modulation_positions: 0          # Number of rotations of the array to consider for the modulation
 
     angular_extension:
         theta_x: [-3.5e-6, 3.5e-6, 2000]    # start, end, number of points
         theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
-    code_v_opd_file: "code_v/simulation_0401.txt"
+    code_v_opd_file:
+        nominal:    "code_v/nominal_100sim_21804points.txt"
+        perturbed:  "code_v/perturbed_100sim_21804points.txt"
 
 
 outputs:

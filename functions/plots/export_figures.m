@@ -10,6 +10,8 @@ function export_figures(export_settings)
 %
 % VERSION HISTORY:
 %   2025-03-24 -------- 1.0
+%   2025-04-14 -------- 1.1
+%                     - Force title removal.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,6 +40,7 @@ end
 set(findall(gcf, '-property', 'FontName'), 'FontName', 'Times New Roman');
 set(findall(gcf, '-property', 'FontSize'), 'FontSize', export_settings.font_size);
 
+set(gca, "Title", title(""));
 set(gcf, 'Units', 'centimeters', 'Position', [2, 2, export_settings.width, export_settings.height]);
 set(gcf, 'PaperUnits', 'centimeters', 'PaperSize', [export_settings.width, export_settings.height]);
 set(gcf, 'PaperPositionMode', 'auto');

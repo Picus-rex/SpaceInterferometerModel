@@ -1,16 +1,21 @@
 instrument:
     apertures: 4
     baseline: 10.5
-    apertures_ratio: 2
-    array: X-Array
+    array: Custom
     intensities:
      - [0.5, 0.5, 0.5, 0.5]
+
+    positions:
+     - [ 5.2500, -0.1]
+     - [ 1.7500,  0.1]
+     - [-1.7500,  0.1]
+     - [-5.2500, -0.1]
 
     wavelength: 10e-6
 
     efficiencies:
         beam_combiner: 0.25
-        optical_line: 0.2
+        optical_line: 0.4
 
 environment:
 
@@ -42,21 +47,17 @@ environment:
 
 
 simulation:
-    phases: optimal                         # If optimal, compute phases using SVD
-
     consider_non_ideal: true                # If false, fields with [1] are optional
-    model: instrumental_leakage             # [1] Model to use
-    monte_carlo_iterations: 0               # [1]
+    model: "instrumental_leakage"           # [1] Model to use
+    monte_carlo_iterations: 0            # [1]
 
-    planet_modulation_positions: 100        # Number of rotations of the array to consider for the modulation
+    planet_modulation_positions: 0    # Number of rotations of the array to consider for the modulation
 
     angular_extension:
-        theta_x: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
-        theta_y: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
+        theta_x: [-3.5e-6, 3.5e-6, 2000]    # start, end, number of points
+        theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
-    code_v_opd_file:
-        nominal:    "code_v/nominal_100sim_21804points.txt"
-        perturbed:  "code_v/perturbed_100sim_21804points.txt"
+    code_v_opd_file: "code_v/simulation_0401.txt"
 
 
 outputs:
@@ -69,5 +70,3 @@ outputs:
      - 15e-6
 
     plot_star: true
-
-    verbose: true

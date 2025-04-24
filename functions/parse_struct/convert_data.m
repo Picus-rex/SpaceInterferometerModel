@@ -3,6 +3,12 @@ function data = convert_data(data)
 %readable to S.I. units. and compute some missing values in preparation to
 %the analysis. 
 
+% If the input is the path to the configuration file, convert it to a
+% struct calling the appropriate function.
+if ischar(data) || isstring(data)
+    data = ReadYaml(data);
+end
+
 fields_inst = fieldnames(data.instrument);
 fields_envi = fieldnames(data.environment);
 fields_simu = fieldnames(data.simulation);
@@ -25,7 +31,14 @@ for i = 1:length(fields_inst)
         case "combination"
             data.instrument.combination = cell2mat(data.instrument.combination);
         case "array"
-            data.instrument.positions = define_array(data.instrument.array, data.instrument.baseline, data.instrument.apertures_ratio);
+            if ~strcmp(data.instrument.array, "Custom")
+                data.instrument.positions = define_array(data.instrument.array, data.instrument.baseline, data.instrument.apertures_ratio);
+            else
+                if ~isfield(data.instrument, "positions")
+                    error("When the array is Custom, positions field must be manually defined in configuration!")
+                end
+                data.instrument.positions = cell2mat(data.instrument.positions);
+            end
     end
 
 end
@@ -72,8 +85,34 @@ end
 
 for i = 1:length(fields_simu)
     switch fields_simu{i}
+        case "phases"
+
+            if strcmp(data.simulation.phases, "optimal")
+                [data.simulation.U, data.instrument.combination, ...
+                data.instrument.phase_shifts] = compute_optimal_splitting(...
+                    data.instrument.apertures, data.instrument.baseline, ...
+                    data.instrument.wavelength, data.instrument.positions(:, 1), ...
+                    data.instrument.positions(:, 2), ...
+                    data.environment.stellar_angular_radius, false);
+            end
+
         case "angular_extension"
             [data.simulation.theta_range, data.simulation.theta_x, data.simulation.theta_y] = define_range(data.simulation.angular_extension);
+
+        case "code_v_opd_file"
+            if isfield(data.simulation.code_v_opd_file, "nominal")
+                [data.simulation.code_v.nominal.op, ...
+                 data.simulation.code_v.nominal.opd, ...
+                 data.simulation.code_v.nominal.x, ...
+                 data.simulation.code_v.nominal.y] = load_opd(data.simulation.code_v_opd_file.nominal);
+            end
+
+            if isfield(data.simulation.code_v_opd_file, "perturbed")
+                [data.simulation.code_v.perturbed.op, ...
+                 data.simulation.code_v.perturbed.opd, ...
+                 data.simulation.code_v.perturbed.x, ...
+                 data.simulation.code_v.perturbed.y] = load_opd(data.simulation.code_v_opd_file.perturbed);
+            end
     end
 end
 

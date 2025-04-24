@@ -1,12 +1,13 @@
-function [RFs, RFn, R, ratio] = interferogram_sensitivity(nominal_file, ...
-    perturbed_file, intensities, nominal_phases, positions, combination,...
-    lambda, theta, stellar_angular_radius, maps_to_compute)
+function [RFs, RFn, R, ratio] = interferogram_sensitivity(OPD_n, OPD, ...
+    intensities, nominal_phases, positions, combination,...
+    lambda, theta, maps_to_compute, stellar_angular_radius)
 %INTERFEROGRAM_SENSITIVITY Computes the nominal and perturbed response
 %functions for interferogram sensitivity analysis.
 %
 % ARGUMENT INPUTS:
-%   nominal_file[string] Path to the nominal CSV file from CODE V.
-%   perturbed_file[string] Path to the perturbed CSV from CODE V.
+%   OPD_n[Np x 1]       OPD in the nominal case for all the Np points [m]
+%   OPD[Np x Ns]        OPD in the perturbed cases for all points and
+%                       simulations [m]
 %   intensities[Nx1]    Vector of aperture intensities [V/m]
 %   nominal_phases[Nx1] Vector of nom. phase shifts for each aperture [rad]
 %   positions[Nx2]      Matrix of (x, y) positions of the apertures [m]
@@ -14,10 +15,10 @@ function [RFs, RFn, R, ratio] = interferogram_sensitivity(nominal_file, ...
 %   lambda[1]           Wavelength [m] (default: 1e-5 m)
 %   theta[Nt x 1]       Vector of angular coordinates [rad] 
 %                       (default: mas2rad(linspace(-700, 700, 1000)))
-%   stellar_angular_radius[1] Angular radius of the star [rad] 
-%                       (default: Proxima Centauri value)
 %   maps_to_compute[1xNm] Indices of the maps to include in the R 3D matrix
 %                       (default: [1, 251, 501, 751])
+%   stellar_angular_radius[1] Angular radius of the star [rad] 
+%                       (default: Proxima Centauri value)
 %
 % OUTPUTS:
 %   RFs[Ns x Nt]        Matrix of perturbed response functions
@@ -27,25 +28,29 @@ function [RFs, RFn, R, ratio] = interferogram_sensitivity(nominal_file, ...
 %
 % VERSION HISTORY:
 %   2025-04-09 -------- 1.0
+%   2025-04-16 -------- 1.1
+%                     - Inputs improved: now, instead of the file, the
+%                       function requires information that is already
+%                       available in the main script.
+%   2025-04-22 -------- 1.1.1
+%                     - Fix in the order of inputs.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 arguments
-    nominal_file {mustBeFile}
-    perturbed_file {mustBeFile}
+    OPD_n 
+    OPD
     intensities 
     nominal_phases 
     positions 
     combination 
     lambda = 1e-5
     theta = mas2rad(linspace(-700, 700, 1000))
-    stellar_angular_radius = 1.50444523662918e-09
     maps_to_compute = 1 : floor(length(theta) / 4) : length(theta)
+    stellar_angular_radius = 1.50444523662918e-09
 end
 
-% Load data from CODE V and compute nominal phase
-[~, OPD, ~, ~] = load_opd(perturbed_file);
-[~, OPD_n, ~, ~] = load_opd(nominal_file);
+% Compute nominal phase
 delta_phi_n = opd2phase(OPD_n(:, 1), lambda);
 
 % Extract number of simulations

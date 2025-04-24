@@ -47,6 +47,8 @@ figures:
       width: half
       height: normal
 
+
+
     - type: nullratio_single_branch_single_wavelenth
       chapter: 3
       width: half
@@ -68,18 +70,62 @@ figures:
       width: full
       height: normal
 
+    - type: opd_pupil_plane_system
+      chapter: 3
+      width: half
+      height: normal
+
+    - type: phase_pupil_plane_system
+      chapter: 3
+      width: half
+      height: normal
+
+    - type: sensitivity_opd_system
+      include:
+        - fitted_gaussian
+        - rms_vs_std
+      chapter: 3
+      width: half
+      height: normal
+
+
+
+    - type: interferogram
+      maps_to_compute: 3
+      include:
+        interferometer_response_angles:
+            width: third
+            height: quart
+        interferometer_nulling_angles:
+            width: third
+            height: quart
+        interferometer_nulling_statistics:
+            width: half
+            height: normal
+        interferometer_response_function:
+            width: full
+            height: normal
+      chapter: 4
+      width: third
+      height: quart
+
 tables:
 
-    - type: unique_baselines
-      chapter: 2
+    # - type: unique_baselines
+    #   chapter: 2
 
 
 
 
 chapters:
     - name: intro
+      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/
     - name: modelling
+      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/
     - name: sensitivity
+      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/
+    - name: results
+      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/paperino/67f92ac5d9ea1e6dd82b036e/
 
 sizes:
     width:

@@ -153,7 +153,7 @@ if ~isempty(color_intervals)
 end
 
 if isstruct(export_settings) && isstruct(export_settings.embedded)
-    export_figures("embedded", export_settings);
+    export_figures("embedded", export_settings.embedded);
 end
 
 end

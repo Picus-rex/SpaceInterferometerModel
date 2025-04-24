@@ -19,6 +19,8 @@ function h = plot_response_function_theta(theta_range, RFs, export_setup)
 %                     - Added YScale optional argument for plots.
 %                     - Result is normalised along the Y axis if desired. 
 %                     - Can specify a nominal curve to differentiate style.
+%   2025-04-17 -------- 1.2
+%                     - Added integrated plot support.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -28,6 +30,7 @@ arguments
     export_setup.YScale = "log"
     export_setup.Nominal_curve = 1
     export_setup.Normalize = true
+    export_setup.embedded = []
 end
 
 % Import styling
@@ -67,5 +70,9 @@ xlabel("Observation angle [mas]")
 ylabel("Normalised response function")
 legend([h1, h_dummy], {"Nominal", "Perturbed"});
 grid minor;
+
+if isstruct(export_setup.embedded)
+    export_figures("embedded", export_setup.embedded);
+end
 
 end

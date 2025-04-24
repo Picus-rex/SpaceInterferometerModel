@@ -26,7 +26,7 @@ write_table_section(fid, linearArrayTable);
 % Close LaTeX table
 fprintf(fid, '        \\bottomrule\n');
 fprintf(fid, '    \\end{tabular}\n');
-fprintf(fid, '    \\caption{Classification of baselines for the two proposed arrays in terms of type, length, and contributing repeating baselines for the considered arrays. The numbering associated to the contributing apertures is referenced from the presented configurations in Figure~\ref{fig:modelling:configurations}.}\n');
+fprintf(fid, '    \\caption{Classification of baselines for the two proposed arrays in terms of type, length, and contributing repeating baselines for the considered arrays. The numbering associated to the contributing apertures is referenced from the presented configurations in Figure~\\ref{fig:modelling:configurations}.}\n');
 fprintf(fid, '    \\label{tab:baseline_classifications}\n');
 fprintf(fid, '\\end{table}\n');
 

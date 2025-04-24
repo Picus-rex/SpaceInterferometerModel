@@ -31,6 +31,9 @@ function perform_statistics(element, analysis, export_setup)
 %                     - Numerically, some elements may be complex,
 %                       therefore in plotting only the real part must be
 %                       considered.
+%   2025-04-17 -------- 1.2
+%                     - Integration of exports and fix of check for
+%                       export_setup.embedded values.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -39,7 +42,7 @@ arguments
     analysis.desired_percentiles = [90, 95, 99]
     export_setup.verbose = true
     export_setup.create_plots = true
-    export_setup.embedded = NaN
+    export_setup.embedded = []
     export_setup.label = "OPD"
     export_setup.type = "m_1e-6"
     export_setup.scale = "linear" 
@@ -88,6 +91,9 @@ end
 
 if export_setup.create_plots
     
+    % Load colours
+    style_colors;
+
     % PLOT 1
     simIndex = 1:N;
     
@@ -105,8 +111,8 @@ if export_setup.create_plots
         set(gca, "YScale", "log")
     end
 
-    if isstruct(export_setup.embedded)
-        export_figures("embedded", export_setup.embedded(1))
+    if iscell(export_setup.embedded) && isstruct(export_setup.embedded{1})
+        export_figures("embedded", export_setup.embedded{1})
     end
     
     % PLOT 2
@@ -122,7 +128,7 @@ if export_setup.create_plots
         edges = log10(logspace(log10(min(all_OPD_values)), log10(max(all_OPD_values)), num_bins));
     else
         % Define bin edges in linear space
-        num_bins = 50;
+        num_bins = 100;
         edges = linspace(min(all_OPD_values), max(all_OPD_values), num_bins);
     end
     
@@ -131,7 +137,7 @@ if export_setup.create_plots
     if strcmp(export_setup.scale, "log")
         histogram(real(log10(all_OPD_values)), real(edges), 'Normalization', 'pdf', 'FaceAlpha', 0.6, 'DisplayStyle', 'bar');
     else
-        histogram(all_OPD_values, edges, 'Normalization', 'pdf', 'FaceAlpha', 0.6, 'DisplayStyle', 'bar');
+        histogram(all_OPD_values, edges, 'Normalization', 'pdf', 'FaceAlpha', 0.6, 'DisplayStyle', 'bar', "FaceColor", ui_colours(end, :));
     end
     hold on;
     
@@ -141,7 +147,7 @@ if export_setup.create_plots
     if strcmp(export_setup.scale, "log")
         plot(log10(x_vals), y_vals, 'r-', 'LineWidth', 2, 'DisplayName', 'Global Gaussian Fit');
     else
-        plot(x_vals, y_vals, 'r-', 'LineWidth', 2, 'DisplayName', 'Global Gaussian Fit');
+        plot(x_vals, y_vals, 'r-', 'LineWidth', 2, 'DisplayName', 'Global Gaussian Fit', "Color", ui_colours(1, :));
     end
     
     % Labels and legend
@@ -151,8 +157,8 @@ if export_setup.create_plots
     legend(sprintf('Histogram of %s', export_setup.label), 'Global Gaussian Fit');
     grid on;
 
-    if isstruct(export_setup.embedded)
-        export_figures("embedded", export_setup.embedded(2))
+    if iscell(export_setup.embedded) && isstruct(export_setup.embedded{2})
+        export_figures("embedded", export_setup.embedded{2})
     end
 
     % PLOT 3
@@ -169,8 +175,8 @@ if export_setup.create_plots
         set(gca, "YScale", "log")
     end
 
-    if isstruct(export_setup.embedded)
-        export_figures("embedded", export_setup.embedded(3))
+    if iscell(export_setup.embedded) && isstruct(export_setup.embedded{3})
+        export_figures("embedded", export_setup.embedded{3})
     end
     
     % PLOT 4
@@ -188,15 +194,15 @@ if export_setup.create_plots
         set(gca, "YScale", "log")
     end
 
-    if isstruct(export_setup.embedded)
-        export_figures("embedded", export_setup.embedded(4))
+    if iscell(export_setup.embedded) && isstruct(export_setup.embedded{4})
+        export_figures("embedded", export_setup.embedded{4})
     end
     
     % PLOT 5
     figure;
-    scatter(rms_values, sigma_values, 50, 'filled');
+    scatter(rms_values, sigma_values, 50, 'filled', "MarkerFaceColor", colours(1, :));
     hold on;
-    plot([min(rms_values) max(rms_values)], [min(rms_values) max(rms_values)], 'r--', 'LineWidth', 1.5);
+    plot([min(rms_values) max(rms_values)], [min(rms_values) max(rms_values)], 'r--', 'LineWidth', 1.5, "Color", ui_colours(end, :));
     if ~strcmp(scale_tag, "")
         ylabel(sprintf('Standard deviation of fitted distribution [%s]', scale_tag));
         xlabel(sprintf('RMS [%s]', scale_tag));
@@ -210,8 +216,8 @@ if export_setup.create_plots
         set(gca, "YScale", "log", "XScale", "log")
     end
 
-    if isstruct(export_setup.embedded)
-        export_figures("embedded", export_setup.embedded(5))
+    if iscell(export_setup.embedded) && isstruct(export_setup.embedded{5})
+        export_figures("embedded", export_setup.embedded{5})
     end
     
     % PLOT 6
@@ -224,8 +230,8 @@ if export_setup.create_plots
         set(gca, "YScale", "log")
     end
 
-    if isstruct(export_setup.embedded)
-        export_figures("embedded", export_setup.embedded(6))
+    if iscell(export_setup.embedded) && isstruct(export_setup.embedded{6})
+        export_figures("embedded", export_setup.embedded{6})
     end
 
 end

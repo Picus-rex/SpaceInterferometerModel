@@ -90,24 +90,67 @@ figures:
 
 
 
-    - type: interferogram
-      maps_to_compute: 3
-      include:
-        interferometer_response_angles:
-            width: third
-            height: quart
-        interferometer_nulling_angles:
-            width: third
-            height: quart
-        interferometer_nulling_statistics:
-            width: half
-            height: normal
-        interferometer_response_function:
-            width: full
-            height: normal
+    # - type: interferogram
+    #   maps_to_compute: 3
+    #   include:
+    #     interferometer_response_angles:
+    #         width: third
+    #         height: quart
+    #     interferometer_nulling_angles:
+    #         width: third
+    #         height: quart
+    #     interferometer_nulling_statistics:
+    #         width: half
+    #         height: normal
+    #     interferometer_response_function:
+    #         width: full
+    #         height: normal
+    #   chapter: 4
+    #   width: third
+    #   height: quart
+    #
+    # - type: interferogram_multiple
+    #   include:
+    #     interferometer_response_angles:
+    #         width: third
+    #         height: quart
+    #     interferometer_nulling_angles:
+    #         width: third
+    #         height: quart
+    #     interferometer_nulling_statistics:
+    #         width: half
+    #         height: normal
+    #     interferometer_response_function:
+    #         width: full
+    #         height: normal
+    #   chapter: 4
+    #   width: third
+    #   height: quart
+    #
+    # - type: transmission_map_perturbed
+    #   include:
+    #     - STD
+    #     - CDF
+    #     - PCA
+    #     - PC1
+    #   chapter: 4
+    #   width: half
+    #   height: normal
+    #
+    # - type: psf_perturbed
+    #   include:
+    #     - STD
+    #     - CDF
+    #     - PCA
+    #     - PC1
+    #   chapter: 4
+    #   width: half
+    #   height: normal
+
+    - type: ppop_yield
       chapter: 4
-      width: third
-      height: quart
+      width: half
+      height: normal
 
 tables:
 
@@ -119,11 +162,11 @@ tables:
 
 chapters:
     - name: intro
-      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/
+      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/
     - name: modelling
-      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/
+      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/
     - name: sensitivity
-      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/67a4aa2876545e0e504145e0/
+      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/
     - name: results
       path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/paperino/67f92ac5d9ea1e6dd82b036e/
 

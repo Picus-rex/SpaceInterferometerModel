@@ -10,8 +10,11 @@ rad2mas = 1e3 * (3600 * 180) / pi;
 % FIGURES 2
 % Extract random maps
 permute_data = randperm(Ns);
-for i = 1:export_setup.perturbed_map_plotting_number
-    plot_transmission_map(theta_x(1, :), Maps(:, :, permute_data(i)));
+
+if isstruct(export_setup)
+    for i = 1:export_setup.perturbed_map_plotting_number
+        plot_transmission_map(theta_x(1, :), Maps(:, :, permute_data(i)));
+    end
 end
 
 % FIGURE 3
@@ -28,6 +31,10 @@ title('Standard Deviation Map of Transmission Variability');
 xlabel('\theta_x [mas]');
 ylabel('\theta_y [mas]');
 axis square;
+
+if iscell(export_setup) && length(export_setup) == 4 && isstruct(export_setup{1})
+    export_figures("embedded", export_setup{1})
+end
 
 % Determine the size of the maps
 [m, n, ~] = size(Maps);
@@ -52,15 +59,23 @@ if Ns > 1
     xlabel('\theta_x [mas]');
     ylabel('\theta_y [mas]');
     axis square;
+
+    if iscell(export_setup) && length(export_setup) == 4 && isstruct(export_setup{3})
+        export_figures("embedded", export_setup{3})
+    end
     
     % FIGURE 5
     % Plot the PC1 scores for each simulation
     figure;
-    plot(score(:,1), 'o-', "LineWidth", 1.5, "Color", colours(1, :));
+    plot(score(:,1), 'o', "LineWidth", 1.5, "Color", colours(1, :));
     xlabel('Simulation Number');
     ylabel('PC1 Score');
     title('PC1 Scores Across Simulations');
     grid minor;
+
+    if iscell(export_setup) && length(export_setup) == 4 && isstruct(export_setup{4})
+        export_figures("embedded", export_setup{4})
+    end
 end
 
 % FIGURE 6
@@ -94,5 +109,9 @@ xlabel('Difference Value at Pixel');
 ylabel('Cumulative Distribution');
 title(['CDF of Differences at Pixel (', num2str(ix), ', ', num2str(iy), ')']);
 grid minor;
+
+if iscell(export_setup) && length(export_setup) == 4 && isstruct(export_setup{2})
+    export_figures("embedded", export_setup{2})
+end
 
 end

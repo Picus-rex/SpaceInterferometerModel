@@ -16,6 +16,8 @@ function plot_ppop_yield(exotable, IWA, OWA, ratio, export_setup)
 %                     - Added several new plots to the analysis.
 %   2025-04-10 -------- 1.2
 %                     - Added option for universes_to_plot to reduce plots.
+%   2025-04-24 -------- 1.2.1
+%                     - Fixed exporting checks.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -90,8 +92,8 @@ for i = 1:length(selection)
     ylabel("Flux contrast at observation wavelength")
     grid minor;
 
-    if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.figures.yields
-        export_figures("embedded", export_settings.figures.yields)
+    if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.yields)
+        export_figures("embedded", export_setup.figures.yields)
     end
 end
 
@@ -114,8 +116,8 @@ ylabel('Universe');
 title('Mean Yields');
 grid minor;
 colorbar;
-if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.figures.mean_yield
-    export_figures("embedded", export_settings.figures.mean_yield)
+if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.mean_yield)
+    export_figures("embedded", export_setup.figures.mean_yield)
 end
 
 figure;
@@ -125,8 +127,8 @@ ylabel('Universe');
 title('Total Yields');
 grid minor;
 colorbar;
-if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.figures.total_yield
-    export_figures("embedded", export_settings.figures.total_yield)
+if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.total_yield)
+    export_figures("embedded", export_setup.figures.total_yield)
 end
 
 if Nu > 1
@@ -136,8 +138,8 @@ if Nu > 1
     ylabel('Mean Yield Across Universes');
     title('Boxplot of Mean Yields per Simulation');
     grid minor;
-    if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.figures.boxplot
-        export_figures("embedded", export_settings.figures.boxplot)
+    if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.boxplot)
+        export_figures("embedded", export_setup.figures.boxplot)
     end
 end
 
@@ -153,8 +155,8 @@ ylabel('Mean Yield');
 title('Yield Trend Across Simulations per Universe');
 legend('Location', 'best');
 grid minor;
-if isstruct(export_setup) && isfield(export_setup, "figures") && export_setup.figures.trend
-    export_figures("embedded", export_settings.figures.trend)
+if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.trend)
+    export_figures("embedded", export_setup.figures.trend)
 end
 
 end

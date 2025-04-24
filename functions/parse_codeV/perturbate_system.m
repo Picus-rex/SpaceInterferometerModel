@@ -1,4 +1,5 @@
-function [ratios, Maps, PSFs] = perturbate_system(N, amplitudes_nominal, ...
+function [ratios, Maps, Nominal_Map, PSFs, Nominal_PSF] = ...
+    perturbate_system(N, amplitudes_nominal, ...
     phases_nominal, positions_nominal, theta_star, lambda, ...
     phases_perturbed, combinations, theta_x, theta_y, ...
     exoplanet_position, export_setup)
@@ -34,8 +35,10 @@ function [ratios, Maps, PSFs] = perturbate_system(N, amplitudes_nominal, ...
 %   Maps[TX x TY x Ns]  3D matrix where the first two dimensions are the
 %                       standard normalised response function along the
 %                       angular coordinates provided.
+%   Nominal_Map[TX x TY]Nominal response map.
 %   PSFs[TX x TY x Ns]  3D matrix where the first two dimensions are the
 %                       PSFs along the angular coordinates provided.
+%   Nominal_PSF[TX x TY]Nominal PSF.
 %
 % VERSION HISTORY:
 %   2025-04-02 -------- 1.0
@@ -44,6 +47,8 @@ function [ratios, Maps, PSFs] = perturbate_system(N, amplitudes_nominal, ...
 %                       and outputs.
 %                     - Moved the plots of variation maps to a dedicated
 %                       function.
+%   2025-04-24 -------- 1.2
+%                     - Added additional exports to speed up the analysis.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,6 +68,7 @@ arguments
     export_setup.type = "m_1e-6"
     export_setup.perturbed_map_plotting_number = 3
     export_setup.compute_PSF = true
+    export_setup.embedded = []
 end
 
 % Number of series, obtain OPDs as well as the nominal map

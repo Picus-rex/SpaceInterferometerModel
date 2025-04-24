@@ -9,7 +9,7 @@ set(0, 'DefaultFigureWindowStyle', 'normal')
 
 %% PART 1: GENERATE FILES FOR THE ANALYSIS
 
-data = convert_data('config/x_array.yml');
+data = convert_data('config/linear_array.yml');
 
 % Compute optimal splitting
 [data.simulation.U, data.instrument.combination, ...
@@ -54,6 +54,21 @@ data = convert_data('config/x_array.yml');
     data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
     data.instrument.phase_shifts, data.instrument.positions, ...
     data.instrument.combination, data.instrument.wavelength);
+
+% PSF and Transmission maps of perturbed systems
+[data.simulation.perturbation.ratio, data.simulation.perturbation.transmission_maps, ...
+    data.simulation.perturbation.nominal_map, data.simulation.perturbation.PSFs, ...
+    data.simulation.perturbation.nominal_PSF]  = perturbate_system(data.instrument.apertures, ...
+                    data.instrument.intensities, data.instrument.phase_shifts, ...
+                    data.instrument.positions, data.environment.stellar_angular_radius, ...
+                    data.instrument.wavelength, data.simulation.code_v.perturbed.phase, data.instrument.combination, ...
+                    perturbed_map_plotting_number=0, compute_PSF=true, create_plots=false);
+
+% PPOP yield
+data.instrument.IWA = data.instrument.wavelength / data.instrument.baseline;
+data.instrument.OWA = data.instrument.wavelength / data.instrument.diameter(1);
+[data.simulation.yield.ppop_table, data.simulation.yield.ppop_matrix] = get_ppop_yield(data.instrument.IWA, ...
+    data.instrument.OWA, data.simulation.perturbation.ratio, data.instrument.wavelength, "create_plots", false);
 
 clc;
 save("exports/data_"+data.instrument.name+".mat", "data", "-v7.3");
@@ -296,6 +311,67 @@ for i = 1:length(data_matrices)
 
                 end
 
+            case "transmission_map_perturbed"
+                
+                exp_figures = {};
+
+                for j = 1:length(figure{1}.include)
+                    if strcmp(figure{1}.include{j}, "STD")
+                        exp_figures{1} = export_settings;
+                        exp_figures{1}.name = label_name + "_STD";
+                    elseif strcmp(figure{1}.include{j}, "CDF")
+                        exp_figures{2} = export_settings;
+                        exp_figures{2}.name = label_name + "_CDF";
+                    elseif strcmp(figure{1}.include{j}, "PCA")
+                        exp_figures{3} = export_settings;
+                        exp_figures{3}.name = label_name + "_PCA";
+                    elseif strcmp(figure{1}.include{j}, "PC1")
+                        exp_figures{4} = export_settings;
+                        exp_figures{4}.name = label_name + "_PC1";
+                    end
+                end
+
+                plot_variation_map(size(data.simulation.code_v.perturbed.op, 2), ...
+                    load_grid("x"), load_grid("y"), data.simulation.perturbation.transmission_maps, ...
+                    data.simulation.perturbation.nominal_map, exp_figures);
+
+             case "psf_perturbed"
+                
+                exp_figures = {};
+
+                for j = 1:length(figure{1}.include)
+                    if strcmp(figure{1}.include{j}, "STD")
+                        exp_figures{1} = export_settings;
+                        exp_figures{1}.name = label_name + "_STD";
+                    elseif strcmp(figure{1}.include{j}, "CDF")
+                        exp_figures{2} = export_settings;
+                        exp_figures{2}.name = label_name + "_CDF";
+                    elseif strcmp(figure{1}.include{j}, "PCA")
+                        exp_figures{3} = export_settings;
+                        exp_figures{3}.name = label_name + "_PCA";
+                    elseif strcmp(figure{1}.include{j}, "PC1")
+                        exp_figures{4} = export_settings;
+                        exp_figures{4}.name = label_name + "_PC1";
+                    end
+                end
+
+                plot_variation_map(size(data.simulation.code_v.perturbed.op, 2), ...
+                    load_grid("x"), load_grid("y"), data.simulation.perturbation.PSFs, ...
+                    data.simulation.perturbation.nominal_PSF, exp_figures);
+
+            case "ppop_yield"
+                exp_figures = {};
+                exp_figures.figures.yields = export_settings;
+                exp_figures.figures.yields.name = label_name + "_yield";
+                exp_figures.figures.mean_yield = [];
+                exp_figures.figures.total_yield = export_settings;
+                exp_figures.figures.total_yield.name = label_name + "_total_yield";
+                exp_figures.figures.boxplot = [];
+                exp_figures.figures.trend = [];
+                exp_figures.universes_to_plot = 1;
+
+                plot_ppop_yield(data.simulation.yield.ppop_table, data.instrument.IWA, ...
+                    data.instrument.OWA, min(rms(data.simulation.perturbation.ratio)), exp_figures);
         end
     end
 

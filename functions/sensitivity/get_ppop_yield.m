@@ -1,11 +1,11 @@
-function [T, total_yield_matrix] = get_ppop_yield(IWAs, OWA, ratios, lambda, sim_options, export_setup)
+function [T, total_yield_matrix] = get_ppop_yield(IWA, OWA, ratios, lambda, sim_options, export_setup)
 %GET_PPOP_YIELD Verify the yield of the array from comparing the nulling
 %ratio of the array over the integration time of the system when subjected
 %to perturbations.
 %
 % INPUTS:
-%   IWAs[Ns x 1]        Inner working angle for each simulation [rad]
-%   OWA[Ns x 1]         Outer working angle [rad]
+%   IWA[1 x 1]          Inner working angle [rad]
+%   OWA[1 x 1]          Outer working angle [rad]
 %   ratios[Np x Ns]     Nulling ratio for each point of the decentered
 %                       ray tracing and for each simulation [-]
 %   lambda[1]           Wavelength [m]
@@ -40,11 +40,13 @@ function [T, total_yield_matrix] = get_ppop_yield(IWAs, OWA, ratios, lambda, sim
 %                       plot_ppop_yield.
 %                     - Added total_yield_matrix as export.
 %                     - Added compatibility with real exoplanets.
+%   2025-04-24 -------- 1.3
+%                     - Using only a single IWA, fixing inputs.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 arguments
-    IWAs (:, :)
+    IWA (:, :)
     OWA (1, 1)
     ratios (:, :)
     lambda (1, 1)
@@ -56,7 +58,7 @@ arguments
 end
 
 % Extract the number of simulations from the system.
-Ns = size(IWAs, 1);
+Ns = size(ratios, 2);
 
 % Constants
 AU = 1.496e11;                  % Astronomical unit in meters
@@ -107,7 +109,6 @@ rms_ratios = zeros(Ns, 1);
 
 % For every simulation...
 for i = 1:Ns
-    IWA = IWAs(i);
     rms_ratios(i) = rms(ratios(:, i));
 
     T.candidates(:, i) = T.ang_sep_rad(:) > IWA & T.ang_sep_rad(:) < OWA;
@@ -133,7 +134,6 @@ if sim_options.verbose
     fprintf("Average for universe in the mean case:\t%.2f planets\n", mean(mean(total_yield_matrix, 2)));
     fprintf("Average for all universes:\t%.2f planets\n", mean(sum(total_yield_matrix, 1)));
 end
-
 
 % PLOT SECTION
 if export_setup.create_plots

@@ -2,3 +2,4 @@ exports/
 .DS_Store
 *.asv
 *temp*
+code_v/

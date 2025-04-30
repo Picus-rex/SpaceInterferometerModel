@@ -1,6 +1,6 @@
-function [RFs, RFn, R, ratio] = interferogram_sensitivity(OPD_n, OPD, ...
-    intensities, nominal_phases, positions, combination,...
-    lambda, theta, maps_to_compute, stellar_angular_radius)
+function [RFs, RFn, R, ratio, eta_mod] = interferogram_sensitivity(OPD_n, OPD, ...
+    intensities, nominal_phases, positions, combination, areas, ...
+    lambda, theta, maps_to_compute, eta_opt, stellar_angular_radius)
 %INTERFEROGRAM_SENSITIVITY Computes the nominal and perturbed response
 %functions for interferogram sensitivity analysis.
 %
@@ -12,11 +12,13 @@ function [RFs, RFn, R, ratio] = interferogram_sensitivity(OPD_n, OPD, ...
 %   nominal_phases[Nx1] Vector of nom. phase shifts for each aperture [rad]
 %   positions[Nx2]      Matrix of (x, y) positions of the apertures [m]
 %   combination[Nx1]    Vector of beam combiner coefficients [-]
+%   surfaces[Nx1]       Surfaces associated to each apertures [m^2]
 %   lambda[1]           Wavelength [m] (default: 1e-5 m)
 %   theta[Nt x 1]       Vector of angular coordinates [rad] 
 %                       (default: mas2rad(linspace(-700, 700, 1000)))
 %   maps_to_compute[1xNm] Indices of the maps to include in the R 3D matrix
 %                       (default: [1, 251, 501, 751])
+%   eta_opt[1]          Efficiency of optical line (default: 0.25)
 %   stellar_angular_radius[1] Angular radius of the star [rad] 
 %                       (default: Proxima Centauri value)
 %
@@ -25,6 +27,7 @@ function [RFs, RFn, R, ratio] = interferogram_sensitivity(OPD_n, OPD, ...
 %   RFn[1 x Nt]         Vector of nominal response function
 %   R[Np x Nt x Ns]     3D matrix of the response map over apertures
 %   ratio[Np x Ns]      Nulling ratio for every point for every simulation
+%   eta_mod[Np x Ns]    Modulation eff. for every point for every sim. 
 %
 % VERSION HISTORY:
 %   2025-04-09 -------- 1.0
@@ -34,6 +37,9 @@ function [RFs, RFn, R, ratio] = interferogram_sensitivity(OPD_n, OPD, ...
 %                       available in the main script.
 %   2025-04-22 -------- 1.1.1
 %                     - Fix in the order of inputs.
+%   2025-04-30 -------- 1.2
+%                     - Added modulation efficiency as output.
+%                     - Inputs reorganised.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,9 +50,11 @@ arguments
     nominal_phases 
     positions 
     combination 
+    areas
     lambda = 1e-5
     theta = mas2rad(linspace(-700, 700, 1000))
     maps_to_compute = 1 : floor(length(theta) / 4) : length(theta)
+    eta_opt = 0.1
     stellar_angular_radius = 1.50444523662918e-09
 end
 
@@ -68,6 +76,7 @@ phases_nominal = (nominal_phases + delta_phi_n);
 R = zeros(Np, Nt, length(maps_to_compute));
 RFs = zeros(Ns, Nt);
 ratio = zeros(Np, Ns);
+eta_mod = zeros(Np, Ns);
 
 % Perturbate a single branch
 jR = 1;
@@ -100,6 +109,17 @@ for i = 1:Ns
     % Compute nulling ratio for each point on the screen
     ratio(:, i) = compute_nulling_ratio(N, intensities, phase_perturbations, ...
         positions, stellar_angular_radius, lambda);
+    
+    if nargout > 4
+        % Export unique_baselines for modulation efficiency
+        for j = 1:Np
+            [~, unique_baselines] = classify_baselines(intensities, ...
+                    positions, phase_perturbations(j, :), false);
+            C_i = unique_baselines.C_i;
+        
+            eta_mod(j, i) = compute_modulation_efficiency(eta_opt, areas, C_i);
+        end
+    end
 
 end
 

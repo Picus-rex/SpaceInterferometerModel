@@ -9,7 +9,7 @@ addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') 
 
 % Loading of elements from configurations files
-data = convert_data('config/linear_array.yml');
+data = convert_data('config/lay_linear_A.yml');
 
 % Overwrite the angular interval for this script and of maps to compute
 % within the function.
@@ -21,12 +21,20 @@ maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
 %data.instrument.combination = [0.2236    0.6708    0.6708    0.2236];
 
 % Compute the response at the pupil screen with the defined function
+% [data.outputs.response_function.perturbed, data.outputs.response_function.nominal, ...
+%  data.outputs.response_function.maps, data.simulation.nulling_ratio_interferogram, ...
+%  data.simulation.modulation_efficiency_interferogram] = ...
+%     interferogram_sensitivity(data.simulation.code_v.nominal.opd, ...
+%     data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
+%     data.instrument.phase_shifts, data.instrument.positions, data.instrument.combination, ...
+%     data.instrument.surfaces, data.instrument.wavelength, theta, maps_to_compute);
+
 [data.outputs.response_function.perturbed, data.outputs.response_function.nominal, ...
  data.outputs.response_function.maps, data.simulation.nulling_ratio_interferogram] = ...
     interferogram_sensitivity(data.simulation.code_v.nominal.opd, ...
     data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
-    data.instrument.phase_shifts, data.instrument.positions, ...
-    data.instrument.combination, data.instrument.wavelength, theta, maps_to_compute);
+    data.instrument.phase_shifts, data.instrument.positions, data.instrument.combination, ...
+    data.instrument.surfaces, data.instrument.wavelength, theta, maps_to_compute);
 
 % For all results requested with maps_to_compute, plots them. 
 R = data.outputs.response_function.maps;
@@ -43,10 +51,18 @@ plot_response_function_theta(theta, RFp, "Normalize", true);
 ratio = data.simulation.nulling_ratio_interferogram;
 plot_value_on_image_plane(ratio(:, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), title="Nulling ratio", type="log");
 
+% Plot also the modulation efficieny
+% eff = data.simulation.modulation_efficiency_interferogram;
+% plot_value_on_image_plane(eff(:, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), title="Modulation efficiency", type="_1e0");
+
 % Mean, Median, Max across Ns simulations
 log_mean = mean(ratio, 2);
 log_median = median(ratio, 2);
 log_max = max(ratio, [], 2); 
+
+% eff_mean = mean(eff, 2);
+% plot_value_on_image_plane(eff_mean, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), ...
+%     title="Mean Modulation Efficiency", type="1e0");
 
 plot_value_on_image_plane(log_mean, data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), ...
     title="Mean Log Nulling Ratio", type="log");

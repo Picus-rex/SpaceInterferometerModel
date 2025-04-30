@@ -9,6 +9,8 @@ function [baselines, unique_baselines] = classify_baselines(amplitudes, ...
 %   phases[Nx1]         Vector of phase shifts associated with each 
 %                       aperture. [rad]
 %   export[bool]        If true, write to command window the results.
+%   phases[NxN1]        If available, use multiple points. Otherwise, use
+%                       nom_phases.
 %
 % OUTPUTS:
 %   baselines[table]    Table containing the j, k indices, the positions
@@ -50,6 +52,9 @@ function [baselines, unique_baselines] = classify_baselines(amplitudes, ...
 %                       confirmation.
 %                     - The function now computes all the coefficients that
 %                       are relative to the apertures.
+%   2025-04-30 -------- 2.1
+%                     - Computation of C_i factors in the respective
+%                       function.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -134,48 +139,7 @@ end
 % Strip empty column
 contributing = contributing(:, 1:max(maxks));
 
-% Allocate space for baseline amplitude factors C_i; for every unique
-% baseline follows equation 8 from Lay. At the end, avoiding double
-% contributions, the sign is doubled.
-C_i  = zeros(size(unique_baselines, 1), 1);
-for i = 1:size(unique_baselines, 1)
-    
-    repeating_couples = strings(1, size(contributing, 2));
-    n = 1;
-
-    % Extract contributing baselines from the seen apertures before
-    for l = 1:size(contributing, 2)
-        if ~strcmp(contributing(i, l), "")
-            
-            % Transform back to numbers
-            apertures = split(contributing(i, l), '-');
-            j = str2double(apertures(1));
-            k = str2double(apertures(2));
-            
-            found = false;
-            
-            for m = 1:length(repeating_couples)
-                if strcmp(string(k)+"-"+string(j), repeating_couples(m)) || strcmp(string(j)+"-"+string(k), repeating_couples(m))
-                    found = true;
-                    break
-                end
-            end
-
-            % Debug info
-            if export && ~found
-                fprintf("[%.0f] Contribution from apertures %.0f, %.0f\n", i, j, k)
-            end
-            
-            if ~found
-                % Compute the amplitude factor
-                C_i(i) = C_i(i) + amplitudes(j) * amplitudes(k) * sin(phases(j) - phases(k));
-                repeating_couples(n) = contributing(i, l);
-                n = n + 1;
-            end
-   
-        end
-    end
-end
+C_i = compute_baselines_amplitude_factor(size(unique_baselines, 1), contributing, amplitudes, phases);
 
 % Convert to tables
 baselines = array2table(baselines, "VariableNames", {'j', 'k', 'Delta_x', ...

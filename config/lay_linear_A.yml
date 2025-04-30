@@ -10,6 +10,9 @@ instrument:
 
     wavelength: 10e-6
 
+    combination:
+     - [1, 1, 1, 1]
+
     efficiencies:
         beam_combiner: 0.25
         optical_line: 0.1
@@ -26,6 +29,10 @@ simulation:
 
     angular_extension:
      - [-2.90888208665724e-7, 2.90888208665724e-7, 500]               # start, end, number of points
+
+    code_v_opd_file:
+        nominal:    "code_v/nominal_0424.txt"
+        perturbed:  "code_v/perturbed_0424_100sims.txt"
 
 
 outputs:

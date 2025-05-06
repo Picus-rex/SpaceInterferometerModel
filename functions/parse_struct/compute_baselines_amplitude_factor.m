@@ -23,6 +23,9 @@ function C_i = compute_baselines_amplitude_factor(num_unique_baselines, contribu
 %
 % VERSION HISTORY:
 %   2025-04-30 -------- 1.0
+%   2025-05-06 -------- 1.1
+%                     - Replaced strings with cells to increase speed of
+%                       the executions.  
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,22 +36,22 @@ function C_i = compute_baselines_amplitude_factor(num_unique_baselines, contribu
 C_i  = zeros(num_unique_baselines, size(phases, 1));
 for i = 1:num_unique_baselines
     
-    repeating_couples = strings(1, size(contributing, 2));
+    repeating_couples = cell(1, size(contributing, 2));
     n = 1;
 
     % Extract contributing baselines from the seen apertures before
     for l = 1:size(contributing, 2)
-        if ~strcmp(contributing(i, l), "")
+        if ~isempty(contributing{i, l})
             
             % Transform back to numbers
-            apertures = split(contributing(i, l), '-');
-            j = str2double(apertures(1));
-            k = str2double(apertures(2));
+            apertures = cell2mat(contributing{i, l});
+            j = apertures(1);
+            k = apertures(2);
             
             found = false;
             
             for m = 1:length(repeating_couples)
-                if strcmp(string(k)+"-"+string(j), repeating_couples(m)) || strcmp(string(j)+"-"+string(k), repeating_couples(m))
+                if isequal({k, j}, repeating_couples{m}) || isequal({j, k}, repeating_couples{m})
                     found = true;
                     break
                 end
@@ -57,7 +60,7 @@ for i = 1:num_unique_baselines
             if ~found
                 % Compute the amplitude factor
                 C_i(i, :) = C_i(i, :) + (amplitudes(j) * amplitudes(k) * sin(phases(:, j) - phases(:, k)))';
-                repeating_couples(n) = contributing(i, l);
+                repeating_couples{n} = contributing{i, l};
                 n = n + 1;
             end
    

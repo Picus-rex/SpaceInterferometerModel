@@ -112,13 +112,8 @@ for i = 1:Ns
     
     if nargout > 4
         % Export unique_baselines for modulation efficiency
-        for j = 1:Np
-            [~, unique_baselines] = classify_baselines(intensities, ...
-                    positions, phase_perturbations(j, :), false);
-            C_i = unique_baselines.C_i;
-        
-            eta_mod(j, i) = compute_modulation_efficiency(eta_opt, areas, C_i);
-        end
+        C_i = classify_baselines_matrix(intensities, positions, phase_perturbations);
+        eta_mod(:, i) = compute_modulation_efficiency(eta_opt, areas, C_i);
     end
 
 end

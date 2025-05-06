@@ -76,6 +76,7 @@ Fields in italic are optional.
 | **Name** | **Unit** | **Description** |
 | -------- | -------- | --------------- |
 | `angular_extension` | multiple | Vector of start, end points [rad] and number of points to consider. Otherwise, is a struct, as described below. |
+| `code_v_opd_file`   | -  | See below for fields. |
 | `consider_non_ideal` | - | Flag indicating whether to consider non-ideal conditions |
 | *`monte_carlo_iterations`* | - | Number of iterations for the Monte Carlo simulation |
 
@@ -86,6 +87,15 @@ If non square arrays are desired (to increase the angular resolution on the x ax
 | `theta_x`| multiple | Vector of start, end points [rad] and number of points to consider for the x axis. |
 | `theta_y`| multiple | Vector of start, end points [rad] and number of points to consider for the y axis. |
 
+Where `code_v_opd_file` can include the following fields; if specified, the additional field `code_v` will be present once `convert_data` is runned (notice it can slow down computations): 
+
+| **Name** | **Unit** | **Description** |
+| -------- | -------- | --------------- |
+| `compensator` | -   | Path to compensator export from CODE V (*). |
+| `nominal`     | -   | Path to nominal export from CODE V.   |
+| `perturbed` | -     | Path to perturbed export from CODE V. |
+
+(*) If compensator is provided, all the other fields are always overwritten. For the structure of CODE V export, see the [respective file](code_v_structure.md). 
 
 #### Output properties
 

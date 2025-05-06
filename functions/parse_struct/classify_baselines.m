@@ -6,11 +6,9 @@ function [baselines, unique_baselines] = classify_baselines(amplitudes, ...
 % INPUTS:
 %   amplitudes[Nx1]     Amplitudes of each apertures. [-]
 %   positions[Nx2]      Matrix of (x, y) coordinates of the N apertures.[m]
-%   phases[Nx1]         Vector of phase shifts associated with each 
+%   phases[1xN]         Vector of phase shifts associated with each 
 %                       aperture. [rad]
 %   export[bool]        If true, write to command window the results.
-%   phases[NxN1]        If available, use multiple points. Otherwise, use
-%                       nom_phases.
 %
 % OUTPUTS:
 %   baselines[table]    Table containing the j, k indices, the positions
@@ -55,6 +53,9 @@ function [baselines, unique_baselines] = classify_baselines(amplitudes, ...
 %   2025-04-30 -------- 2.1
 %                     - Computation of C_i factors in the respective
 %                       function.
+%   2025-05-06 -------- 2.2
+%                     - Replaced strings with cells to increase the
+%                       execution speed. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -122,14 +123,14 @@ unique_baselines = unique_baselines(1:k-1, :);
 unique_baselines(:, 1:2) = abs(unique_baselines(:, 1:2));
 
 % Add the contributing baselines to the array:
-contributing = strings(size(unique_baselines, 1), size(baselines, 1));
+contributing = cell(size(unique_baselines, 1), size(baselines, 1));
 maxks = zeros(size(baselines, 1), 1);
 for i = 1:size(unique_baselines, 1)
     k = 1;
     for j = 1:size(baselines, 1)
         if abs(baselines(j, 5) - unique_baselines(i, 3)) < tol && ...
                  abs(abs(baselines(j, 6)) - abs(unique_baselines(i, 4))) < tol 
-            contributing(i, k) = string(baselines(j, 1)) + "-" + string(baselines(j, 2));
+            contributing{i, k} = {baselines(j, 1), baselines(j, 2)};
             k = k + 1;
         end
     end

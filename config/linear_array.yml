@@ -57,8 +57,9 @@ simulation:
         theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
     code_v_opd_file:
-        nominal:    "code_v/nominal_0424.txt"
-        perturbed:  "code_v/perturbed_0424_100sims.txt"
+        nominal:     "code_v/nominal_0424.txt"
+        perturbed:   "code_v/perturbed_0424_100sims.txt"
+        compensator: "code_v/perturbed_compensator_aut_0506.txt"
 
 
 outputs:

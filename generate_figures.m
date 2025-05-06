@@ -9,7 +9,7 @@ set(0, 'DefaultFigureWindowStyle', 'normal')
 
 %% PART 1: GENERATE FILES FOR THE ANALYSIS
 
-data = convert_data('config/linear_array.yml');
+data = convert_data('config/lin_paperone.yml');
 
 % Compute optimal splitting
 [data.simulation.U, data.instrument.combination, ...
@@ -78,9 +78,10 @@ save("exports/data_"+data.instrument.name+".mat", "data", "-v7.3");
 warning("Always pull the last version from the system!")
 
 % Specify path of the git to export images following the convention adopted
-export_data = ReadYaml('config/export_figures.yml');
+export_data = ReadYaml('config/figs_paperone.yml');
 data_matrices = ["exports/data_linear", "exports/data_xarray"];
-skip_chapt = [1, 2, 3];
+data_matrices = ["exports/data_pap1.mat", "exports/data_pap2.mat"];
+skip_chapt = [2, 3];
 
 for i = 1:length(data_matrices)
 
@@ -110,7 +111,12 @@ for i = 1:length(data_matrices)
                 [~, ~, h] = plot_apertures(data.instrument.positions, data.instrument.intensities, data.instrument.efficiencies.optical_line, data.instrument.efficiencies.optical_line, export_settings);
 
             case "transmission_map"
-                h = plot_transmission_map(data.simulation.theta_range, data.simulation.T_standard, export_settings);
+                if figure{1}.planets
+                    theta_planets = [300, 750, 1250];
+                    h = plot_transmission_map(data.simulation.theta_range, data.simulation.T_standard, export_settings, theta_planets);
+                else
+                    h = plot_transmission_map(data.simulation.theta_range, data.simulation.T_standard, export_settings);
+                end
             
             case "transmission_map_planet"
                 export_settings.include = figure{1}.include;

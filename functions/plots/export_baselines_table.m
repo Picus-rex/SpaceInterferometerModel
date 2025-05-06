@@ -48,8 +48,14 @@ for i = 1:height(tableData)
     phase_diff = rad2deg(tableData.Delta_phi(i));
     factor = tableData.C_i(i);
 
-    idx = find(tableData.contributing(i, :) ~= "");
-    contributions = strjoin(tableData.contributing(i, idx), ", ");
+    row = tableData.contributing(i, :);  % Get the row
+    nonEmptyIdx = ~cellfun(@isempty, row);  % Logical index of non-empty cells
+    
+    % Convert each {a,b} to a "a-b" string
+    strPairs = cellfun(@(c) sprintf('%d-%d', c{1}, c{2}), row(nonEmptyIdx), 'UniformOutput', false);
+    
+    % Join with commas
+    contributions = strjoin(strPairs, ', ');
     
     if tableData.Imaging_Flag(i) == 0
         type = "Nulling";

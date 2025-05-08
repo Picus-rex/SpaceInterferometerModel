@@ -4,13 +4,18 @@ instrument:
     apertures_ratio: 6
     array: X-Array
     surfaces:
-     - [12.56, 12.56, 12.56, 12.56]
+     - [3.14, 3.14, 3.14, 3.14]
 
     wavelength: 10e-6
 
+    phase_shifts:
+     - [270, 90, 180, 0]
+    combination:
+     - [1, 1, 1, 1]
+
     efficiencies:
-        beam_combiner: 0.5
-        optical_line: 0.2
+        beam_combiner: 0.15
+        optical_line: 0.1
 
     name: TPF-I
 
@@ -44,9 +49,9 @@ environment:
 
 
 simulation:
-    phases: optimal                         # If optimal, compute phases using SVD
+    phases: given                           # If optimal, compute phases using SVD
 
-    consider_non_ideal: true                # If false, fields with [1] are optional
+    consider_non_ideal: false               # If false, fields with [1] are optional
     model: instrumental_leakage             # [1] Model to use
     monte_carlo_iterations: 0               # [1]
 
@@ -56,7 +61,7 @@ simulation:
         theta_x: [-3.5e-6, 3.5e-6, 2000]    # start, end, number of points
         theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
-    code_v_opd_file:
+    code_v_opd_file:                        # [1]
         nominal:     "code_v/nominal_0424.txt"
         perturbed:   "code_v/perturbed_0424_100sims.txt"
         compensator: "code_v/0507_compensator_aut.txt"

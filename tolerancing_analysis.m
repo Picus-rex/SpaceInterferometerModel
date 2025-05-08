@@ -48,30 +48,6 @@ end
 
 perform_statistics(OPD);
 
-%% Verify exoplanet yield
-
-Ns = size(ratios, 2);
-
-% Allocate space
-perturbed_vect = zeros(size(data.instrument.phase_shifts));
-IWAs = zeros(Ns, 1);
-
-% For every simulation compute the IWA
-for i = 1:Ns
-    perturbed_vect(1) = rms(phases(:, i));
-    pp = data.instrument.phase_shifts + perturbed_vect;
-    aa = data.instrument.intensities .* data.instrument.combination;
-    [~, unique_baselines] = classify_baselines(aa, data.instrument.positions, pp, false);
-
-    IWAs(i) = compute_IWA(unique_baselines, data.instrument.wavelength);
-end
-
-% Use simplified relation for the OWA
-OWA = data.instrument.wavelength / data.instrument.diameter(1);
-
-% Get yield from PPOP
-exotable = get_ppop_yield(0.5 * IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true);
-
 %% Exoplanet yield from NASA 
 
 exotable2 = get_ppop_yield(IWAs, OWA, ratios, data.instrument.wavelength, "verbose", true, "population", "NASA");

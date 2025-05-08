@@ -18,6 +18,10 @@ function plot_ppop_yield(exotable, IWA, OWA, ratio, export_setup)
 %                     - Added option for universes_to_plot to reduce plots.
 %   2025-04-24 -------- 1.2.1
 %                     - Fixed exporting checks.
+%   2025-05-08 -------- 1.3
+%                     - Removed unused useless plots.
+%                     - Small improvements to existing plots.
+%                     - Below 3 simulations, use normal histogram.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -28,6 +32,10 @@ Ns = size(exotable.yields, 2);
 rad2mas = ((pi/180)/3600 / 1e3)^(-1);     
 markers = {'o','s','^','d','v','>','<','p','h'};
 unique_types = unique(exotable.Stype);
+
+cols = get_colours(2);
+
+style_colors;
 
 if isfield(export_setup, "universes_to_plot")
     selection = randi(Nu, export_setup.universes_to_plot);
@@ -54,7 +62,7 @@ for i = 1:length(selection)
         if length(unique_types) < length(markers)
             % Plot all points in blue
             scatter(T.ang_sep_rad(type_rows) * rad2mas, T.contrast(type_rows), ...
-                    [], 'b', markers{j}, 'filled', 'DisplayName', current_type);
+                    [], cols(2, :), markers{j}, 'filled', 'DisplayName', current_type);
         else
             scatter(T.ang_sep_rad(type_rows) * rad2mas, T.contrast(type_rows), ...
                     [], 'filled', 'DisplayName', current_type);
@@ -73,18 +81,18 @@ for i = 1:length(selection)
             % Overlay resulting points
             yield_one_rows = max(type_rows & (T.yields == 1), [], 2);
             scatter(T.ang_sep_rad(yield_one_rows) * rad2mas, T.contrast(yield_one_rows), ...
-                    [], 'r', markers{j}, 'filled', 'DisplayName', [current_type ' (Detected)']);
+                    [], cols(1, :), markers{j}, 'filled', 'DisplayName', [current_type ' (Detected)']);
         else
             % Overlay resulting points
             yield_one_rows = max(type_rows & (T.yields == 1), [], 2);
             scatter(T.ang_sep_rad(yield_one_rows) * rad2mas, T.contrast(yield_one_rows), ...
-                    [], 'r', 'filled', 'DisplayName', [current_type ' (Detected)']);
+                    [], cols(1, :), 'filled', 'DisplayName', [current_type ' (Detected)']);
         end
     end
 
-    xline(IWA * rad2mas, '--', "DisplayName", "IWA (Mean value)")
-    xline(OWA * rad2mas, '--', "DisplayName", "OWA")
-    yline(ratio, '--', "DisplayName", "Best achievable nulling ratio")
+    xline(IWA * rad2mas, '--', "DisplayName", "IWA", "Color", ui_colours(1, :), "LineWidth", 1.5)
+    xline(OWA * rad2mas, '--', "DisplayName", "OWA", "Color", ui_colours(2, :), "LineWidth", 1.5)
+    yline(ratio, '--', "DisplayName", "Best nulling ratio", "Color", ui_colours(end, :), "LineWidth", 1.5)
 
     set(gca, 'XScale', 'log', 'YScale', 'log'); 
     legend('show', 'Location', 'best', 'NumColumns', 3);
@@ -97,66 +105,45 @@ for i = 1:length(selection)
     end
 end
 
-yields = exotable.yields;        
-universes = exotable.Nuniverse;  
+yields = exotable.yields;           % N_planets x Ns (1: detected, 0: no)       
+universes = exotable.Nuniverse;     % N_planets x 1  (0..0, 1..1, ...)  
 
-mean_yield_matrix = zeros(Nu, Ns); % Nu x Ns
 total_yield_matrix = zeros(Nu, Ns); % Nu x Ns
 
 for u = 1:Nu
-    idx = universes == u-1;              % Logical indexing for current universe
-    mean_yield_matrix(u, :) = mean(yields(idx, :), 1); % Mean across planets in universe
+    % Logical indexing for current universe and sum to get plot
+    idx = universes == u-1;              
     total_yield_matrix(u, :) = sum(yields(idx, :));
 end
 
-figure;
-imagesc(mean_yield_matrix);
-xlabel('Simulation');
-ylabel('Universe');
-title('Mean Yields');
-grid minor;
-colorbar;
-if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.mean_yield)
-    export_figures("embedded", export_setup.figures.mean_yield)
+if Ns > 3
+
+    figure;
+    imagesc(total_yield_matrix);
+    xlabel('Simulation');
+    ylabel('Universe');
+    title('Total Yields');
+    grid minor;
+    colorbar;
+    clim([0, max(total_yield_matrix, [], "all")])
+    colormap(darkBlue);
+
+else
+    
+    figure;
+    bar(total_yield_matrix, 'grouped'); 
+    xlabel('Universe');
+    ylabel('Total Yields');
+    if Ns > 1
+        legend(arrayfun(@(x) sprintf('Simulation %d', x), 1:Ns, 'UniformOutput', false));
+    end
+    grid on;
+
 end
 
-figure;
-imagesc(total_yield_matrix);
-xlabel('Simulation');
-ylabel('Universe');
-title('Total Yields');
-grid minor;
-colorbar;
 if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.total_yield)
     export_figures("embedded", export_setup.figures.total_yield)
 end
 
-if Nu > 1
-    figure;
-    boxplot(mean_yield_matrix, 'Labels', string(1:Ns));
-    xlabel('Simulation Index');
-    ylabel('Mean Yield Across Universes');
-    title('Boxplot of Mean Yields per Simulation');
-    grid minor;
-    if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.boxplot)
-        export_figures("embedded", export_setup.figures.boxplot)
-    end
-end
-
-figure;
-hold on;
-
-for u = 1:Nu
-    plot(mean_yield_matrix(u, :), '-o', 'DisplayName', ['Universe ' num2str(u)]);
-end
-
-xlabel('Simulation Index');
-ylabel('Mean Yield');
-title('Yield Trend Across Simulations per Universe');
-legend('Location', 'best');
-grid minor;
-if isstruct(export_setup) && isfield(export_setup, "figures") && isstruct(export_setup.figures.trend)
-    export_figures("embedded", export_setup.figures.trend)
-end
 
 end

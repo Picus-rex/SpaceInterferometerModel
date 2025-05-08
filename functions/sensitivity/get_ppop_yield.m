@@ -42,6 +42,10 @@ function [T, total_yield_matrix] = get_ppop_yield(IWA, OWA, ratios, lambda, sim_
 %                     - Added compatibility with real exoplanets.
 %   2025-04-24 -------- 1.3
 %                     - Using only a single IWA, fixing inputs.
+%   2025-05-09 -------- 1.4
+%                     - Fix: IWAs was still referenced in plot. 
+%                     - Fix: input validation for less than 5 simulations.
+%                     - Removed some useless printing and improved others.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,7 +58,7 @@ arguments
     sim_options.verbose = false;
     sim_options.population {mustBeMember(sim_options.population,["PPOP", "NASA"])}  = "PPOP"
     export_setup.create_plots = true;
-    export_setup.universes_to_plot = 5;
+    export_setup.universes_to_plot = input_validation_nplot(ratios);
 end
 
 % Extract the number of simulations from the system.
@@ -107,6 +111,11 @@ T.yields = zeros(size(T, 1), Ns);
 T.candidates = zeros(size(T, 1), Ns);
 rms_ratios = zeros(Ns, 1);
 
+% For debug
+if sim_options.verbose
+    fprintf("Sim\tRatio\t\tAverage detection\n")
+end
+
 % For every simulation...
 for i = 1:Ns
     rms_ratios(i) = rms(ratios(:, i));
@@ -116,7 +125,7 @@ for i = 1:Ns
     
     % For debug
     if sim_options.verbose
-        fprintf("%d\t%.3e\t%d\n", i, rms_ratios(i), sum(T.yields(:, i)))
+        fprintf("%d\t%.3e\t%.0f\n", i, rms_ratios(i), sum(T.yields(:, i)/Nu))
     end
 end
 
@@ -132,12 +141,21 @@ end
 if sim_options.verbose
     fprintf("\nAverage for universe in the best case:\t%.2f planets\n", max(mean(total_yield_matrix, 1)));
     fprintf("Average for universe in the mean case:\t%.2f planets\n", mean(mean(total_yield_matrix, 2)));
-    fprintf("Average for all universes:\t%.2f planets\n", mean(sum(total_yield_matrix, 1)));
 end
 
 % PLOT SECTION
 if export_setup.create_plots
-    plot_ppop_yield(T, mean(IWAs), OWA, min(rms_ratios), export_setup);
+    plot_ppop_yield(T, IWA, OWA, min(rms_ratios), export_setup);
 end
+
+end
+
+
+function Nplot = input_validation_nplot(ratios)
+%INPUT_VALIDATION_NPLOT: take the minimum between the available simulations
+%and 5. 
+
+Ns = size(ratios, 2);
+Nplot = min([Ns, 5]);
 
 end

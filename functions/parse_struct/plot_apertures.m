@@ -29,6 +29,8 @@ function [D, a, h] = plot_apertures(positions, A, eta_opt, eta_bc, export_settin
 %                     - export false does not create a plot.
 %   2025-03-26 -------- 1.2
 %                     - Uniformated to the plot structures.
+%   2025-05-09 -------- 1.2.1
+%                     - Fix: error in the surface computation. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,8 +46,8 @@ if nargin < 5
 end
 
 % Aperture sizes relation
-a = (A.^2) / (eta_opt * eta_bc);
-D = 2 * sqrt(a / pi);
+D = sqrt((A.^2) / (eta_opt * eta_bc * pi));
+a = pi * (D / 2).^2;
 
 if isstruct(export_settings)
     h = figure; hold on; axis equal;

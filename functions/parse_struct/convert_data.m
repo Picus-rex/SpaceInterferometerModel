@@ -32,6 +32,12 @@ for i = 1:length(fields_inst)
             if iscell(data.instrument.intensities)
                 data.instrument.intensities = cell2mat(data.instrument.intensities);
             end
+        case "surfaces"
+            if iscell(data.instrument.surfaces)
+                data.instrument.surfaces = cell2mat(data.instrument.surfaces);
+            end
+            data.instrument.intensities = area2intensity(data.instrument.surfaces, ...
+                data.instrument.efficiencies.optical_line, data.instrument.efficiencies.beam_combiner);
         case "combination"
             if iscell(data.instrument.combination)
                 data.instrument.combination = cell2mat(data.instrument.combination);
@@ -104,6 +110,8 @@ for i = 1:length(fields_simu)
                     data.instrument.wavelength, data.instrument.positions(:, 1), ...
                     data.instrument.positions(:, 2), ...
                     data.environment.stellar_angular_radius, false);
+
+                [data.instrument.baselines, data.instrument.unique_baselines] = classify_baselines(data.instrument.intensities, data.instrument.positions, data.instrument.phase_shifts, false);
             end
 
         case "angular_extension"
@@ -111,38 +119,7 @@ for i = 1:length(fields_simu)
 
         case "code_v_opd_file"
             
-            if isfield(data.simulation.code_v_opd_file, "compensator")
-                [op, opd, x, y] = load_opd(data.simulation.code_v_opd_file.compensator);
-
-                if isfield(data.instrument, "wavelength")
-                    pha = opd2phase(opd, data.instrument.wavelength);
-                end
-                
-                data.simulation.code_v.nominal.op    =  op(:, 2); 
-                data.simulation.code_v.nominal.opd   = opd(:, 2); 
-                data.simulation.code_v.nominal.x     =   x(:, 2); 
-                data.simulation.code_v.nominal.y     =   y(:, 2); 
-                data.simulation.code_v.nominal.phase = pha(:, 2); 
-
-                op(:, 1:2) = [];
-                opd(:, 1:2) = [];
-                x(:, 1:2) = [];
-                y(:, 1:2) = [];
-                pha(:, 1:2) = [];
-
-                data.simulation.code_v.perturbed.op    =  op(:, 1:2:end); 
-                data.simulation.code_v.perturbed.opd   = opd(:, 1:2:end); 
-                data.simulation.code_v.perturbed.x     =   x(:, 1:2:end); 
-                data.simulation.code_v.perturbed.y     =   y(:, 1:2:end); 
-                data.simulation.code_v.perturbed.phase = pha(:, 1:2:end);
-
-                data.simulation.code_v.corrected.op    =  op(:, 2:2:end); 
-                data.simulation.code_v.corrected.opd   = opd(:, 2:2:end); 
-                data.simulation.code_v.corrected.x     =   x(:, 2:2:end); 
-                data.simulation.code_v.corrected.y     =   y(:, 2:2:end); 
-                data.simulation.code_v.corrected.phase = pha(:, 2:2:end);
-
-            else
+            if isfield(data.simulation, "consider_non_ideal") && data.simulation.consider_non_ideal
 
                 if isfield(data.simulation.code_v_opd_file, "nominal")
                     [data.simulation.code_v.nominal.op, ...
@@ -155,16 +132,45 @@ for i = 1:length(fields_simu)
                     end
                 end
     
-                if isfield(data.simulation.code_v_opd_file, "perturbed")
-                    [data.simulation.code_v.perturbed.op, ...
-                     data.simulation.code_v.perturbed.opd, ...
-                     data.simulation.code_v.perturbed.x, ...
-                     data.simulation.code_v.perturbed.y] = load_opd(data.simulation.code_v_opd_file.perturbed);
+                if isfield(data.simulation.code_v_opd_file, "compensator")
+                    [op, opd, x, y] = load_opd(data.simulation.code_v_opd_file.compensator);
     
                     if isfield(data.instrument, "wavelength")
-                        data.simulation.code_v.perturbed.phase = opd2phase(data.simulation.code_v.perturbed.opd, data.instrument.wavelength);
+                        pha = opd2phase(opd, data.instrument.wavelength);
+                    end
+    
+                    data.simulation.code_v.perturbed.op    =  op(:, 1:2:end); 
+                    data.simulation.code_v.perturbed.opd   = opd(:, 1:2:end); 
+                    data.simulation.code_v.perturbed.x     =   x(:, 1:2:end); 
+                    data.simulation.code_v.perturbed.y     =   y(:, 1:2:end); 
+                    data.simulation.code_v.perturbed.phase = pha(:, 1:2:end);
+    
+                    data.simulation.code_v.corrected.op    =  op(:, 2:2:end); 
+                    data.simulation.code_v.corrected.opd   = opd(:, 2:2:end); 
+                    data.simulation.code_v.corrected.x     =   x(:, 2:2:end); 
+                    data.simulation.code_v.corrected.y     =   y(:, 2:2:end); 
+                    data.simulation.code_v.corrected.phase = pha(:, 2:2:end);
+
+                    data.simulation.code_v.num_perturbed_simulations = size(data.simulation.code_v.perturbed.op, 2);
+    
+                    if isfield(data.simulation.code_v_opd_file, "perturbed")
+                        warning("Perturbed file is replaced by data within the compensator. Remove compensator to use perturbed data.")
+                    end
+    
+                else
+        
+                    if isfield(data.simulation.code_v_opd_file, "perturbed")
+                        [data.simulation.code_v.perturbed.op, ...
+                         data.simulation.code_v.perturbed.opd, ...
+                         data.simulation.code_v.perturbed.x, ...
+                         data.simulation.code_v.perturbed.y] = load_opd(data.simulation.code_v_opd_file.perturbed);
+        
+                        if isfield(data.instrument, "wavelength")
+                            data.simulation.code_v.perturbed.phase = opd2phase(data.simulation.code_v.perturbed.opd, data.instrument.wavelength);
+                        end
                     end
                 end
+
             end
     end
 end

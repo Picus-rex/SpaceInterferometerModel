@@ -1,4 +1,4 @@
-function export_comparison_table(tableData, names, filename)
+function export_comparison_table(tableData, names, filename, caption, label)
 
 % Open file for writing
 fid = fopen(filename + ".tex", 'w');
@@ -39,8 +39,8 @@ end
 % Close LaTeX table
 fprintf(fid, '        \\bottomrule\n');
 fprintf(fid, '    \\end{tabular}\n');
-fprintf(fid, '    \\caption{Comparison table for five example configurations as presented in Lay \cite{lay_imaging_2005} with normalised results for positions, modulation efficiency (higher is better), inner working angles (lower is better) and resolution angles (lower is better). Ap. is the aperture, $\varphi$ is the assigned phase and G is the nulling ratio (higher exponent is better).}\n');
-fprintf(fid, '    \\label{tab:modelling:comparison}\n');
+fprintf(fid, '    \\caption{%s}\n', caption);
+fprintf(fid, '    \\label{%s}\n', label);
 fprintf(fid, '\\end{table}\n');
 
 % Close file

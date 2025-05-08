@@ -1,18 +1,18 @@
 instrument:
     apertures: 4
-    baseline: 10.5
-    apertures_ratio: 3
-    array: Linear
-    intensities:
-     - [0.5, 0.5, 0.5, 0.5]
+    baseline: 400
+    apertures_ratio: 6
+    array: X-Array
+    surfaces:
+     - [12.56, 12.56, 12.56, 12.56]
 
     wavelength: 10e-6
 
     efficiencies:
-        beam_combiner: 0.25
+        beam_combiner: 0.5
         optical_line: 0.2
 
-    name: linear
+    name: TPF-I
 
 environment:
 

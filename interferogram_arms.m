@@ -8,6 +8,8 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'docked') 
 
+tic;
+
 % Loading of elements from configurations files
 data = convert_data('config/linear_array.yml');
 
@@ -20,7 +22,8 @@ maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
 %data.instrument.phase_shifts = [0, -pi, 0, -pi];
 %data.instrument.combination = [0.2236    0.6708    0.6708    0.2236];
 
-% Compute the response at the pupil screen with the defined function
+% Compute the response at the pupil screen with the defined function for
+% the perturbed and corrected (if available) system
 [data.outputs.response_function.perturbed, data.outputs.response_function.nominal, ...
  data.outputs.response_function.maps, data.simulation.nulling_ratio_interferogram, ...
  data.simulation.modulation_efficiency_interferogram] = ...
@@ -29,11 +32,26 @@ maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
     data.instrument.phase_shifts, data.instrument.positions, data.instrument.combination, ...
     data.instrument.surfaces, data.instrument.wavelength, theta, maps_to_compute);
 
+[data.outputs.response_function.corrected, ~, data.outputs.response_function.maps_corrected, ...
+    data.simulation.nulling_ratio_interferogram_corrected, ...
+    data.simulation.modulation_efficiency_interferogram_corrected] = ...
+    interferogram_sensitivity(data.simulation.code_v.nominal.opd, ...
+    data.simulation.code_v.corrected.opd, data.instrument.intensities,...
+    data.instrument.phase_shifts, data.instrument.positions, data.instrument.combination, ...
+    data.instrument.surfaces, data.instrument.wavelength, theta, maps_to_compute);
+
 % The analysis has been moved to a specific function to call it with
 % perturbed and corrected data from the compensator (if available)
 interferogram_analysis(data, data.simulation.code_v.perturbed, theta, maps_to_compute)
 interferogram_analysis(data, data.simulation.code_v.corrected, theta, maps_to_compute)
 
+% Verify results with compensator.
+compare_compensator(data.simulation.code_v.perturbed.opd, ... 
+    data.simulation.nulling_ratio_interferogram, data.simulation.code_v.corrected.opd, ...
+    data.simulation.nulling_ratio_interferogram_corrected, data.simulation.code_v.corrected.x(:, 1), ...
+    data.simulation.code_v.corrected.y(:, 1));
+
+toc;
 
 %% Perturbate multiple branches with random picks
 

@@ -35,8 +35,6 @@ OP X Y
 
 In compensators file, the following structure is observed
 
-- Nominal simulation (this is discarded)
-- Nominal simulation (with compensator, normally equivalent to nominal)
 - Perturbed uncorrected simulation 1
 - Perturbed and corrected simulation 1
 - Perturbed uncorrected simulation 2
@@ -44,4 +42,4 @@ In compensators file, the following structure is observed
 - Perturbed uncorrected simulation 3
 - Perturbed and corrected simulation 3
 
-and so on.
+and so on, therefore, when the `compensator` field is provided, the field `perturbed` is overwritten (a warning will be displayed). 

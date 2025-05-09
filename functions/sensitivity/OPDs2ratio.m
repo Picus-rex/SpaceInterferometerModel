@@ -29,6 +29,9 @@ function [ratios, h] = OPDs2ratio(N, amplitudes, phases, positions, ...
 %                     - Fixed plots consistency across the scripts.
 %   2025-03-27 -------- 1.2
 %                     - Added export settings
+%   2025-05-09 -------- 1.2.1
+%                     - Fixed situation where an error was thrown due to
+%                       wrong sizes of available data.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,7 +50,7 @@ regen = true;
 if isfile('exports/ratios.mat')
 
     data = load("exports/ratios.mat", "lambdas");
-    if ~all(lambdas == data.lambdas)
+    if ~all(size(lambdas) == size(data.lambdas)) || ~all(lambdas == data.lambdas)
         fprintf("Saved data existed, but do not match input wavelengths. Regenerating...\n")
     else
         regen = false;
@@ -57,7 +60,7 @@ if isfile('exports/ratios.mat')
 end
 
 if regen
-    fprintf("Saved file does not exist. The generation of the map requires few seconds...\n")
+    fprintf("The generation of the map requires few seconds...\n")
 
     points = 1000;
     ratios = zeros(length(lambdas), points, points);

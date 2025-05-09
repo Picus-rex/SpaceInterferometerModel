@@ -100,7 +100,7 @@ figures:
 
     - type: interferogram
       maps_to_compute: 3
-      simulation: compensator
+      simulation: corrected
       include:
         interferometer_response_angles:
             width: third
@@ -122,7 +122,7 @@ figures:
       height: quart
 
     - type: interferogram_multiple
-      simulation: compensator
+      simulation: corrected
       include:
         interferometer_response_angles:
             width: third

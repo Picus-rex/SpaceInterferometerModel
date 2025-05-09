@@ -16,12 +16,16 @@ function h = plot_transmission_map(theta_range, map, export_settings, planets)
 %   2025-03-24 -------- 1.0
 %   2025-05-05 -------- 1.1
 %                     - Integrated planet plotting if desired.
+%   2025-05-09 -------- 1.1.1
+%                     - Error in input parsing when planets is not given.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if nargin == 2
+if nargin < 4
     export_settings = NaN;
+end
+if nargin < 3
     planets = [];
 end
 

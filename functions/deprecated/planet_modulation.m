@@ -36,6 +36,9 @@ function [modulation, hs] = planet_modulation(data, export_settings)
 %                       exporting of figures.
 %                     - Planet signal modulation capped at 360° along the x
 %                       axis on the plot. 
+%   2025-05-09 -------- 1.3.2
+%                     - Fixed missing export of hs when 
+%                       planet_modulation_positions was not given. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -60,6 +63,7 @@ if isfield(data.simulation, "planet_modulation_positions")
     n_rotation = data.simulation.planet_modulation_positions;
     if n_rotation == 0
         modulation = NaN;
+        hs = NaN;
         return
     end
 else

@@ -127,14 +127,14 @@ for i = 1:length(export_data.options.data_files)
             case "sensitivity_opd_system"
                 
                 % Prepare image export
-                exp_figs = {[], []};
+                exp_figs = {[], [], [], [], [], []};
                 if ismember("fitted_gaussian", cur_fig.include)
-                    exp_figs{1} = export_settings;
-                    exp_figs{1}.name = label_name + "_fitted_gaussian";
+                    exp_figs{2} = export_settings;
+                    exp_figs{2}.name = label_name + "_fitted_gaussian";
                 end
                 if ismember("rms_vs_std", cur_fig.include)
-                    exp_figs{2} = export_settings;
-                    exp_figs{2}.name = label_name + "_rms_std";
+                    exp_figs{5} = export_settings;
+                    exp_figs{5}.name = label_name + "_rms_std";
                 end
 
                 perform_statistics(data.simulation.code_v.perturbed.opd, "embedded", exp_figs);
@@ -142,7 +142,7 @@ for i = 1:length(export_data.options.data_files)
             case "interferogram"
                 
                 if isfield(cur_fig.include, "interferometer_response_angles")
-                    for j = 1:size(data.simulation.interferogram.R, 3)
+                    for j = 1:size(data.outputs.response_function.maps.(cur_fig.simulation), 3)
                         export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_response_angles.width), ...
                                 "height", export_data.sizes.height.(cur_fig.include.interferometer_response_angles.height), ...
                                 "font_size", export_data.sizes.font_size, ...

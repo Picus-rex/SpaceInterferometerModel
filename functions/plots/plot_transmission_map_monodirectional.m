@@ -5,10 +5,15 @@ function h = plot_transmission_map_monodirectional(theta_range, maps, names, emb
 %
 % INPUTS:
 %   theta_range[Nx1]    Range of coordinates to consider. [rad]
-%   maps[NxN]           Selection of desired transmission maps resulting 
-%                       from function. [-]
-%  optional:
-%   export_setting[struct] Setting for export. 
+%   maps[struct]        Selection of desired transmission maps, each with
+%                       the corresponding fieldname is names.
+%   names               Names of the associated fields to plots from maps.        
+%
+% OPTIONAL INPUTS:
+%   embedded[struct]    Setting for export. 
+%
+% ARGUMENT INPUTS:
+%   tendendies[Mx1]     Exponent of theta to plots (default: 2, 4, 6).
 %
 % OUTPUTS:
 %   h                   Handle of the figure.
@@ -17,14 +22,17 @@ function h = plot_transmission_map_monodirectional(theta_range, maps, names, emb
 %   2025-03-24 -------- 1.0
 %   2025-04-03 -------- 1.1
 %                     - Added arguments and possibility to change the
-%                       number of tendencies lines within the plot. 
+%                       number of tendencies lines within the plot.
+%   2025-05-09 -------- 1.1.1
+%                     - Fixed some problems in the argument parsing and old
+%                       documentation. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 arguments
     theta_range (:, :)
-    maps {mustBeA(maps, "table")}
-    names {mustBeA(names, "string")}
+    maps {mustBeA(maps, "struct")}
+    names
     embedded = NaN
     export_settings.tendencies = [2, 4, 6];
 end

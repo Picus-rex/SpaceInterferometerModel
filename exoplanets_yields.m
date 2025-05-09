@@ -20,6 +20,8 @@ OWA = data.instrument.wavelength / data.instrument.diameter(1);
 
 exotable = get_ppop_yield(IWA, OWA, ratio, data.instrument.wavelength, "verbose", true);
 
+sumtable_ideal = extract_statistics_exoplanets(exotable, "Darwin ideal");
+
 %% Perturbed cases 
 
 Ns = data.simulation.code_v.num_perturbed_simulations;
@@ -34,3 +36,34 @@ phases = data.simulation.code_v.corrected.phase;
 
 % Get yield from PPOP
 exotable = get_ppop_yield(IWA, OWA, ratios, data.instrument.wavelength, "verbose", true);
+
+sumtable_pert = extract_statistics_exoplanets(exotable, "Darwin perturbed");
+
+%% Config analysis
+
+configurations = ["darwin", "tpf_i", "life"]';
+names = ["Darwin", "TPF-I", "LIFE"];
+
+sumtable = table();
+
+% For every configuration...
+for i = 1:length(configurations)
+    data = convert_data(sprintf('config/%s.yml', configurations(i)));
+    
+    IWA = compute_IWA(data.instrument.unique_baselines, data.instrument.wavelength);
+    OWA = data.instrument.wavelength / data.instrument.diameter(1);
+
+    [ratio, ~] = compute_nulling_ratio(data.instrument.apertures, data.instrument.intensities, ...
+     data.instrument.phase_shifts, data.instrument.positions, ...
+     data.environment.stellar_angular_radius, data.instrument.wavelength);
+
+    exotable = get_ppop_yield(IWA, OWA, ratio, data.instrument.wavelength, "verbose", false, "create_plots", false);
+
+    sumtable(i, :) = extract_statistics_exoplanets(exotable, names(i));
+
+end
+
+%% Export table
+
+filename = '/Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/tables/validation/exo_data';
+export_exoplanets_table(sumtable, filename);

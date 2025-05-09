@@ -1,117 +1,53 @@
 %% GENERATE_FIGURES This script generates all the figures within the thesis
 % allowing for easiness of reproduction and substitution. This script
 % relies on the the export_figures.yml configuration file that must be
-% modified accordingly. 
+% modified accordingly.
 
 clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'normal') 
 
-%% PART 1: GENERATE FILES FOR THE ANALYSIS
-
-data = convert_data('config/lin_paperone.yml');
-
-% Compute optimal splitting
-[data.simulation.U, data.instrument.combination, ...
-    data.instrument.phase_shifts] = compute_optimal_splitting(...
-    data.instrument.apertures, data.instrument.baseline, ...
-    data.instrument.wavelength, data.instrument.positions(:, 1), ...
-    data.instrument.positions(:, 2), ...
-    data.environment.stellar_angular_radius, false);
-
-% Classify baselines
-[data.instrument.baselines, data.instrument.unique_baselines] = ...
-    classify_baselines(data.instrument.intensities, data.instrument.positions, data.instrument.phase_shifts, true);
-
-% Complex Field and Response Function
-[~, data] = compute_response_function("data", data);
-
-% Verify modulation of the signal
-[data.simulation.planet_modulation] = planet_modulation(data);
-
-% Find nulling ratio
-[data.simulation.nulling_ratio, data.simulation.rejection_factor] = ...
-    compute_nulling_ratio(data.instrument.apertures, data.instrument.intensities, ...
-    data.instrument.phase_shifts, data.instrument.positions, ...
-    data.environment.stellar_angular_radius, data.instrument.wavelength);
-
-% Point Spread Function
-[data.simulation.PSF, ~, ~] = compute_psf(data.instrument.wavelength, ...
-    data.instrument.intensities, data.instrument.positions, data.instrument.phase_shifts, ...
-    data.environment.exoplanet_position, data.simulation.theta_range);
-
-% Interferometer sensitivity - single arm
-[data.simulation.interferogram.RFp, data.simulation.interferogram.RFn, ...
- data.simulation.interferogram.R, data.simulation.interferogram.nulling] = ...
-    interferogram_sensitivity(data.simulation.code_v.nominal.opd, data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
-    data.instrument.phase_shifts, data.instrument.positions, ...
-    data.instrument.combination, data.instrument.surfaces, data.instrument.wavelength);
-
-% Interferometer sensitivity - multiple arms
-[data.simulation.interferogram_multi.RFp, data.simulation.interferogram_multi.RFn, ...
- data.simulation.interferogram_multi.R, data.simulation.interferogram_multi.nulling] = ...
- interferogram_sensitivity_multiple_branches(data.simulation.code_v.nominal.opd, ...
-    data.simulation.code_v.perturbed.opd, data.instrument.intensities,...
-    data.instrument.phase_shifts, data.instrument.positions, ...
-    data.instrument.combination, data.instrument.wavelength);
-
-% PSF and Transmission maps of perturbed systems
-[data.simulation.perturbation.ratio, data.simulation.perturbation.transmission_maps, ...
-    data.simulation.perturbation.nominal_map, data.simulation.perturbation.PSFs, ...
-    data.simulation.perturbation.nominal_PSF]  = perturbate_system(data.instrument.apertures, ...
-                    data.instrument.intensities, data.instrument.phase_shifts, ...
-                    data.instrument.positions, data.environment.stellar_angular_radius, ...
-                    data.instrument.wavelength, data.simulation.code_v.perturbed.phase, data.instrument.combination, ...
-                    perturbed_map_plotting_number=0, compute_PSF=true, create_plots=false);
-
-% PPOP yield
-data.instrument.IWA = data.instrument.wavelength / data.instrument.baseline;
-data.instrument.OWA = data.instrument.wavelength / data.instrument.diameter(1);
-[data.simulation.yield.ppop_table, data.simulation.yield.ppop_matrix] = get_ppop_yield(data.instrument.IWA, ...
-    data.instrument.OWA, data.simulation.perturbation.ratio, data.instrument.wavelength, "create_plots", false);
-
-clc;
-save("exports/data_"+data.instrument.name+".mat", "data", "-v7.3");
-
-%% PART 2: LOAD AND EXPORT IMAGES
-
-warning("Always pull the last version from the system!")
-
 % Specify path of the git to export images following the convention adopted
-export_data = ReadYaml('config/figs_paperone.yml');
-data_matrices = ["exports/data_linear", "exports/data_xarray"];
-data_matrices = ["exports/data_pap1.mat", "exports/data_pap2.mat"];
-skip_chapt = [2, 3];
+export_data = ReadYaml('config/export_figures.yml');
 
-for i = 1:length(data_matrices)
+% Verify if files exist
+for i = 1:length(export_data.options.data_files)
+    if ~isfile(export_data.options.data_files{i})
+        error("File %s does not exist. Generate it using complete_analysis first!", export_data.options.data_files{i});
+    end
+end
 
-    datas(i) = load(data_matrices(i)).data;
-    data = datas(i);
+% For every configuration to export...
+for i = 1:length(export_data.options.data_files)
+
+    data = load(export_data.options.data_files{i}).data;
     suffix = "_" + data.instrument.name;
 
     theta = mas2rad(linspace(-100, 100, 1000));
-    maps_to_compute = 1 : floor(length(theta) / 4) : length(theta);
+    maps_to_compute = 1 : floor(length(theta) / 3) : length(theta);
     
     for figure = export_data.figures
 
-        if ismember(figure{1}.chapter, skip_chapt) 
+        cur_fig = figure{1};
+    
+        if ismember(cur_fig.chapter, cell2mat(export_data.options.skip_chapters))
             continue
         end
         
-        label_name = export_data.chapters{figure{1}.chapter}.path + "images/" + export_data.chapters{figure{1}.chapter}.name + "/" + figure{1}.type + suffix;
+        label_name = export_data.chapters{cur_fig.chapter}.path + "images/" + export_data.chapters{cur_fig.chapter}.name + "/" + cur_fig.type + suffix;
 
-        export_settings = struct("width", export_data.sizes.width.(figure{1}.width), ...
-                    "height", export_data.sizes.height.(figure{1}.height), ...
+        export_settings = struct("width", export_data.sizes.width.(cur_fig.width), ...
+                    "height", export_data.sizes.height.(cur_fig.height), ...
                     "font_size", export_data.sizes.font_size, ...
                     "name", label_name);
     
-        switch figure{1}.type
+        switch cur_fig.type
             
             case "configuration"
                 [~, ~, h] = plot_apertures(data.instrument.positions, data.instrument.intensities, data.instrument.efficiencies.optical_line, data.instrument.efficiencies.optical_line, export_settings);
 
             case "transmission_map"
-                if figure{1}.planets
+                if cur_fig.planets
                     theta_planets = [300, 750, 1250];
                     h = plot_transmission_map(data.simulation.theta_range, data.simulation.T_standard, export_settings, theta_planets);
                 else
@@ -119,22 +55,22 @@ for i = 1:length(data_matrices)
                 end
             
             case "transmission_map_planet"
-                export_settings.include = figure{1}.include;
+                export_settings.include = cur_fig.include;
                 export_settings.sizes = export_data.sizes;
                 [~, h] = planet_modulation(data, export_settings);
     
             case "transmission_map_monodirectional"
                 maps = struct();
-                for i = 1:length(figure{1}.include)
-                    maps.(figure{1}.include{i}) = data.simulation.(figure{1}.include{i});
+                for j = 1:length(cur_fig.include)
+                    maps.(cur_fig.include{j}) = data.simulation.(cur_fig.include{j});
                 end
-                h = plot_transmission_map_monodirectional(data.simulation.theta_range, maps, figure{1}.names, export_settings);
+                h = plot_transmission_map_monodirectional(data.simulation.theta_range, maps, cur_fig.names, export_settings);
             
             case "psf_map"
                 h = plot_psf_map(data.simulation.theta_range, data.simulation.PSF, export_settings);
     
             case "optimal_modes"
-                export_settings.include = figure{1}.include;
+                export_settings.include = cur_fig.include;
                 export_settings.sizes = export_data.sizes;
                 [~, ~, ~, h] = compute_optimal_splitting(...
                     data.instrument.apertures, data.instrument.baseline, ...
@@ -162,7 +98,7 @@ for i = 1:length(data_matrices)
             case "nullratio_double_branch_discrete"
                 OPDs2ratio(data.instrument.apertures, data.instrument.intensities, ...
                     data.instrument.phase_shifts, data.instrument.positions, ...
-                    data.environment.stellar_angular_radius, cell2mat(figure{1}.wavelengths), export_settings);
+                    data.environment.stellar_angular_radius, cell2mat(cur_fig.wavelengths), export_settings);
             
             case "nullratio_double_branch"
                 OPD2ratio_point(data.instrument.apertures, data.instrument.intensities, ...
@@ -191,48 +127,58 @@ for i = 1:length(data_matrices)
             case "sensitivity_opd_system"
                 
                 % Prepare image export
-                exp_figs = {[], [], [], [], [], []};
-                if ismember("fitted_gaussian", figure{1}.include)
-                    exp_figs{2} = export_settings;
-                    exp_figs{2}.name = label_name + "_fitted_gaussian";
+                exp_figs = {[], []};
+                if ismember("fitted_gaussian", cur_fig.include)
+                    exp_figs{1} = export_settings;
+                    exp_figs{1}.name = label_name + "_fitted_gaussian";
                 end
-                if ismember("rms_vs_std", figure{1}.include)
-                    exp_figs{5} = export_settings;
-                    exp_figs{5}.name = label_name + "_rms_std";
+                if ismember("rms_vs_std", cur_fig.include)
+                    exp_figs{2} = export_settings;
+                    exp_figs{2}.name = label_name + "_rms_std";
                 end
 
                 perform_statistics(data.simulation.code_v.perturbed.opd, "embedded", exp_figs);
             
             case "interferogram"
                 
-                if isfield(figure{1}.include, "interferometer_response_angles")
+                if isfield(cur_fig.include, "interferometer_response_angles")
                     for j = 1:size(data.simulation.interferogram.R, 3)
-                        export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_angles.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_response_angles.height), ...
+                        export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_response_angles.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_response_angles.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_angles_%d", j));
-                        plot_value_on_image_plane(data.simulation.interferogram.R(:, j, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="_1e0", embedded=export_settings);
+                        plot_value_on_image_plane(data.outputs.response_function.maps.(cur_fig.simulation)(:, j, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="_1e0", embedded=export_settings);
                     end
                 end
 
-                if isfield(figure{1}.include, "interferometer_nulling_angles")
+                if isfield(cur_fig.include, "interferometer_modulation_angles")
                     for j = 1:3
-                        export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_nulling_angles.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_angles.height), ...
+                        export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_nulling_angles.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_nulling_angles.height), ...
+                                "font_size", export_data.sizes.font_size, ...
+                                "name", label_name + sprintf("_modulation_%d", j));
+                        plot_value_on_image_plane(data.simulation.modulation_efficiency_interferogram.(cur_fig.simulation)(:, j), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="_1e0", embedded=export_settings);
+                    end
+                end
+
+                if isfield(cur_fig.include, "interferometer_nulling_angles")
+                    for j = 1:3
+                        export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_nulling_angles.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_nulling_angles.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_nulling_%d", j));
-                        plot_value_on_image_plane(data.simulation.interferogram.nulling(:, j), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
+                        plot_value_on_image_plane(data.simulation.nulling_ratio_interferogram.(cur_fig.simulation)(:, j), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
                     end
                 end
                 
-                if isfield(figure{1}.include, "interferometer_nulling_statistics")
-                    log_mean = mean(data.simulation.interferogram.nulling, 2);
-                    log_median = median(data.simulation.interferogram.nulling, 2);
-                    log_max = max(data.simulation.interferogram.nulling, [], 2); 
-                    fraction_good = sum(data.simulation.interferogram.nulling < 1e-4, 2) / size(data.simulation.interferogram.nulling, 2);
+                if isfield(cur_fig.include, "interferometer_nulling_statistics")
+                    log_mean = mean(data.simulation.nulling_ratio_interferogram.(cur_fig.simulation), 2);
+                    log_median = median(data.simulation.nulling_ratio_interferogram.(cur_fig.simulation), 2);
+                    log_max = max(data.simulation.nulling_ratio_interferogram.(cur_fig.simulation), [], 2);
+                    fraction_good = sum(data.simulation.nulling_ratio_interferogram.(cur_fig.simulation) < 1e-4, 2) / size(data.simulation.nulling_ratio_interferogram.(cur_fig.simulation), 2);
 
-                    export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_nulling_statistics.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_statistics.height), ...
+                    export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_nulling_statistics.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_nulling_statistics.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name);
 
@@ -250,10 +196,10 @@ for i = 1:length(data_matrices)
                 end
 
 
-                if isfield(figure{1}.include, "interferometer_response_function")
-                    RFp = [data.simulation.interferogram.RFn; data.simulation.interferogram.RFp];
-                    export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_function.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_response_function.height), ...
+                if isfield(cur_fig.include, "interferometer_response_function")
+                    RFp = [data.outputs.response_function.(cur_fig.simulation); data.outputs.response_function.nominal];
+                    export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_response_function.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_response_function.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_rf_%d", j));
                     plot_response_function_theta(theta, RFp, "Normalize", true, "embedded", export_settings);
@@ -262,34 +208,34 @@ for i = 1:length(data_matrices)
 
             case "interferogram_multiple"
                 
-                if isfield(figure{1}.include, "interferometer_response_angles")
+                if isfield(cur_fig.include, "interferometer_response_angles")
                     for j = 1:size(data.simulation.interferogram_multi.R, 3)
-                        export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_angles.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_response_angles.height), ...
+                        export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_response_angles.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_response_angles.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_angles_%d", j));
                         plot_value_on_image_plane(data.simulation.interferogram_multi.R(:, j, 1), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="_1e0", embedded=export_settings);
                     end
                 end
 
-                if isfield(figure{1}.include, "interferometer_nulling_angles")
+                if isfield(cur_fig.include, "interferometer_nulling_angles")
                     for j = 1:3
-                        export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_nulling_angles.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_angles.height), ...
+                        export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_nulling_angles.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_nulling_angles.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_nulling_%d", j));
                         plot_value_on_image_plane(data.simulation.interferogram_multi.nulling(:, j), data.simulation.code_v.perturbed.x(:, 1), data.simulation.code_v.perturbed.y(:, 1), type="log", embedded=export_settings);
                     end
                 end
                 
-                if isfield(figure{1}.include, "interferometer_nulling_statistics")
+                if isfield(cur_fig.include, "interferometer_nulling_statistics")
                     log_mean = mean(data.simulation.interferogram_multi.nulling, 2);
                     log_median = median(data.simulation.interferogram_multi.nulling, 2);
                     log_max = max(data.simulation.interferogram_multi.nulling, [], 2);
                     fraction_good = sum(data.simulation.interferogram_multi.nulling < 1e-4, 2) / size(data.simulation.interferogram_multi.nulling, 2);
 
-                    export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_nulling_statistics.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_nulling_statistics.height), ...
+                    export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_nulling_statistics.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_nulling_statistics.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name);
 
@@ -307,10 +253,10 @@ for i = 1:length(data_matrices)
                 end
 
 
-                if isfield(figure{1}.include, "interferometer_response_function")
+                if isfield(cur_fig.include, "interferometer_response_function")
                     RFp = [data.simulation.interferogram_multi.RFn; data.simulation.interferogram.RFp];
-                    export_settings = struct("width", export_data.sizes.width.(figure{1}.include.interferometer_response_function.width), ...
-                                "height", export_data.sizes.height.(figure{1}.include.interferometer_response_function.height), ...
+                    export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_response_function.width), ...
+                                "height", export_data.sizes.height.(cur_fig.include.interferometer_response_function.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_rf_%d", j));
                     plot_response_function_theta(theta, RFp, "Normalize", true, "embedded", export_settings);
@@ -321,17 +267,17 @@ for i = 1:length(data_matrices)
                 
                 exp_figures = {};
 
-                for j = 1:length(figure{1}.include)
-                    if strcmp(figure{1}.include{j}, "STD")
+                for j = 1:length(cur_fig.include)
+                    if strcmp(cur_fig.include{j}, "STD")
                         exp_figures{1} = export_settings;
                         exp_figures{1}.name = label_name + "_STD";
-                    elseif strcmp(figure{1}.include{j}, "CDF")
+                    elseif strcmp(cur_fig.include{j}, "CDF")
                         exp_figures{2} = export_settings;
                         exp_figures{2}.name = label_name + "_CDF";
-                    elseif strcmp(figure{1}.include{j}, "PCA")
+                    elseif strcmp(cur_fig.include{j}, "PCA")
                         exp_figures{3} = export_settings;
                         exp_figures{3}.name = label_name + "_PCA";
-                    elseif strcmp(figure{1}.include{j}, "PC1")
+                    elseif strcmp(cur_fig.include{j}, "PC1")
                         exp_figures{4} = export_settings;
                         exp_figures{4}.name = label_name + "_PC1";
                     end
@@ -345,17 +291,17 @@ for i = 1:length(data_matrices)
                 
                 exp_figures = {};
 
-                for j = 1:length(figure{1}.include)
-                    if strcmp(figure{1}.include{j}, "STD")
+                for j = 1:length(cur_fig.include)
+                    if strcmp(cur_fig.include{j}, "STD")
                         exp_figures{1} = export_settings;
                         exp_figures{1}.name = label_name + "_STD";
-                    elseif strcmp(figure{1}.include{j}, "CDF")
+                    elseif strcmp(cur_fig.include{j}, "CDF")
                         exp_figures{2} = export_settings;
                         exp_figures{2}.name = label_name + "_CDF";
-                    elseif strcmp(figure{1}.include{j}, "PCA")
+                    elseif strcmp(cur_fig.include{j}, "PCA")
                         exp_figures{3} = export_settings;
                         exp_figures{3}.name = label_name + "_PCA";
-                    elseif strcmp(figure{1}.include{j}, "PC1")
+                    elseif strcmp(cur_fig.include{j}, "PC1")
                         exp_figures{4} = export_settings;
                         exp_figures{4}.name = label_name + "_PC1";
                     end
@@ -382,17 +328,5 @@ for i = 1:length(data_matrices)
     end
 
     close all;
-
-end
-
-
-for table = export_data.tables
-
-    switch table{1}.type
-            case "unique_baselines"
-                filename = path + "tables/" + export_data.chapters{table{1}.chapter}.name + "/" + table{1}.type;
-                export_baselines_table(datas(2).instrument.unique_baselines, ...
-                    datas(1).instrument.unique_baselines, filename)
-    end
 
 end

@@ -1,3 +1,11 @@
+options:
+    data_files:
+        - "exports/data_linear"
+        - "exports/data_xarray"
+
+    skip_chapters: [2, 3]
+
+
 figures:
 
     - type: configuration
@@ -90,74 +98,72 @@ figures:
 
 
 
-    # - type: interferogram
-    #   maps_to_compute: 3
-    #   include:
-    #     interferometer_response_angles:
-    #         width: third
-    #         height: quart
-    #     interferometer_nulling_angles:
-    #         width: third
-    #         height: quart
-    #     interferometer_nulling_statistics:
-    #         width: half
-    #         height: normal
-    #     interferometer_response_function:
-    #         width: full
-    #         height: normal
-    #   chapter: 4
-    #   width: third
-    #   height: quart
-    #
-    # - type: interferogram_multiple
-    #   include:
-    #     interferometer_response_angles:
-    #         width: third
-    #         height: quart
-    #     interferometer_nulling_angles:
-    #         width: third
-    #         height: quart
-    #     interferometer_nulling_statistics:
-    #         width: half
-    #         height: normal
-    #     interferometer_response_function:
-    #         width: full
-    #         height: normal
-    #   chapter: 4
-    #   width: third
-    #   height: quart
-    #
-    # - type: transmission_map_perturbed
-    #   include:
-    #     - STD
-    #     - CDF
-    #     - PCA
-    #     - PC1
-    #   chapter: 4
-    #   width: half
-    #   height: normal
-    #
-    # - type: psf_perturbed
-    #   include:
-    #     - STD
-    #     - CDF
-    #     - PCA
-    #     - PC1
-    #   chapter: 4
-    #   width: half
-    #   height: normal
+    - type: interferogram
+      maps_to_compute: 3
+      simulation: compensator
+      include:
+        interferometer_response_angles:
+            width: third
+            height: quart
+        interferometer_nulling_angles:
+            width: third
+            height: quart
+        interferometer_nulling_statistics:
+            width: half
+            height: normal
+        interferometer_modulation_angles:
+            width: third
+            height: quart
+        interferometer_response_function:
+            width: full
+            height: normal
+      chapter: 4
+      width: third
+      height: quart
+
+    - type: interferogram_multiple
+      simulation: compensator
+      include:
+        interferometer_response_angles:
+            width: third
+            height: quart
+        interferometer_nulling_angles:
+            width: third
+            height: quart
+        interferometer_nulling_statistics:
+            width: half
+            height: normal
+        interferometer_response_function:
+            width: full
+            height: normal
+      chapter: 4
+      width: third
+      height: quart
+
+    - type: transmission_map_perturbed
+      include:
+        - STD
+        - CDF
+        - PCA
+        - PC1
+      chapter: 4
+      width: half
+      height: normal
+
+    - type: psf_perturbed
+      include:
+        - STD
+        - CDF
+        - PCA
+        - PC1
+      chapter: 4
+      width: half
+      height: normal
 
     - type: ppop_yield
       chapter: 4
       width: half
       height: normal
-
-tables:
-
-    # - type: unique_baselines
-    #   chapter: 2
-
-
 
 
 chapters:

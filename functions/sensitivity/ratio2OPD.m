@@ -28,6 +28,8 @@ function [OPDs, h] = ratio2OPD(N, amplitudes, phases, positions, ...
 %   2025-03-13 -------- 1.0
 %   2025-03-27 -------- 1.1
 %                     - Added export settings
+%   2025-05-12 -------- 1.1.1
+%                     - Correction to the xlabel
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,7 +76,7 @@ if isstruct(export_settings)
     set(cb, 'TickLabels', tick_labels);
 
     % Set axis labels
-    xlabel('Nulling Ratios');
+    xlabel('Nulling Ratio');
     ylabel('Wavelengths [µm]');
     set(gca, 'XScale', 'log');
 

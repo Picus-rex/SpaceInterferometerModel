@@ -34,6 +34,9 @@ function [OPD, OPD_max, h] = find_minimum_OPD_single_branch(N, amplitudes, ...
 %                       numerical solvers. Now works only on single branch.
 %   2025-03-27 -------- 2.1
 %                     - Adapted to the export settings to save plots.
+%   2025-05-12 -------- 2.2
+%                     - Correction to the xlabel.
+%                     - Added color consistency.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -92,11 +95,13 @@ opd_fun = @(r) interp1(ratios_range, opd_range, r, "spline", NaN);
 
 % Begin plot if needed
 if isstruct(export_settings)
+    style_colors;
     h = figure; hold on; set(gca, 'XScale', 'log', 'YScale', 'log')
-    xlabel("Nulling ratios")
+    xlabel("Nulling ratio")
     ylabel("Minimum OPD [µm]")
-    plot(ratios, opd*1e6, "*-", "LineWidth", 1.5);
-    plot(ratios_range, opd_range*1e6, "-", "LineWidth", 1.5);
+    plot(ratios, opd*1e6, "*-", "LineWidth", 1.5, "Color", ui_colours(1, :));
+    plot(ratios_range, opd_range*1e6, "-", "LineWidth", 1.5, "Color", ui_colours(9, :));
+    grid minor;
 end
 
 % For every desired ratio... 
@@ -115,9 +120,7 @@ for i = 1:length(desired_ratios)
     
     % Continue plot
     if isstruct(export_settings)
-        xline(desired_ratio, '--g', "LineWidth", 1.5);
-        xline(rr, '--k', "LineWidth", 1.5)
-        yline(req_opd * 1e6, '--r', "LineWidth", 1.5);
+        xline(desired_ratio, '--', "LineWidth", 1.5, Color=ui_colours(5, :));
     end
 end
 

@@ -1,5 +1,5 @@
 function h = plot_phase_sensitivity(surfaces, intensities, positions, ...
-    nominal_phases, eta_opt, lambda, theta_star)
+    nominal_phases, eta_opt, lambda, theta_star, export_setup)
 %PLOT_PHASE_SENSITIVITY Visualise how the modulation efficiency and the
 %nulling ratio change with respect to the phase of the first element.
 %
@@ -12,11 +12,16 @@ function h = plot_phase_sensitivity(surfaces, intensities, positions, ...
 %   lambda[1]           Wavelength of observation. [m]
 %   theta_star[1]       Angular dimension of the star. [rad]
 %
+% OPTIONAL INPUTS:
+%   export_setup[struct]Struct with data to save exporting.
+%
 % OUTPUTS:
 %   h[figure]           Handle of the figure. 
 %
 % VERSION HISTORY:
 %   2025-05-06 -------- 1.0
+%   2025-05-12 -------- 1.1
+%                     - Added export setup options. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,11 +49,21 @@ for i = 1:length(phase)
 end
 
 % Plotting
-h = figure;
-yyaxis left;
+figure;
 plot(phase, eta_mod, "LineWidth", 1.5);
 ylabel("Modulation efficiency")
-yyaxis right;
+xlim([0, 360])
+xticks(0:30:360)
+xlabel("Phase of the perturbed aperture [deg]")
+grid minor
+
+if isstruct(export_setup)
+    glob_name = export_setup.name;
+    export_setup.name = glob_name + "_modulation";
+    export_figures("embedded", export_setup)
+end
+
+figure;
 plot(phase, nulling, "LineWidth", 1.5);
 ylabel("Nulling ratio")
 set(gca, "YScale", "log")
@@ -56,5 +71,11 @@ xlim([0, 360])
 xticks(0:30:360)
 xlabel("Phase of the perturbed aperture [deg]")
 grid minor
+
+if isstruct(export_setup)
+    export_setup.name = glob_name + "_nul_ratio";
+    export_figures("embedded", export_setup)
+end
+
 
 end

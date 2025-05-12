@@ -24,6 +24,9 @@ function plot_array_size_sensitivity(intensities, array, baseline, ...
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if nargin < 8
+    export_setup = [];
+end
 
 % Define and allocate
 Bs = linspace(100, 600, 1000);

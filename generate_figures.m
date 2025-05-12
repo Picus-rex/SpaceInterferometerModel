@@ -44,7 +44,7 @@ for i = 1:length(export_data.options.data_files)
                 [~, ~, h] = plot_apertures(data.instrument.positions, data.instrument.intensities, data.instrument.efficiencies.optical_line, data.instrument.efficiencies.optical_line, export_settings);
 
             case "transmission_map"
-                if cur_fig.planets
+                if isfield(cur_fig, "planets") && cur_fig.planets
                     theta_planets = [300, 750, 1250];
                     h = plot_transmission_map(data.simulation.theta_range, data.simulation.T_standard, export_settings, theta_planets);
                 else
@@ -326,12 +326,18 @@ for i = 1:length(export_data.options.data_files)
                 compare_compensator(data.simulation.code_v.perturbed.opd, ... 
                         data.simulation.nulling_ratio_interferogram.perturbed, data.simulation.code_v.corrected.opd, ...
                         data.simulation.nulling_ratio_interferogram.corrected, data.simulation.code_v.corrected.x(:, 1), ...
-                        data.simulation.code_v.corrected.y(:, 1));
+                        data.simulation.code_v.corrected.y(:, 1), export_settings);
 
             case "sensitivity_dimensions"
                 plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
                     data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
-                    data.environment.stellar_angular_radius, data.instrument.wavelength)
+                    data.environment.stellar_angular_radius, data.instrument.wavelength, export_settings)
+
+            case "sensitivity_phase"
+                plot_phase_sensitivity(data.instrument.surfaces, data.instrument.intensities, ...
+                    data.instrument.positions, data.instrument.phase_shifts, ...
+                    data.instrument.efficiencies.optical_line, data.instrument.wavelength, ...
+                    data.environment.stellar_angular_radius, export_settings);
         end
     end
 

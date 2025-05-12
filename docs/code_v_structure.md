@@ -43,3 +43,13 @@ In compensators file, the following structure is observed
 - Perturbed and corrected simulation 3
 
 and so on, therefore, when the `compensator` field is provided, the field `perturbed` is overwritten (a warning will be displayed). 
+
+### Splitted files 
+
+Since GitHub does not allow for larger files to be upload, it is possible to load splitted files. Splitted files, generated with `split_large_files.py` function, follow the form `basename.id.txt`, where `id` starts from 1 up to all the necessary files. So that, in the configuration file, one can simply indicate, for example:
+
+```
+compensator: "code_v/0510_compensator_bis.txt"
+```
+
+Then all the files `code_v/0510_compensator_bis.1.txt`, `code_v/0510_compensator_bis.2.txt` etc. will be imported. 

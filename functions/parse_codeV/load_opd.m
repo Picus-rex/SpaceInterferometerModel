@@ -34,13 +34,15 @@ function [optical_path, OPD, x_coords, y_coords] = load_opd(filename)
 %                     - Output of OPD as well as the optical path.
 %   2025-04-10 -------- 1.2
 %                     - Completely rewritten to be significantly faster.
+%   2025-05-12 -------- 1.3
+%                     - Allow split importing for larger files.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % Read all lines from the file
-lines = readlines(filename);
+lines = read_split_file(filename);
 
 % Identify series start markers
 markerIdx = find(startsWith(lines, '=='));
@@ -94,4 +96,40 @@ end
 % Compute OPD
 center_index = ceil(Np / 2);
 OPD = optical_path - optical_path(center_index, :);
+end
+
+
+
+
+function lines = read_split_file(filename)
+    % Extract folder, base name, and extension
+    [folder, base, ext] = fileparts(filename);
+    basefile = fullfile(folder, [base, ext]);
+
+    % Initialize array for all lines
+    lines = [];
+
+    % Check if split parts exist (e.g., file.1.txt, file.2.txt, ...)
+    part_index = 1;
+    has_parts = false;
+    while true
+        part_file = fullfile(folder, sprintf('%s.%d%s', base, part_index, ext));
+        if isfile(part_file)
+            has_parts = true;
+            part_lines = readlines(part_file);
+            lines = [lines; part_lines];  %#ok<AGROW> <-- disable warning
+            part_index = part_index + 1;
+        else
+            break;
+        end
+    end
+
+    % If no parts were found, read the original file
+    if ~has_parts
+        if isfile(basefile)
+            lines = readlines(basefile);
+        else
+            error('File "%s" not found.', basefile);
+        end
+    end
 end

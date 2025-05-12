@@ -162,7 +162,7 @@ figures:
 
     - type: ppop_yield
       chapter: 4
-      width: half
+      width: full
       height: normal
 
     - type: compensator_effects
@@ -173,6 +173,11 @@ figures:
     - type: sensitivity_dimensions
       chapter: 4
       width: half
+      height: half
+
+    - type: sensitivity_phase
+      chapter: 4
+      width: full
       height: half
 
 

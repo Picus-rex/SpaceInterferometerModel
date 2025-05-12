@@ -53,13 +53,13 @@ simulation:
     planet_modulation_positions: 0          # Number of rotations of the array to consider for the modulation
 
     angular_extension:
-        theta_x: [-3.5e-6, 3.5e-6, 2000]    # start, end, number of points
+        theta_x: [-1.9393e-6, 1.9393e-6, 2000]    # start, end, number of points
         theta_y: [-0.1e-7, 0.1e-7, 2]       # start, end, number of points
 
     code_v_opd_file:
-        nominal:     "code_v/nominal_0424.txt"
-        perturbed:   "code_v/perturbed_0424_100sims.txt"
-        compensator: "code_v/0507_compensator_bis.txt"
+        nominal:     "code_v/nominal_49077.txt"
+        # perturbed:   "code_v/perturbed_0424_100sims.txt"
+        compensator: "code_v/0510_compensator_bis.txt"
 
 
 outputs:

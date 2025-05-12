@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <workbook>
+    <preferences>
+      <color-palette name="ui_scale" type="ordered-diverging">
+        <color>#ed5544</color>
+        <color>#ee7e35</color>
+        <color>#ee9d27</color>
+        <color>#edae45</color>
+        <color>#edbc5b</color>
+        <color>#adb7a9</color>
+        <color>#25a1e1</color>
+        <color>#196da6</color>
+        <color>#002f61</color>
+      </color-palette>
+    </preferences>
+  </workbook>

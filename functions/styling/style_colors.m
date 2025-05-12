@@ -22,6 +22,7 @@ ui_colours = [
         255, 127, 17   % Orange (wheel)
     ] / 255;
 
+ui_colours = xml2matrix("others/ui_scale_diverging_colors.xml");
 
 colours = xml2matrix("others/autumn_night.xml");
 

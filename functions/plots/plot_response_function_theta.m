@@ -21,6 +21,9 @@ function h = plot_response_function_theta(theta_range, RFs, export_setup)
 %                     - Can specify a nominal curve to differentiate style.
 %   2025-04-17 -------- 1.2
 %                     - Added integrated plot support.
+%   2025-05-12 -------- 1.2.1
+%                     - Corrected parsing in some case with default
+%                       arguments.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,7 +36,7 @@ arguments
     export_setup.embedded = []
 end
 
-if ~theta_range
+if isempty(theta_range)
     theta_range = default_arguments("theta");
 end
 

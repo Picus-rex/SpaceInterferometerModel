@@ -53,8 +53,8 @@ simulation:
     planet_modulation_positions: 100        # Number of rotations of the array to consider for the modulation
 
     angular_extension:
-        theta_x: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
-        theta_y: [-0.3e-6, 0.3e-6, 500]     # start, end, number of points
+        theta_x: [-1.9393e-6, 1.9393e-6, 500]     # start, end, number of points
+        theta_y: [-1.9393e-6, 1.9393e-6, 500]     # start, end, number of points
 
     code_v_opd_file:
         nominal:    "code_v/nominal_100sim_21804points.txt"

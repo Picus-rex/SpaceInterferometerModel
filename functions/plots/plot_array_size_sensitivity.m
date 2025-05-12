@@ -1,5 +1,5 @@
 function plot_array_size_sensitivity(intensities, array, baseline, ...
-    apertures_ratio, phase_shifts, theta_star, lambda)
+    apertures_ratio, phase_shifts, theta_star, lambda, export_setup)
 %PLOT_ARRAY_SIZE_SENSITIVITY Visualise how dimensions affects the resulting
 %metrics of nulling ratio and inner working angle in the detection of the
 %system. 
@@ -13,8 +13,13 @@ function plot_array_size_sensitivity(intensities, array, baseline, ...
 %   theta_star[1]       Angular dimension of the star. [rad]
 %   lambda[1]           Wavelength of observation (default: 1e-5). [m]
 %
+% OPTIONAL INPUTS:
+%   export_setup[struct]Struct with data to save exporting.
+%
 % VERSION HISTORY:
 %   2025-05-08 -------- 1.0
+%   2025-05-12 -------- 1.1
+%                     - Added export setup.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,6 +35,11 @@ IWAs = zeros(length(Bs), 1);
 % Plot nulling ratio
 find_optimal_baseline_by_B(Bs(1), Bs(end), intensities, ...
     array, apertures_ratio, phase_shifts, theta_star, lambda);
+if isstruct(export_setup)
+    glob_name = export_setup.name;
+    export_setup.name = glob_name + "_nulratio_baseline";
+    export_figures("embedded", export_setup)
+end
 
 % For every possible baseline...
 for i = 1:length(Bs)
@@ -47,12 +57,20 @@ plot(Bs, rad2mas(IWAs), "LineWidth", 1.5);
 xlabel("Maximum baseline")
 ylabel("Inner working angle [mas]")
 grid minor;
+if isstruct(export_setup)
+    export_setup.name = glob_name + "_iwa_baseline";
+    export_figures("embedded", export_setup)
+end
 
 % PART 2: EDIT THE APERTURE RATIO
 
 % Plot nulling ratio
 find_optimal_baseline_by_AR(ARs(1), ARs(end), intensities, ...
     array, baseline, phase_shifts, theta_star, lambda);
+if isstruct(export_setup)
+    export_setup.name = glob_name + "_nulratio_aspectratio";
+    export_figures("embedded", export_setup)
+end
 
 % For every possible baseline...
 for i = 1:length(ARs)
@@ -69,5 +87,9 @@ plot(ARs, rad2mas(IWAs), "LineWidth", 1.5);
 xlabel("Aperture ratio")
 ylabel("Inner working angle [mas]")
 grid minor;
+if isstruct(export_setup)
+    export_setup.name = glob_name + "_iwa_aspectratio";
+    export_figures("embedded", export_setup)
+end
 
 end

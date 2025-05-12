@@ -59,7 +59,7 @@ simulation:
     code_v_opd_file:
         nominal:     "code_v/nominal_0424.txt"
         perturbed:   "code_v/perturbed_0424_100sims.txt"
-        compensator: "code_v/0507_compensator_aut.txt"
+        compensator: "code_v/0507_compensator_bis.txt"
 
 
 outputs:

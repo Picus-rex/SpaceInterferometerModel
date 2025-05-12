@@ -10,12 +10,15 @@ function points = load_grid(direction)
 %
 % VERSION HISTORY:
 %   2025-04-02 -------- 1.0
+%   2025-05-12 -------- 1.1
+%                     - Corrected interva in accordance with other
+%                       simulations.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Generation of the meshgrid
-theta_range = linspace(-3.5e-6, 3.5e-6, 1000); 
+theta_range = mas2rad(linspace(-700, 700, 1000)); 
 [points_x, points_y] = meshgrid(theta_range, theta_range);
 
 switch direction

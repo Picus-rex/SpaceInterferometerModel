@@ -40,6 +40,9 @@ function [RFs, RFn, R, ratio, eta_mod] = interferogram_sensitivity(OPD_n, OPD, .
 %   2025-04-30 -------- 1.2
 %                     - Added modulation efficiency as output.
 %                     - Inputs reorganised.
+%   2025-05-12 -------- 1.2.1
+%                     - Corrected default arguments in accordance with
+%                       other simulations. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,10 +55,10 @@ arguments
     combination 
     areas
     lambda = 1e-5
-    theta = mas2rad(linspace(-700, 700, 1000))
-    maps_to_compute = 1 : floor(length(theta) / 4) : length(theta)
+    theta = default_arguments("theta")
+    maps_to_compute = default_arguments("maps_to_compute")
     eta_opt = 0.1
-    stellar_angular_radius = 1.50444523662918e-09
+    stellar_angular_radius = default_arguments("stellar_angular_radius")
 end
 
 % Compute nominal phase

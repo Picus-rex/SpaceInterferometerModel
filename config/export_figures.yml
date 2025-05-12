@@ -165,6 +165,16 @@ figures:
       width: half
       height: normal
 
+    - type: compensator_effects
+      chapter: 4
+      width: half
+      height: normal
+
+    - type: sensitivity_dimensions
+      chapter: 4
+      width: half
+      height: half
+
 
 chapters:
     - name: intro
@@ -184,5 +194,6 @@ sizes:
         quart: 5.5
     height:
         normal: 10
+        half: 5
         quart: 5
     font_size: 10

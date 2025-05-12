@@ -39,6 +39,8 @@ function [modulation, hs] = planet_modulation(data, export_settings)
 %   2025-05-09 -------- 1.3.2
 %                     - Fixed missing export of hs when 
 %                       planet_modulation_positions was not given. 
+%   2025-05-12 -------- 1.3.3
+%                     - Allocate outputs before functions to avoid errors.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,6 +56,9 @@ end
 conversion_rad2mas = 1e3 * (3600 * 180) / pi;
 style_colors;
 
+% Allocate outputs
+hs = NaN;
+
 % Planet position
 planet_x = data.environment.exoplanet_position(1);
 planet_y = data.environment.exoplanet_position(2);
@@ -63,7 +68,6 @@ if isfield(data.simulation, "planet_modulation_positions")
     n_rotation = data.simulation.planet_modulation_positions;
     if n_rotation == 0
         modulation = NaN;
-        hs = NaN;
         return
     end
 else

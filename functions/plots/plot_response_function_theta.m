@@ -25,13 +25,18 @@ function h = plot_response_function_theta(theta_range, RFs, export_setup)
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 arguments
-    theta_range 
-    RFs 
+    theta_range = default_arguments("theta")
+    RFs = []
     export_setup.YScale = "log"
     export_setup.Nominal_curve = 1
     export_setup.Normalize = true
     export_setup.embedded = []
 end
+
+if ~theta_range
+    theta_range = default_arguments("theta");
+end
+
 
 % Import styling
 style_colors;

@@ -22,9 +22,6 @@ for i = 1:length(export_data.options.data_files)
 
     data = load(export_data.options.data_files{i}).data;
     suffix = "_" + data.instrument.name;
-
-    theta = mas2rad(linspace(-100, 100, 1000));
-    maps_to_compute = 1 : floor(length(theta) / 3) : length(theta);
     
     for figure = export_data.figures
 
@@ -202,7 +199,7 @@ for i = 1:length(export_data.options.data_files)
                                 "height", export_data.sizes.height.(cur_fig.include.interferometer_response_function.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_rf_%d", j));
-                    plot_response_function_theta(theta, RFp, "Normalize", true, "embedded", export_settings);
+                    plot_response_function_theta([], RFp, "Normalize", true, "embedded", export_settings);
 
                 end
 
@@ -254,12 +251,12 @@ for i = 1:length(export_data.options.data_files)
 
 
                 if isfield(cur_fig.include, "interferometer_response_function")
-                    RFp = [data.simulation.interferogram_multi.RFn; data.simulation.interferogram.RFp];
+                    RFp = [data.simulation.interferogram_multi.RFn; data.simulation.interferogram_multi.RFp];
                     export_settings = struct("width", export_data.sizes.width.(cur_fig.include.interferometer_response_function.width), ...
                                 "height", export_data.sizes.height.(cur_fig.include.interferometer_response_function.height), ...
                                 "font_size", export_data.sizes.font_size, ...
                                 "name", label_name + sprintf("_rf_%d", j));
-                    plot_response_function_theta(theta, RFp, "Normalize", true, "embedded", export_settings);
+                    plot_response_function_theta([], RFp, "Normalize", true, "embedded", export_settings);
 
                 end
 
@@ -324,6 +321,17 @@ for i = 1:length(export_data.options.data_files)
 
                 plot_ppop_yield(data.simulation.yield.ppop_table, data.instrument.IWA, ...
                     data.instrument.OWA, min(rms(data.simulation.perturbation.ratio)), exp_figures);
+
+            case "compensator_effects"
+                compare_compensator(data.simulation.code_v.perturbed.opd, ... 
+                        data.simulation.nulling_ratio_interferogram.perturbed, data.simulation.code_v.corrected.opd, ...
+                        data.simulation.nulling_ratio_interferogram.corrected, data.simulation.code_v.corrected.x(:, 1), ...
+                        data.simulation.code_v.corrected.y(:, 1));
+
+            case "sensitivity_dimensions"
+                plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
+                    data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
+                    data.environment.stellar_angular_radius, data.instrument.wavelength)
         end
     end
 

@@ -1,4 +1,4 @@
-function compare_compensator(opd_uncorr, null_uncorr, opd_corr, null_corr, x, y)
+function compare_compensator(opd_uncorr, null_uncorr, opd_corr, null_corr, x, y, export_setup)
 %COMPARE_COMPENSATOR Provide some figures to compare the results between
 %uncorrected and corrected simulations.
 %
@@ -10,11 +10,20 @@ function compare_compensator(opd_uncorr, null_uncorr, opd_corr, null_corr, x, y)
 %   x[Npx1]             X coordinates at the pupil screen [m].
 %   y[Npx1]             Y coordinates at the pupil screen [m].
 %
+% OPTIONAL INPUTS:
+%   export_setup[struct]Struct with data to save exporting.
+%
 % VERSION HISTORY:
 %   2025-05-07 -------- 1.0
+%   2025-05-12 -------- 1.1
+%                     - Added export setup options
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin < 7
+    export_setup = [];
+end
 
 % Compute variables sizes
 Ns = size(opd_corr, 2);
@@ -31,6 +40,12 @@ boxplot([rms_uncorr; rms_corr]',...
 ylabel('Root mean squares of OPD');
 title('Reduction in wavefront error');
 grid minor;
+
+if isstruct(export_setup)
+    glob_name = export_setup.name;
+    export_setup.name = glob_name + "_boxplot";
+    export_figures("embedded", export_setup)
+end
 
 % Convert nulling ratios to log values, then compute the mean for all
 % values to flatten values
@@ -66,11 +81,23 @@ linear2power_thicks("xy")
 axis equal;
 grid minor;
 
+if isstruct(export_setup)
+    export_setup.name = glob_name + "_correlation";
+    export_figures("embedded", export_setup)
+end
+
 % Compute difference and plot it
 dlog_map        = mean_log_corr - mean_log_uncorr;  
 
 % PLOT 4
-plot_value_on_image_plane(dlog_map, x, y, ...
+if isstruct(export_setup)
+    export_setup.name = glob_name + "_map";
+    plot_value_on_image_plane(dlog_map, x, y, ...
+        title="Mean difference of logarithm of Nulling Ratio", type="_1e0", embedded=export_setup);
+else
+    plot_value_on_image_plane(dlog_map, x, y, ...
     title="Mean difference of logarithm of Nulling Ratio", type="_1e0");
+end
+
 
 end

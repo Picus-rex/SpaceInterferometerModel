@@ -19,12 +19,8 @@ $$$$$$\ $$\   $$\ $$$$$$$$\ $$$$$$$$\ $$$$$$$\  $$$$$$$$\
 $$$$$$\ $$ | \$$ |   $$ |   $$$$$$$$\ $$ |  $$ |$$ |$$\             
 \______|\__|  \__|   \__|   \________|\__|  \__|\__|\__|
 ===========================================================================
-This script will generate a .mat file that can be used in images exporting.
-Please consider this may take a while. Grab a snack. This is going to be
-interstellar.
-
-ATTENTION: This script relies on the compensator being integrated into the
-analysis (as well as perturbations). To use without a perturbation, please
-replace all instances of "corrected" with "perturbed".
+This script will generate all the images specified in the corresponding 
+configuration file (if the exporting folders exist :-)). This script will
+frequently steal the focus, therefore, once again, relax and wait.
 
 Analysis started...

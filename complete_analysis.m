@@ -9,7 +9,7 @@ set(0, 'DefaultFigureWindowStyle', 'docked')
 tic;
 
 % CHANGE HERE THE ARRAY
-data = convert_data('config/linear_array.yml');
+data = convert_data('config/x_array.yml');
 
 type others/header.txt
 

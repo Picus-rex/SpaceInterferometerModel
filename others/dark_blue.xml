@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <workbook>
+    <preferences>
+      <color-palette name="Dark Blue" type="ordered-sequential">
+        <color>#002f61</color>
+        <color>#36547d</color>
+        <color>#5e7594</color>
+        <color>#8292aa</color>
+        <color>#a3aebe</color>
+        <color>#c3c8d0</color>
+        <color>#e2e2e2</color>
+      </color-palette>
+    </preferences>
+  </workbook>

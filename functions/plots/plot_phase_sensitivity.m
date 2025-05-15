@@ -49,8 +49,10 @@ for i = 1:length(phase)
 end
 
 % Plotting
+style_colors;
+
 figure;
-plot(phase, eta_mod, "LineWidth", 1.5);
+plot(phase, eta_mod, "LineWidth", 1.5, "Color", ui_colours(1, :));
 ylabel("Modulation efficiency")
 xlim([0, 360])
 xticks(0:30:360)
@@ -64,7 +66,7 @@ if isstruct(export_setup)
 end
 
 figure;
-plot(phase, nulling, "LineWidth", 1.5);
+plot(phase, nulling, "LineWidth", 1.5, "Color", ui_colours(9, :));
 ylabel("Nulling ratio")
 set(gca, "YScale", "log")
 xlim([0, 360])

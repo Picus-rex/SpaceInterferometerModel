@@ -3,8 +3,8 @@ clc; clear; close;
 % IWA, OWA from Viseurs
 
 % Read the catalogue
-opts = detectImportOptions('others/TestPlanetPopulation.txt', 'NumHeaderLines', 1);
-T = readtable('others/TestPlanetPopulation.txt', opts);
+opts = detectImportOptions('others/TestPlanetPopulationB.txt', 'NumHeaderLines', 1);
+T = readtable('others/TestPlanetPopulationB.txt', opts);
 
 universeToPlot = 0;
 rows = T.Nuniverse == universeToPlot;
@@ -46,14 +46,17 @@ markers = {'o','s','^','d','v','>','<','p','h'};
 
 style_colors;
 
+% To select different colours (terrible implementation)
+ui_idx = [1, 3, 5, 7, 9];
+
 for i = 1:length(starTypes)
 
     % Select indices for the current star type
     idx = strcmp(T.Stype(:), {starTypes{i}});
 
     % Create a log–log scatter plot for this group
-    scatter(ang_sep_rad(idx) * 648000000/pi, contrast(idx), 40, ...
-        colours(i,:), 'filled', 'DisplayName', starTypes{i});
+    scatter(ang_sep_rad(idx) * 648000000/pi, contrast(idx), 20, ...
+        ui_colours(ui_idx(i),:), 'filled', 'DisplayName', starTypes{i}, 'MarkerFaceAlpha', 0.5);
 
 end
 

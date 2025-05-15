@@ -8,6 +8,8 @@ This repository contains a series of functions to study the behaviour of a N ape
 
 The function library is provided within the `function` folder. They can be called individually or exploited like shown in the main files within the root of the folder. All the main files starts by clearing the workspace and by loading the functions folders, therefore everything works out of the box, provided that the necessary toolboxes are installed.
 
+> Notice: Certain files require the existance of some folders, therefore when the `file not found` error occurs, the creation of the required folders or the modification of the path should solve the problem. In particular, the `export` folder must be created on the root of the active folder. 
+
 Most of the scripts (whose description is provided below) rely on configuration files, written in YAML. Examples are given within the `config` folder. The documentation folder `docs` contains a document that explains the main elements of a configuration file. Some of them (the ones that concern perturbations), also require external outputs from ray-tracing software (more about them in the [CODE V integration](docs/code_v_structure.md)): outputs from that files are given, as an example, in the `code_v` folder. 
 
 

@@ -2,7 +2,7 @@
 clear; close all; clc;
 
 % Specify the file name
-filename = 'others/TestPlanetPopulation.txt';
+filename = 'others/TestPlanetPopulationB.txt';
 
 % Read the catalogue.
 % (Assumes whitespace‐delimited text file with header rows.)
@@ -47,7 +47,8 @@ contrast_1 = ((Tsub.rp * R_earth).^2 .* B(Tsub.Tp, lambda1)) ./ ((Tsub.Rs * R_su
 contrast_2 = ((Tsub.rp * R_earth).^2 .* B(Tsub.Tp, lambda2)) ./ ((Tsub.Rs * R_sun).^2 .* B(Tsub.Ts, lambda2));
 
 set(0, 'DefaultFigureWindowStyle', 'normal') % Change to NORMAL to export
-col = styling;
+style_colors;
+col = colours;
 
 figure;
 semilogy(stellarTypes, contrast_1, 'o', 'LineWidth', 1.5, 'MarkerSize', 8, "Color", col(1, :));
@@ -55,7 +56,6 @@ xlabel('Stellar Spectral Type');
 ylabel('Planet/Star Flux Contrast');
 grid on;
 colorbar('off')
-styling(true, 10, 7, "exports/contrast_1", false);
 
 figure;
 semilogy(stellarTypes, contrast_2, 'o', 'LineWidth', 1.5, 'MarkerSize', 8, "Color", col(3, :));
@@ -64,4 +64,3 @@ ylabel('Planet/Star Flux Contrast');
 ylim([1e-20, 1e-5])
 grid on;
 colorbar('off')
-styling(true, 10, 7, "exports/contrast_2", false);

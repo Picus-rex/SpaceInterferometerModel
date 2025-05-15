@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <workbook>
+    <preferences>
+      <color-palette name="Spectral wave" type="ordered-sequential">
+        <color>#e58e26</color>
+        <color>#ee7e39</color>
+        <color>#f27152</color>
+        <color>#f1656e</color>
+        <color>#eb5d8c</color>
+        <color>#e258a9</color>
+        <color>#d457c6</color>
+        <color>#c358de</color>
+        <color>#ad5df1</color>
+        <color>#a659f2</color>
+        <color>#af4be3</color>
+        <color>#b73dd0</color>
+        <color>#bc30b8</color>
+        <color>#be259d</color>
+        <color>#be1c80</color>
+        <color>#bb1767</color>
+        <color>#b51462</color>
+        <color>#ae105c</color>
+        <color>#a40f6b</color>
+        <color>#951580</color>
+        <color>#851e8f</color>
+        <color>#732795</color>
+        <color>#602f94</color>
+        <color>#4b368d</color>
+        <color>#363a80</color>
+        <color>#213c71</color>
+        <color>#0f3a65</color>
+        <color>#093461</color>
+        <color>#072d60</color>
+        <color>#0c2461</color>
+      </color-palette>
+    </preferences>
+  </workbook>

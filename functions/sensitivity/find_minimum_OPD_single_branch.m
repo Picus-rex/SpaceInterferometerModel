@@ -99,8 +99,8 @@ if isstruct(export_settings)
     h = figure; hold on; set(gca, 'XScale', 'log', 'YScale', 'log')
     xlabel("Nulling ratio")
     ylabel("Minimum OPD [µm]")
-    plot(ratios, opd*1e6, "*-", "LineWidth", 1.5, "Color", ui_colours(1, :));
-    plot(ratios_range, opd_range*1e6, "-", "LineWidth", 1.5, "Color", ui_colours(9, :));
+    plot(ratios, opd*1e6, "-", "LineWidth", 10, "Color", ui_colours(4, :));
+    plot(ratios_range, opd_range*1e6, "-", "LineWidth", 5, "Color", ui_colours(1, :));
     grid minor;
 end
 
@@ -119,8 +119,8 @@ for i = 1:length(desired_ratios)
                                         positions, theta_star, lambda);
     
     % Continue plot
-    if isstruct(export_settings)
-        xline(desired_ratio, '--', "LineWidth", 1.5, Color=ui_colours(5, :));
+    if isstruct(export_settings) && (i == 1 || i == length(desired_ratios))
+        xline(desired_ratio, '--', "LineWidth", 1.5, Color=ui_colours(9, :));
     end
 end
 

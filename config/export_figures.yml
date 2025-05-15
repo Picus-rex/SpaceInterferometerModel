@@ -1,9 +1,9 @@
 options:
     data_files:
-        - "exports/data_linear"
-        - "exports/data_xarray"
+        - "exports/data_linear.mat"
+        - "exports/data_xarray.mat"
 
-    skip_chapters: [2, 3]
+    skip_chapters: [1, 2, 4, 5]
 
 
 figures:
@@ -96,6 +96,11 @@ figures:
       width: half
       height: normal
 
+    - type: sensitivity_phase
+      chapter: 3
+      width: half
+      height: half
+
 
 
     - type: interferogram
@@ -166,30 +171,43 @@ figures:
       height: normal
 
     - type: compensator_effects
+      include:
+        boxplot:
+            width: full
+            height: normal
+        correlation:
+            width: half
+            height: normal
+        map:
+            width: half
+            height: normal
       chapter: 4
       width: half
       height: normal
 
-    - type: sensitivity_dimensions
-      chapter: 4
-      width: half
-      height: half
 
-    - type: sensitivity_phase
-      chapter: 4
-      width: full
+
+    - type: sensitivity_dimensions
+      chapter: 5
+      width: half
       height: half
 
 
 chapters:
     - name: intro
-      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/
+      path: exports/
+
     - name: modelling
-      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/
+      path: exports/
+
     - name: sensitivity
-      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/
+      path: exports/
+
     - name: results
-      path: /Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/paperino/67f92ac5d9ea1e6dd82b036e/
+      path: exports/
+
+    - name: validation
+      path: exports/
 
 sizes:
     width:

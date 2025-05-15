@@ -164,7 +164,7 @@ if autoplot
     end
     xlabel('\theta_x [mas]');
     ylabel('Normalized Intensity');
-    ylim([0, 1.2*max(reshape(W_intensity(1, :), length(theta_y), length(theta_x)))])
+    ylim([0, 5*max(reshape(W_intensity(1, :), length(theta_y), length(theta_x)), [], "all")])
     legend("NumColumns", 2);
     grid minor; hold off;
     if export

@@ -7,6 +7,9 @@ clc; clear; close all;
 addpath(genpath("."))
 set(0, 'DefaultFigureWindowStyle', 'normal') 
 
+tic;
+type others/header_images.txt
+
 % Specify path of the git to export images following the convention adopted
 export_data = ReadYaml('config/export_figures.yml');
 
@@ -17,11 +20,16 @@ for i = 1:length(export_data.options.data_files)
     end
 end
 
+fprintf("\n✓ Data files found\n")
+
 % For every configuration to export...
 for i = 1:length(export_data.options.data_files)
 
     data = load(export_data.options.data_files{i}).data;
     suffix = "_" + data.instrument.name;
+
+    fprintf("✓ %s loaded\n", export_data.options.data_files{i})
+    k = 1;
     
     for figure = export_data.figures
 
@@ -323,10 +331,31 @@ for i = 1:length(export_data.options.data_files)
                     data.instrument.OWA, min(rms(data.simulation.perturbation.ratio)), exp_figures);
 
             case "compensator_effects"
+
+                exp_figures = {};
+
+                for j = 1:length(cur_fig.include)
+                    if isfield(cur_fig.include, "boxplot")
+                        exp_figures{1} = export_settings;
+                        exp_figures{1}.width = export_data.sizes.width.(cur_fig.include.boxplot.width);
+                        exp_figures{1}.height = export_data.sizes.height.(cur_fig.include.boxplot.height);
+                    end
+                    if isfield(cur_fig.include, "correlation")
+                        exp_figures{2} = export_settings;
+                        exp_figures{2}.width = export_data.sizes.width.(cur_fig.include.correlation.width);
+                        exp_figures{2}.height = export_data.sizes.height.(cur_fig.include.correlation.height);
+                    end
+                    if isfield(cur_fig.include, "map")
+                        exp_figures{3} = export_settings;
+                        exp_figures{3}.width = export_data.sizes.width.(cur_fig.include.map.width);
+                        exp_figures{3}.height = export_data.sizes.height.(cur_fig.include.map.height);
+                    end
+                end
+
                 compare_compensator(data.simulation.code_v.perturbed.opd, ... 
                         data.simulation.nulling_ratio_interferogram.perturbed, data.simulation.code_v.corrected.opd, ...
                         data.simulation.nulling_ratio_interferogram.corrected, data.simulation.code_v.corrected.x(:, 1), ...
-                        data.simulation.code_v.corrected.y(:, 1), export_settings);
+                        data.simulation.code_v.corrected.y(:, 1), exp_figures);
 
             case "sensitivity_dimensions"
                 plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
@@ -339,8 +368,14 @@ for i = 1:length(export_data.options.data_files)
                     data.instrument.efficiencies.optical_line, data.instrument.wavelength, ...
                     data.environment.stellar_angular_radius, export_settings);
         end
+
+        fprintf("✓ (%d/%d) Image %s exported\n", k, length(export_data.figures), cur_fig.type)
+        k = k + 1;
+
     end
 
     close all;
 
 end
+
+toc;

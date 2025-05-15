@@ -51,7 +51,7 @@ environment:
 simulation:
     phases: given                           # If optimal, compute phases using SVD
 
-    consider_non_ideal: true                # If false, fields with [1] are optional
+    consider_non_ideal: false               # If false, fields with [1] are optional
     model: instrumental_leakage             # [1] Model to use
     monte_carlo_iterations: 0               # [1]
 

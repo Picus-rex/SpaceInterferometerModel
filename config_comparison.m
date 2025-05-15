@@ -25,7 +25,7 @@ elseif CONFIG_TYPE == 2
     names = ["Darwin", "TPF-I", "LIFE"];
     caption = "Comparison table for Darwin, TPF-I and LIFE with normalised results for positions, modulation efficiency (higher is better), inner working angles (lower is better) and resolution angles (lower is better). Ap. is the aperture, $\varphi$ is the assigned phase and G is the nulling ratio (higher exponent is better).";
     label = "tab:validation:comparison";
-    filename = '/Users/francesco/Library/CloudStorage/OneDrive-Personale/Università/SEMESTRE 12/TESI/Thesis/main/tables/validation/comparison';
+    filename = 'exports/images/table';
 end
 
 % Empty fields to fill
@@ -68,24 +68,47 @@ for i = 1:length(configurations)
         data.instrument.surfaces, C_i);
 
     IWA(i, 1) = compute_IWA(data.instrument.unique_baselines, data.instrument.wavelength) / (data.instrument.wavelength/data.instrument.baseline);
+    OWA = data.instrument.wavelength / data.instrument.diameter(1);
+    
+    [B_opt(i, 1), AR_opt(i, 1), NR_opt(i, 1:2), IWA_opt(i, 1:2)] = ...
+        plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
+        data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
+        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.4);
 
-    B_opt(i, 1) = find_optimal_baseline_by_B(100, 600, data.instrument.intensities, ...
-        data.instrument.array, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
-        data.environment.stellar_angular_radius, data.instrument.wavelength, false);
+    [B_opt(i, 2), AR_opt(i, 2), NR_opt(i, 3:4), IWA_opt(i, 3:4)] = ...
+        plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
+        data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
+        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.5);
 
-    AR_opt(i, 1) = find_optimal_baseline_by_AR(0.4, 6, data.instrument.intensities, ...
-        data.instrument.array, data.instrument.baseline, data.instrument.phase_shifts, ...
-        data.environment.stellar_angular_radius, data.instrument.wavelength, false);
+    [B_opt(i, 3), AR_opt(i, 3), NR_opt(i, 5:6), IWA_opt(i, 5:6)] = ...
+        plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
+        data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
+        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.6);
+
+    for j = 1:6
+        
+        exotable = get_ppop_yield(IWA_opt(i, j), OWA, NR_opt(i, j), data.instrument.wavelength, "verbose", false, "create_plots", false);
+        sumtable_ideal = extract_statistics_exoplanets(exotable, "Table");
+
+        detections(i, j) = sumtable_ideal.MeanDetections;
+    
+    end
+    
+    % Remove to see sensitivity for each elements!
+    close all;
+
 end
 
 % Convert into a table
 results = table(Normalised_positions_x, Normalised_positions_y, ...
-    Amplitudes, Diameter, Phases, Modulation_efficiency, IWA, FWHM, Ratio, B_opt, AR_opt, RowNames=configurations);
+    Amplitudes, Diameter, Phases, Modulation_efficiency, IWA, FWHM, Ratio, B_opt, AR_opt, NR_opt, IWA_opt, detections, RowNames=configurations);
 
 % save exports/results.mat results;
 
 % Export table on the latex format.
 export_comparison_table(results, names, filename, caption, label)
+export_sensitivity_table(results, names, 'exports/images/sensitable')
+
 
 % For the last array, compute some plot about how the dimensions affect
 % some metrics.

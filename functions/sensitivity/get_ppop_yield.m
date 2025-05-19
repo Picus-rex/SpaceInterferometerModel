@@ -46,6 +46,8 @@ function [T, total_yield_matrix] = get_ppop_yield(IWA, OWA, ratios, lambda, sim_
 %                     - Fix: IWAs was still referenced in plot. 
 %                     - Fix: input validation for less than 5 simulations.
 %                     - Removed some useless printing and improved others.
+%   2025-05-19 -------- 1.5
+%                     - Change in input parsing for plot_ppop_yield.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -145,7 +147,7 @@ end
 
 % PLOT SECTION
 if export_setup.create_plots
-    plot_ppop_yield(T, IWA, OWA, min(rms_ratios), export_setup);
+    plot_ppop_yield(T, IWA, OWA, min(rms_ratios), "embedded", export_setup);
 end
 
 end

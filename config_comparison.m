@@ -70,20 +70,23 @@ for i = 1:length(configurations)
     IWA(i, 1) = compute_IWA(data.instrument.unique_baselines, data.instrument.wavelength) / (data.instrument.wavelength/data.instrument.baseline);
     OWA = data.instrument.wavelength / data.instrument.diameter(1);
     
+    exotable = get_ppop_yield(compute_IWA(data.instrument.unique_baselines, data.instrument.wavelength), OWA, Ratio(i, 1), data.instrument.wavelength, "verbose", false, "create_plots", true);
+    sumtable_ideal = extract_statistics_exoplanets(exotable, "Table");
+
     [B_opt(i, 1), AR_opt(i, 1), NR_opt(i, 1:2), IWA_opt(i, 1:2)] = ...
         plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
         data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
-        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.4);
+        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.4, false);
 
     [B_opt(i, 2), AR_opt(i, 2), NR_opt(i, 3:4), IWA_opt(i, 3:4)] = ...
         plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
         data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
-        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.5);
+        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.5, false);
 
     [B_opt(i, 3), AR_opt(i, 3), NR_opt(i, 5:6), IWA_opt(i, 5:6)] = ...
         plot_array_size_sensitivity(data.instrument.intensities, data.instrument.array, ...
         data.instrument.baseline, data.instrument.apertures_ratio, data.instrument.phase_shifts, ...
-        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.6);
+        data.environment.stellar_angular_radius, data.instrument.wavelength, [], 0.6, false);
 
     for j = 1:6
         
@@ -93,9 +96,6 @@ for i = 1:length(configurations)
         detections(i, j) = sumtable_ideal.MeanDetections;
     
     end
-    
-    % Remove to see sensitivity for each elements!
-    close all;
 
 end
 

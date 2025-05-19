@@ -1,6 +1,6 @@
 function [optimal_B, optimal_AR, optimal_NR, optimal_IWA] = ...
     plot_array_size_sensitivity(intensities, array, baseline, ...
-    apertures_ratio, phase_shifts, theta_star, lambda, export_setup, weight)
+    apertures_ratio, phase_shifts, theta_star, lambda, export_setup, weight, autoplot)
 %PLOT_ARRAY_SIZE_SENSITIVITY Visualise how dimensions affects the resulting
 %metrics of nulling ratio and inner working angle in the detection of the
 %system. 
@@ -19,6 +19,7 @@ function [optimal_B, optimal_AR, optimal_NR, optimal_IWA] = ...
 %   weight[1]           Value ∈ [0, 1] to prioritise the nulling ratio over 
 %                       the IWA. When it's 0.5, both have the same
 %                       importance. (default: 0.5)
+%   autoplot[bool]      Create plots. (default: true)
 %
 % OUTPUTS
 %   optimal_B[1]        Baseline that provides the best metrics in the 
@@ -38,6 +39,8 @@ function [optimal_B, optimal_AR, optimal_NR, optimal_IWA] = ...
 %                     - Removed references to deprecated functions. 
 %                     - Added optimiser and additional point plot.
 %                     - Added outputs of optimisations.
+%   2025-05-16 -------- 1.3
+%                     - Added autoplot input argument. 
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -52,6 +55,7 @@ arguments
     lambda = 1e-5
     export_setup = []
     weight = 0.5
+    autoplot = true
 end
 
 % Define and allocate
@@ -79,29 +83,31 @@ for i = 1:length(Bs)
 
 end
 
-style_colors;
-
-figure; hold on;
-plot(Bs, ratios, "LineWidth", 1.5, "Color", ui_colours(6, :));
-plot(optimal_B, optimal_NR(1), '.', "MarkerSize", 10);
-set(gca, "YScale", "log");
-xlabel("Maximum baseline [m]")
-ylabel("Nulling ratio")
-grid minor;
-if isstruct(export_setup)
-    export_setup.name = glob_name + "_nulling_baseline";
-    export_figures("embedded", export_setup)
-end
-
-figure; hold on;
-plot(Bs, rad2mas(IWAs), "LineWidth", 1.5, "Color", ui_colours(2, :));
-plot(optimal_B, rad2mas(optimal_IWA(1)), '.', "MarkerSize", 10);
-xlabel("Maximum baseline [m]")
-ylabel("Inner working angle [mas]")
-grid minor;
-if isstruct(export_setup)
-    export_setup.name = glob_name + "_iwa_baseline";
-    export_figures("embedded", export_setup)
+if autoplot
+    style_colors;
+    
+    figure; hold on;
+    plot(Bs, ratios, "LineWidth", 1.5, "Color", ui_colours(6, :));
+    plot(optimal_B, optimal_NR(1), '.', "MarkerSize", 10);
+    set(gca, "YScale", "log");
+    xlabel("Maximum baseline [m]")
+    ylabel("Nulling ratio")
+    grid minor;
+    if isstruct(export_setup)
+        export_setup.name = glob_name + "_nulling_baseline";
+        export_figures("embedded", export_setup)
+    end
+    
+    figure; hold on;
+    plot(Bs, rad2mas(IWAs), "LineWidth", 1.5, "Color", ui_colours(2, :));
+    plot(optimal_B, rad2mas(optimal_IWA(1)), '.', "MarkerSize", 10);
+    xlabel("Maximum baseline [m]")
+    ylabel("Inner working angle [mas]")
+    grid minor;
+    if isstruct(export_setup)
+        export_setup.name = glob_name + "_iwa_baseline";
+        export_figures("embedded", export_setup)
+    end
 end
 
 % PART 2: EDIT THE APERTURE RATIO
@@ -121,27 +127,29 @@ for i = 1:length(ARs)
     IWAs(i) = compute_IWA(unique_baselines, lambda);
 end
 
-figure; hold on;
-plot(ARs, ratios, "LineWidth", 1.5, "Color", ui_colours(8, :));
-plot(optimal_AR, optimal_NR(2), '.', "MarkerSize", 10);
-set(gca, "YScale", "log");
-xlabel("Aperture ratio")
-ylabel("Nulling ratio")
-grid minor;
-if isstruct(export_setup)
-    export_setup.name = glob_name + "_nulling_aspectratio";
-    export_figures("embedded", export_setup)
-end
-
-figure; hold on;
-plot(ARs, rad2mas(IWAs), "LineWidth", 1.5, "Color", ui_colours(4, :));
-plot(optimal_AR, rad2mas(optimal_IWA(2)), '.', "MarkerSize", 10);
-xlabel("Aperture ratio")
-ylabel("Inner working angle [mas]")
-grid minor;
-if isstruct(export_setup)
-    export_setup.name = glob_name + "_iwa_aspectratio";
-    export_figures("embedded", export_setup)
+if autoplot
+    figure; hold on;
+    plot(ARs, ratios, "LineWidth", 1.5, "Color", ui_colours(8, :));
+    plot(optimal_AR, optimal_NR(2), '.', "MarkerSize", 10);
+    set(gca, "YScale", "log");
+    xlabel("Aperture ratio")
+    ylabel("Nulling ratio")
+    grid minor;
+    if isstruct(export_setup)
+        export_setup.name = glob_name + "_nulling_aspectratio";
+        export_figures("embedded", export_setup)
+    end
+    
+    figure; hold on;
+    plot(ARs, rad2mas(IWAs), "LineWidth", 1.5, "Color", ui_colours(4, :));
+    plot(optimal_AR, rad2mas(optimal_IWA(2)), '.', "MarkerSize", 10);
+    xlabel("Aperture ratio")
+    ylabel("Inner working angle [mas]")
+    grid minor;
+    if isstruct(export_setup)
+        export_setup.name = glob_name + "_iwa_aspectratio";
+        export_figures("embedded", export_setup)
+    end
 end
 
 end

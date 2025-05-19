@@ -9,7 +9,9 @@ end
 % Define the original colours
 style_colors;
 
-if ~strcmp(scale, "contrast")
+if strcmp(scale, "ui")
+    colours_contrast = ui_colours;
+elseif ~strcmp(scale, "contrast")
     colours_contrast = colours;
 end
 

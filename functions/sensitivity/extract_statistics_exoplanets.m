@@ -12,7 +12,7 @@ function sumtable = extract_statistics_exoplanets(exotable, name)
 %       Stype[Ne x 1]   Type of the host star (like 'F', 'G', 'K', 'M').
 %       yields[Ne x Ns] Number of detected exoplanet for each simulation
 %                       and for each universe of the simulation.
-%       name[string]    Name associated to the current array, used as first
+%   name[string]        Name associated to the current array, used as first
 %                       column in the output sumtable. 
 %
 % OUTPUTS:

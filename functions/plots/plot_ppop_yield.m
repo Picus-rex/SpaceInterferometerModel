@@ -47,6 +47,9 @@ function plot_ppop_yield(exotable, IWA, OWA, ratio, export_setup)
 %                     - Introduced input parsing (and fixed it).
 %                     - Use already defined rad2mas function.
 %                     - New plots for HZ zones.
+%   2025-05-20 -------- 1.4.1
+%                     - Fixed argument parsing in compatibility mode. 
+%                     - Fixed case in which HZ_table is not given
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -67,15 +70,21 @@ end
 
 % Compatibility mode
 if ~isempty(fieldnames(export_setup.embedded))
-    export_setup = export_setup.embedded;
+    % Get the field names of the nested struct, then loop and assing
+    field_names = fieldnames(export_setup.embedded);
+    for i = 1:length(field_names)
+        export_setup.(field_names{i}) = export_setup.embedded.(field_names{i});
+    end
 end
 
 % Filter out types
 idx = ismember(exotable.Stype, export_setup.filter_types);
 alltable = exotable; % Important for plotting purposes when filtered
 exotable = exotable(idx, :);
-idx = ismember(export_setup.HZ_table.Stype, export_setup.filter_types);
-HZ_table = export_setup.HZ_table(idx, :);
+if ~isempty(export_setup.HZ_table)
+    idx = ismember(export_setup.HZ_table.Stype, export_setup.filter_types);
+    HZ_table = export_setup.HZ_table(idx, :);
+end
 
 universes = unique(exotable.Nuniverse);
 Nu = length(universes);
@@ -152,7 +161,7 @@ for i = 1:length(selection)
     ylabel("Flux contrast at observation wavelength")
     grid minor;
     
-    if ~isempty(HZ_table)
+    if ~isempty(export_setup.HZ_table)
 
         % Get the current y-axis limits to restore them later
         ylims = get(gca, 'YLim');

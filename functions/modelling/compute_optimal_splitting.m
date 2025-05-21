@@ -38,6 +38,8 @@ function [U, amplitudes, phases, hs] = compute_optimal_splitting(N, B, ...
 %   2025-03-25 -------- 1.1.1
 %                     - Optimisation of the plotting code.
 %                     - Added colours support.
+%   2025-05-20 -------- 1.1.2
+%                     - Fixed bug in plot visualisation.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -132,7 +134,7 @@ if autoplot
         if export
             hs(end+1) = figure; hold on;
         else
-
+            subplot(3, 2, m);
         end
         % Reshape W_intensity into 2D and extract the middle row
         W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));
@@ -154,7 +156,7 @@ if autoplot
     if export
         hs(end+1) = figure;
     else
-        subplot(3, 2, m);
+        subplot(3, 2, [5, 6]);
     end
     for m = 1:min(4, N)
         W_reshaped = reshape(W_intensity(m, :), length(theta_y), length(theta_x));

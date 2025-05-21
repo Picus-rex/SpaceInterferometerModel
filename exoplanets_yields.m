@@ -22,6 +22,16 @@ exotable = get_ppop_yield(IWA, OWA, ratio, data.instrument.wavelength, "verbose"
 
 sumtable_ideal = extract_statistics_exoplanets(exotable, "Darwin ideal");
 
+startable = extract_stars(exotable, "compute_HZ", true);
+summaryTable = summarise_HZ_by_type(startable);
+
+plot_HZ_limits(startable)
+plot_HZ_limits([], summaryTable)
+
+plot_ppop_yield(exotable, IWA, OWA, ratio, "HZ_table", summaryTable, "plot_heatmap", false)
+plot_ppop_yield(exotable, IWA, OWA, ratio, "HZ_table", summaryTable, "plot_heatmap", false, "filter_types", ["F", "K"], "show_legend", "hide");
+plot_ppop_yield(exotable, IWA, OWA, ratio, "HZ_table", summaryTable, "plot_heatmap", false, "filter_types", ["G", "M"], "show_legend", "hide");
+
 %% Perturbed cases 
 
 Ns = data.simulation.code_v.num_perturbed_simulations;

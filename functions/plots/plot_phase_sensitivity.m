@@ -22,9 +22,15 @@ function h = plot_phase_sensitivity(surfaces, intensities, positions, ...
 %   2025-05-06 -------- 1.0
 %   2025-05-12 -------- 1.1
 %                     - Added export setup options. 
+%   2025-05-20 -------- 1.1.1
+%                     - Fixed error in missing input parsing.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if nargin < 8
+    export_setup = [];
+end
 
 % Number of apertures
 N = length(nominal_phases);
@@ -51,7 +57,7 @@ end
 % Plotting
 style_colors;
 
-figure;
+h = figure;
 plot(phase, eta_mod, "LineWidth", 1.5, "Color", ui_colours(1, :));
 ylabel("Modulation efficiency")
 xlim([0, 360])

@@ -24,7 +24,6 @@ diffMaps = bsxfun(@minus, Maps, Nominal_Map);
 stdMap = std(diffMaps, 0, 3);  % 0 indicates normalization by N-1
 
 figure;
-%contourf(theta_x, theta_y, stdMap, 20, 'LineColor', 'none'); 
 contourf(theta_x*rad2mas, theta_y*rad2mas, stdMap, 20); 
 colormap(darkBlue); colorbar;
 title('Standard Deviation Map of Transmission Variability');
@@ -67,7 +66,7 @@ if Ns > 1
     % FIGURE 5
     % Plot the PC1 scores for each simulation
     figure;
-    plot(score(:,1), 'o', "LineWidth", 1.5, "Color", colours(1, :));
+    plot(score(:,1), 'o', "LineWidth", 1.5, "Color", colours(end, :));
     xlabel('Simulation Number');
     ylabel('PC1 Score');
     title('PC1 Scores Across Simulations');
@@ -104,7 +103,7 @@ pixelDiffs = squeeze(diffMaps(ix, iy, :));  % differences at the selected pixel
 cdfValues = (1:Ns) / Ns;
 
 figure;
-plot(sortedDiffs, cdfValues, 'o-', "LineWidth", 1.5, "Color", colours(1, :));
+plot(sortedDiffs, cdfValues, 'o-', "LineWidth", 1.5, "Color", colours(end, :));
 xlabel('Difference Value at Pixel');
 ylabel('Cumulative Distribution');
 title(['CDF of Differences at Pixel (', num2str(ix), ', ', num2str(iy), ')']);

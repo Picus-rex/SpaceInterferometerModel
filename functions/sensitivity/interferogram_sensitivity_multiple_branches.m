@@ -35,6 +35,8 @@ function [RFs, RFn, R, ratio] = interferogram_sensitivity_multiple_branches(OPD_
 %                     - Inputs improved: now, instead of the file, the
 %                       function requires information that is already
 %                       available in the main script. Order updated.
+%   2025-05-20 -------- 1.1.1
+%                     - Uses default_arguments for parsing.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,10 +48,10 @@ arguments
     positions 
     combination 
     lambda = 1e-5
-    theta = mas2rad(linspace(-700, 700, 1000))
-    maps_to_compute = 1 : floor(length(theta) / 4) : length(theta)
+    theta = default_arguments("theta")
+    maps_to_compute = default_arguments("maps_to_compute")
     simulations = 100
-    stellar_angular_radius = 1.50444523662918e-09
+    stellar_angular_radius = default_arguments("stellar_angular_radius")
 end
 
 % Compute nominal phase

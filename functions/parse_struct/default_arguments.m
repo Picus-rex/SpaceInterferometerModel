@@ -15,7 +15,7 @@ function x = default_arguments(label)
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-theta = mas2rad(linspace(-700, 700, 1000));
+theta = mas2rad(linspace(-300, 300, 1000));
 maps_to_compute = 1 : floor(length(theta) / 3) : length(theta);
 stellar_angular_radius = 1.50444523662918e-09;
 

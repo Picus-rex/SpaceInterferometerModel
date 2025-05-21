@@ -3,7 +3,7 @@ options:
         - "exports/data_linear.mat"
         - "exports/data_xarray.mat"
 
-    skip_chapters: [1, 2, 4, 5]
+    skip_chapters: [1, 2, 3, 5]
 
 
 figures:
@@ -165,25 +165,25 @@ figures:
       width: half
       height: normal
 
-    - type: ppop_yield
-      chapter: 4
-      width: full
-      height: normal
-
-    - type: compensator_effects
-      include:
-        boxplot:
-            width: full
-            height: normal
-        correlation:
-            width: half
-            height: normal
-        map:
-            width: half
-            height: normal
-      chapter: 4
-      width: half
-      height: normal
+    # - type: ppop_yield
+    #   chapter: 4
+    #   width: full
+    #   height: normal
+    #
+    # - type: compensator_effects
+    #   include:
+    #     boxplot:
+    #         width: full
+    #         height: normal
+    #     correlation:
+    #         width: half
+    #         height: normal
+    #     map:
+    #         width: half
+    #         height: normal
+    #   chapter: 4
+    #   width: half
+    #   height: normal
 
 
 

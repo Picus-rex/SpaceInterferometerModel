@@ -1,4 +1,4 @@
-function startable = extract_stars(exotable)
+function startable = extract_stars(exotable, options)
 %EXTRACT_STARS Extracts unique host stars from an exoplanet table.
 %
 % INPUTS:
@@ -13,6 +13,11 @@ function startable = extract_stars(exotable)
 %       Dec[Ne x 1]     Declination of the star [deg]
 %       Nstar[Ne x 1]   Univoque number of the star in the universe.
 %
+% ARGUMENT OPTIONAL INPUTS:
+%   compute_HZ[bool]    If true (default), compute also limits of
+%                       habitable zones (but will remove the incompatible
+%                       stars.
+%
 % OUTPUTS:
 %   startable[table]    Unique stars of the catalogue. With fields:
 %       Nuniverse[Nsx1] Universe associated to that planet.
@@ -25,11 +30,22 @@ function startable = extract_stars(exotable)
 %       RA[Ns x 1]      Right ascension of the star [deg]
 %       Dec[Ns x 1]     Declination of the star [deg]
 %
+% SEE ALSO:
+%   compute_habitable_zone
+%
 % VERSION HISTORY:
 %   2025-05-19 -------- 1.0
+%   2025-05-20 -------- 1.1
+%                     - Integrated computation of habitable zones via an
+%                       input argument.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+arguments
+    exotable 
+    options.compute_HZ = true
+end
 
 % Ensure required variables exist
 requiredVars = {'Nuniverse','Nstar','Ds','Rs','Ts','Ms','Stype','RA','Dec'};
@@ -47,5 +63,9 @@ starKeys = strcat(string(exotable.Nuniverse), '_', string(exotable.Nstar));
 
 % Extract only the first occurrence of each star
 startable = exotable(uniqueIdx, {'Nuniverse','Nstar','Ds','Rs','Ts','Ms','Stype','RA','Dec'});
+
+if options.compute_HZ
+    startable = compute_habitable_zone(startable);
+end
 
 end

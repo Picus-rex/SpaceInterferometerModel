@@ -39,6 +39,8 @@ function [epsilon, coefficients] = ...
 %                     - Corrected an error in the conversion of an element
 %                       that was already a matrix. 
 %                     - Added coefficients as output of the analysis.
+%   2025-05-22 -------- 1.3
+%                     - Removed implementation for LZ and EZ.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,21 +130,16 @@ B_EZ = zeros(N, N);
 dB_dx = zeros(N, N);
 dB_dy = zeros(N, N);
 
+warning("This repository does not include a working computation for EZ and LZ contribution. Please add it here.")
+
 for j = 1:N
     for k = 1:N
         xjk = positions(j,1) - positions(k,1);
         yjk = positions(j,2) - positions(k,2);
         b_jk = sqrt(xjk^2 + yjk^2);
         
-        if j ~= k
-            B_EZ(j,k) = compute_exozodiac_contribution(lambda, diameter, ...
-                target_dist, 1, star_temperature, b_jk, star_radius, throughput);
-        
-        else
-            B_EZ(j,k) = compute_exozodiac_contribution(lambda, diameter, ...
-                target_dist, 1, star_temperature, 60, star_radius, 1);
-        end
-        
+        B_EZ(j,k) = 0;                              % <-- CORRECT HERE!
+
     end
 end
 
@@ -168,7 +165,7 @@ for j = 1:N
 end
 
 deltaN_EZ = deltaN_EZ_1 + deltaN_EZ_2;
-BLZ = compute_local_zodiac_contribution(deg2rad(60), pi, lambda, 1);
+BLZ = 1;                                            % <-- CORRECT HERE!
 
 % Local Zodiacal Contributions
 

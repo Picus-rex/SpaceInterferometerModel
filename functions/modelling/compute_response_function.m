@@ -64,6 +64,8 @@ function [Maps, data] = compute_response_function(data)
 %   2025-04-02 -------- 3.0.1
 %                     - Fixed bug in argument parsing when not using a
 %                       single struct.
+%   2025-05-22 -------- 3.0.2
+%                     - Added warning for deprecated sections.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,6 +199,8 @@ if N_MC > 0
             
             R_MC(:,:,mc) = R_standard;
             R_MC_neg(:,:,mc) = R_negated;
+
+            warning("This part has been deprecated due to the lack of complete models.")
 
             [eps_MC(mc), coefficients] = add_external_sensitivity(instrument, environment);
         end

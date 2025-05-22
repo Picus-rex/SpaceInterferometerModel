@@ -1,71 +1,78 @@
-# Space interferometer modelling
+# Space Interferometer Modelling
 
-This repository contains a series of functions to study the behaviour of a N apertures nulling interferometer for exoplanets detection from a numerical point of view, looking at important metrics (nulling ratio, modulation efficiency, exoplanets yield), including the study of optical perturbations by post-processing outputs from ray-tracing softwares.
+This repository provides a collection of MATLAB functions for numerically studying the behavior of a nulling interferometer with *N* apertures for exoplanet detection. It evaluates key performance metrics such as nulling ratio, modulation efficiency, and exoplanet yield. The library also supports the analysis of optical perturbations through post-processing of outputs from ray-tracing software (e.g., CODE V).
+
+The repository is modular and intended for both performance analysis and simulation-based tolerancing studies. It is structured to support a variety of use cases, from ideal response modelling to perturbed system analysis.
 
 ---
 
-### Getting Started
+## Getting Started
 
-The function library is provided within the `function` folder. They can be called individually or exploited like shown in the main files within the root of the folder. All the main files starts by clearing the workspace and by loading the functions folders, therefore everything works out of the box, provided that the necessary toolboxes are installed.
+All functions are located in the `functions` directory. They can be called individually or used as shown in the example scripts in the root folder. These scripts automatically clear the workspace and add the necessary paths, so they work out of the box, provided that the required MATLAB toolboxes are installed.
 
-> Notice: Certain files require the existance of some folders, therefore when the `file not found` error occurs, the creation of the required folders or the modification of the path should solve the problem. In particular, the `export` folder must be created on the root of the active folder. 
+> ⚠️ Some scripts expect specific folders to exist. If a `File not found` error occurs, create the missing folders or update the script paths accordingly. In particular, the `export` folder must exist in the root directory.
 
-Most of the scripts (whose description is provided below) rely on configuration files, written in YAML. Examples are given within the `config` folder. The documentation folder `docs` contains a document that explains the main elements of a configuration file. Some of them (the ones that concern perturbations), also require external outputs from ray-tracing software (more about them in the [CODE V integration](docs/code_v_structure.md)): outputs from that files are given, as an example, in the `code_v` folder. 
+Most scripts rely on configuration files written in YAML format. Examples are available in the `config` folder. Documentation describing the structure and syntax of the configuration files can be found in the `docs` folder. Some analyses (e.g., those involving perturbations) also require ray-tracing outputs, which are expected to be structured as described in [docs/code_v_structure.md](docs/code_v_structure.md). Sample outputs are provided in the `code_v` folder.
 
+> ⚠️ Some signal modelling functions (e.g., `add_external_sensitivity`) depend on proprietary software and are not included in this repository.
 
-### Description of main files
+---
 
-The complexity associated to each task is here presented in a sequential way, therefore the former files execute simpler tasks with respect to the latters. Each file might include a more detailed explanation for each action. 
+## Main Scripts
 
-##### Response functions
-*Requires:* configuration file.
+The main analysis scripts are organized in increasing complexity. Each script contains inline comments for further clarification.
 
-This file loads a configuration script of a given array and compute various ideal characteristics, including: 
-- The phases optimal splitting following the SVD analysis;
-- The classification of the baselines;
-- The response function, including, if provided in the configuration files, a simulation of possible disturbances;
-- The planet modulation signal over a rotation;
-- Several relations about the OPDs and nulling ratios (refer to the functions);
-- Perform some plots.
+### `response_functions.m`
+- **Requires**: Configuration file
+- **Description**: 
+  - Loads a configuration for a specific interferometer array
+  - Computes ideal system characteristics including:
+    - Optimal phase splitting via SVD
+    - Baseline classification
+    - Response function (optionally with disturbances)
+    - Planet modulation signal over rotation
+    - Relations between OPDs and nulling ratios
+  - Generates several plots for visualization
 
-##### PSF view
-*Requires:* configuration file.
+### `psf_view.m`
+- **Requires**: Configuration file
+- **Description**: Computes the point spread function (PSF) and related imaging properties based on Lay OP. Imaging properties of rotating nulling interferometers (2005). Mainly used for debugging.
 
-This script specifically computes the PSF and some associated properties of a specified array, based on Lay OP. Imaging properties of rotating nulling interferometers (2005). It was mainly used for debug reasons as in the thesis the defined default arrays are considered instead. 
+### `config_comparison.m`
+- **Requires**: Configuration file
+- **Description**: Compares the ideal performance of multiple configurations (e.g., Lay configurations, LIFE, Darwin, TPF-I). Outputs a LaTeX table with the comparison results.
 
-##### Config comparison
-*Requires:* configuration file.
+### `tolerancing_analysis.m`
+- **Requires**: Configuration file and optical data
+- **Description**: Aggregates and analyses optical perturbation data to evaluate their impact on system performance.
 
-This script loads several configurations and computes different ideal performance rates in order to compare different arrays. By default it loads the partial list of Lay's defined configurations with a modified baseline or the most available data on LIFE, Darwin and TPF-I. Eventually, the results are exported in a specified latex table.
+### `exoplanets_yields.m`
+- **Requires**: Configuration file and optical data (optional for partial execution)
+- **Description**: Computes the exoplanet yield for both nominal and perturbed configurations using aggregate performance data.
 
-##### Tolerancing analysis
-*Requires:* configuration file and optical data.
+### `config_comparison_perturbed.m`
+- **Requires**: Configuration file and optical data
+- **Description**: Similar to `config_comparison`, but includes the effects of perturbations. More computationally intensive.
 
-This script analyses the optical data in an aggregate way to compute some figures that study how perturbation affects the system.
+### `interferogram_arms.m`
+- **Requires**: Configuration file and optical data
+- **Description**: Propagates perturbations at the pupil level to evaluate their spatial effects across the interferometer arms.
 
-##### Exoplanets yields
-*Requires:* configuration file and optical data.
+### `generate_figures.m`
+- **Requires**: Configuration file and optical data
+- **Description**: Exports all relevant figures in a predefined format for use in a thesis repository. Optional for general users.
 
-This script computes the exoplanet yield both for the nominal system and the perturbed system (using aggregated data). It can be partially executed with the configuration file alone by stopping early in the computation.
+---
 
-##### Config comparison perturbated
-*Requires:* configuration file and optical data.
+## Function Documentation
 
-It repeats what it has been done in `config_comparison` but including some perturbations (it takes longer to run), presenting some aggregated results.
+All major functions include inline documentation. Run the following command in MATLAB for usage information:
 
-##### Interferogram arms
-*Requires:* configuration file and optical data.
+```matlab
+help function_name
+```
 
-It computes some perturbation effects at the pupil plane, therefore characterising the effects of the interferometer perturbations for every propagated points in the analysis. 
-
-##### Generate figures
-*Requires:* configuration file and optical data.
-
-This scripts exports all the figures accordingly to the specified style for the direct export in the git folder that is synchronised with the thesis repository. This script may not be of interest in the global analysis and can be skipped. 
-
-### Description of functions
-
-Each function (at least those that have a larger impact on the code base) has its own `help`. By running `help function_name`, simple usage and input/output explanation is provided. 
+This includes descriptions of inputs, outputs, and example usage.
 
 ---
 
@@ -78,5 +85,3 @@ This project includes, with their respective licenses, the following elements:
 - Jan Siroky, Energocentrum PLUS, s.r.o.
 - Pavel Tomasko, student at Faculty of Electrical Engineering, CTU Prague and Institute of Chemical Technology, Prague.
 MIT License
-
-Adaptation of some functions for external disturbances provided by C. Dandumont.

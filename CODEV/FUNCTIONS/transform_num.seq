@@ -1,0 +1,16 @@
+!***************************************************************************************
+! Purpose:      Define a macro function transform_num to generate a pseudo-random
+!               integer beteween 1 and 100000
+!
+! Syntax:       in transform_num
+!
+! Usage:        @transf_number
+!
+! Author:       C. Carboni
+!****************************************************************************************
+
+fct @transf_number
+
+^index == maxf(1, roundf(randf*100000))
+
+end fct ^index

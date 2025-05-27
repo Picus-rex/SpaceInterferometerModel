@@ -1,0 +1,54 @@
+!***************************************************************************************
+! Purpose:      Define a macro OP_computation for optical path computation
+!
+! Syntax:       in OP_computation
+!
+! Author:        C. Carboni
+!****************************************************************************************
+
+! Allocate memory for local variables
+lcl num ^opt_path(1000000)
+lcl num ^xdet(1000000)
+lcl num ^ydet(1000000)
+
+! Turn off echo of executing commands
+ver all no
+
+! Add path for data_points49077
+! PTH SEQ
+
+IN data_points49077
+
+
+! Number of elements
+^el == 49077;
+
+! Output format
+^data_string == " 'dddd.ddddddddd' 'dddd.dddddd' 'dddd.dddddd'"
+
+! Loop on decenter
+
+FOR ^iter 1 ^el
+    ^dl_x == ^COORD_X(^iter)
+    ^dl_y == ^COORD_Y(^iter)
+	XDE ss (^dl_x)
+	YDE ss (^dl_y)
+
+	^opt_path(^iter) == (op R1 Ss..i Z1 W1)
+	^xdet(^iter) == (x r1 f1 si)
+	^ydet(^iter) == (y r1 f1 si)
+
+
+	wri U^file Q^data_string ^opt_path(^iter) ^xdet(^iter) ^ydet(^iter)
+
+END FOR
+
+
+XDE ss (0)
+YDE ss (0)
+
+
+
+
+
+

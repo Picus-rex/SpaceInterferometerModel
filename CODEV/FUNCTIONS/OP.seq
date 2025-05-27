@@ -1,0 +1,21 @@
+!***************************************************************************************
+! Purpose:      Define a macro function OP to compute the optical path
+!
+! Syntax:       in op
+!
+! Usage:        @OpticalPath
+!
+! Author:        C. Carboni
+!****************************************************************************************
+
+fct @OpticalPath
+
+lcl num ^opt_path
+
+^opt_path == (op R1 Ss..i Z1 W1)
+
+end fct (^opt_path)
+
+
+
+

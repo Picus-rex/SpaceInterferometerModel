@@ -1,0 +1,91 @@
+!***************************************************************************************
+! Purpose:      Define a macro Opt_comp to immplement the compensator with CODE V
+!               optimisation commands.
+!
+! Syntax:       in Opt_comp
+!
+! Author:        C. Carboni
+!****************************************************************************************
+
+! Turn off echo of executing commands
+ver all no
+
+! Freeze values for every surface
+frz sa
+
+
+! Vary values for s3 surface
+XDC S3 0
+YDC S3 0
+ZDC S3 0
+
+ADC S3 0
+BDC S3 0
+CDC S3 100
+
+! Range of actuators
+^dec == 1e-4
+^tilt == 1e-5
+
+! Afocal
+AFC Y
+
+    ! Perform optimisation (see pages 209, 285 for example reference)
+    out n
+    aut;
+
+    ! - Maximum Center Thickness (MXT)
+    ! – Minimum Center Thickness (MNT)
+    ! – Minimum Edge Thickness (MNE)
+    ! – Minimum Axial Air Space (MNA)
+    ! – Minimum Edge Air Space (MAE)
+
+    MXT 1
+    MNT 0.5
+    MNE 0.3
+    MNA 0.010000
+    MAE 0.000250
+
+
+    XDE S3 > ((XDE S3) - ^dec)
+    XDE S3 < ((XDE S3) + ^dec)
+
+    YDE S3 > ((YDE S3) - ^dec)
+    YDE S3 < ((YDE S3) + ^dec)
+
+    ZDE S3 > ((ZDE S3) - ^dec)
+    ZDE S3 < ((ZDE S3) + ^dec)
+
+    ADE S3 > ((ADE S3) - ^tilt)
+    ADE S3 < ((ADE S3) + ^tilt)
+
+    BDE S3 > ((BDE S3) - ^tilt)
+    BDE S3 < ((BDE S3) + ^tilt)
+
+    CDE S3 > ((CDE S3) - ^tilt)
+    CDE S3 < ((CDE S3) + ^tilt)
+
+    go
+
+
+
+!Accuracy of actuators
+^micro == 1e-4
+^nano == 1e-8
+^pico == 1e-10
+
+^deg == 1e-6
+
+! Modulo of the values
+XDE S3 ((XDE S3) - (modf((XDE S3), ^nano)))
+
+YDE S3 ((YDE S3) - (modf((YDE S3), ^nano)))
+
+ZDE S3 ((ZDE S3) - (modf((ZDE S3), ^nano)))
+
+ADE S3 ((ADE S3) - (modf((ADE S3), ^deg)))
+
+BDE S3 ((BDE S3) - (modf((BDE S3), ^deg)))
+
+CDE S3 ((CDE S3) - (modf((CDE S3), ^deg)))
+

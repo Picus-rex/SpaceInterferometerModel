@@ -1,0 +1,20 @@
+!***************************************************************************************
+! Purpose:      Define a macro startup_comp to run each time CODE V is restarted
+!
+! Syntax:       in startup_comp
+!
+! Author:        C. Carboni
+!****************************************************************************************
+! Allocate memory for global variables
+gbl num ^var(100000)
+
+! Turn off echo of executing commands
+ver all no
+
+! Add path for the following funcitons
+! PTH SEQ
+in transform_num
+in OP
+in Function_zfr_rms
+
+wri "success!!!"

@@ -1,0 +1,128 @@
+!***************************************************************************************
+! Purpose:      Define a macro PERTURBATOR to apply the tolerances to the system
+!
+! Syntax:       in PERTURBATOR
+!
+! Author:        C. Carboni
+!****************************************************************************************
+
+! Turn off echo of executing commands
+ver all no
+
+! Allocate memory for global variables
+gbl num ^file
+gbl num ^OP_target
+gbl num ^OPD_target
+
+! Initialise
+^file == 0
+
+! Add path for normal_distribution
+! PTH SEQ
+in normal_distribution
+
+! OPEN new file to save data of the perturbed configuration
+OPE NEW U^file Perturbations.txt
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Number of iterations
+^el == 50;
+
+! Compute optical path of the nominal configuration
+in NOMINAL_opt
+^OP_target == @OpticalPath
+
+
+! Loop to apply tolerances
+FOR ^iter 1 ^el
+
+    out y
+
+    ^dec2 == 0.5e-4; ! cm
+    ^dec3 == 0.5e-4; ! cm
+    ^dec4 == 0.5e-4; ! cm
+
+    ^tilt2 == 0.5e-4; ! deg
+    ^tilt3 == 0.5e-4; ! deg
+    ^tilt4 == 0.5e-4; ! deg
+
+    !! Thickness
+    THI so (1e20)
+    THI Ss (315)
+    THI S2 (-315 + ^var(@transf_number)*^dec2)
+    THI S3 (350 + ^var(@transf_number)*^dec3)
+    THI S4 (-50 + ^var(@transf_number)*^dec4)
+    THI Si (0)
+
+    !! Y Radius
+    RDY So (1e20)
+    RDY Ss (1e20)
+    RDY S2 (-600 + ^var(@transf_number)*^dec2)
+    RDY S3 (30 + ^var(@transf_number)*^dec3)
+    RDY S4 (1e20)
+    RDY Si (1e20)
+
+    !! X,Y,Z Decenter
+    XDE So (0)
+    XDE Ss (0)
+    XDE S2 (0 + ^var(@transf_number)*^dec2)
+    XDE S3 (0 + ^var(@transf_number)*^dec3)
+    XDE S4 (0 + ^var(@transf_number)*^dec4)
+    XDE Si (0)
+
+    YDE So (0)
+    YDE Ss (0)
+    YDE S2 (0 + ^var(@transf_number)*^dec2)
+    YDE S3 (0 + ^var(@transf_number)*^dec3)
+    YDE S4 (0 + ^var(@transf_number)*^dec4)
+    YDE Si (-50)
+
+    ZDE So (0)
+    ZDE Ss (0)
+    ZDE S2 (0 + ^var(@transf_number)*^dec2)
+    ZDE S3 (0 + ^var(@transf_number)*^dec3)
+    ZDE S4 (0 + ^var(@transf_number)*^dec4)
+    ZDE Si (50)
+
+    !! Alpha, Beta, Gamma Tilt angle
+
+    ADE So (0)
+    ADE Ss (0)
+    ADE S2 (0 + ^var(@transf_number)*^tilt2)
+    ADE S3 (0 + ^var(@transf_number)*^tilt3)
+    ADE S4 (45 + ^var(@transf_number)*^tilt4)
+    ADE Si (90)
+
+    BDE So (0)
+    BDE Ss (0)
+    BDE S2 (0 + ^var(@transf_number)*^tilt2)
+    BDE S3 (0 + ^var(@transf_number)*^tilt3)
+    BDE S4 (0 + ^var(@transf_number)*^tilt4)
+    BDE Si (0)
+
+    CDE So (0)
+    CDE Ss (0)
+    CDE S2 (0 + ^var(@transf_number)*^tilt2)
+    CDE S3 (0 + ^var(@transf_number)*^tilt3)
+    CDE S4 (0 + ^var(@transf_number)*^tilt4)
+    CDE Si (0)
+
+    ^dl_x == ^COORD_X(1)
+    ^dl_y == ^COORD_Y(1)
+    XDE ss (^dl_x)
+    YDE ss (^dl_y)
+
+    ! Apply surface deformation
+    in tolerwfe
+
+    ! Compute OP of the perturbed configuration
+    in macro_op_CLAUDIA_improved
+
+    ! Back to the nominal configuration
+    in NOMINAL_opt
+    in nominalWF
+
+
+END FOR
+
+CLO U^file

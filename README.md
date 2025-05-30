@@ -4,6 +4,8 @@ This repository provides a collection of MATLAB functions for numerically studyi
 
 The repository is modular and intended for both performance analysis and simulation-based tolerancing studies. It is structured to support a variety of use cases, from ideal response modelling to perturbed system analysis.
 
+The CODE V MACRO-PLUS code that has been used is also provided in the `code_v_macros` folder, with its associated [documentation](docs/code_v_macros).
+
 ---
 
 ## Getting Started
@@ -15,6 +17,8 @@ All functions are located in the `functions` directory. They can be called indiv
 Most scripts rely on configuration files written in YAML format. Examples are available in the `config` folder. Documentation describing the structure and syntax of the configuration files can be found in the `docs` folder. Some analyses (e.g., those involving perturbations) also require ray-tracing outputs, which are expected to be structured as described in [docs/code_v_structure.md](docs/code_v_structure.md). Sample outputs are provided in the `code_v` folder.
 
 > ⚠️ Some signal modelling functions (e.g., `add_external_sensitivity`) depend on proprietary software and are not included in this repository.
+
+For the use of CODE V macros, please refer to the specific [documentation](docs/code_v_macros).
 
 ---
 

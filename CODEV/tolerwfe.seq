@@ -1,0 +1,86 @@
+!***************************************************************************************
+! Purpose:      Define a macro tolerwfe to apply surface deformation
+!
+! Syntax:       in tolerwfe
+!
+!****************************************************************************************
+num ^lambda ^sfe_rms ^z(100)
+
+
+^pi == 3.14159265358979
+
+!add Monte-Carlo WFE
+! -------------------
+
+
+^lambda == 633					            !wavelenght at which we consider the WFE fringes (nm)
+^sfe_rms == ^lambda/10 						!WFE RMS (nm)
+!^sfe_rms2 == ^lambda/20
+
+
+
+FOR ^k 1 32							        !random value for coeff betwenn 0 and 1
+	^z(^k) == (RANDF); 
+	!!Astigmatism
+	!IF ^k = 5; ^z(^k) == (RANDF); END IF
+	!IF ^k = 6; ^z(^k) == (RANDF); END IF
+	!!Coma
+	!IF ^k = 7; ^z(^k) == (RANDF); END IF
+	!IF ^k = 8; ^z(^k) == (RANDF); END IF
+	!!Spherical
+	!IF ^k = 9; ^z(^k) == (RANDF); END IF
+	!! trefoil
+	!IF ^k = 10; ^z(^k) == (RANDF); END IF
+	!IF ^k = 11; ^z(^k) == (RANDF); END IF
+END FOR
+
+
+^temp2 == @ZFR_rms(^z)
+FOR ^k 1 32; ^z(^k) == (^z(^k)/SQRTF(^temp2))*^sfe_rms; END FOR	   !scale coeff to fit sfe_rms
+^temp2 == @ZFR_rms(^z)								               !check that we have sfe_rms
+^tempx == (SIGNF(1,2*RANDF-1))						               !compute random scale factor (1 or -1)
+FOR ^k 1 32; ^z(^k) == ^z(^k)/(^lambda); END FOR			       !convert coefficient in wave@cwl
+
+
+out n
+
+
+OPE NEW U^unit int_montecarloA.int
+  WRI U^unit "! Monte Carlo WFE"
+  WRI U^unit "Zernike deformation test"
+  WRI U^unit "ZFR 32 WFR WVL " NUM_TO_STR((^lambda)/1000) "SSZ " NUM_TO_STR(^tempx) !1.0"
+  FOR ^k 1 32
+  	WRI U^unit ^z(^k)
+  END FOR
+CLO U^unit
+
+out y
+
+! Apply zernike on surface
+! Add path of int_montecarloA.int
+INT S2 L'' "C:\Users\f090393\Desktop\CodeV_prove\Updated_macro\int_montecarloA.int";
+INT S3 L'' "C:\Users\f090393\Desktop\CodeV_prove\Updated_macro\int_montecarloA.int";
+INT S4 L'' "C:\Users\f090393\Desktop\CodeV_prove\Updated_macro\int_montecarloA.int";
+!------------------ !end WFE definition
+
+INR S2 L'' 125;
+ISF S2 L'' 1;
+INX S2 L'' 0;
+INY S2 L'' 0;
+IRO S2 L'' 0;
+IMI S2 L'' NO
+
+INR S3 L'' 15;
+ISF S3 L'' 1;
+INX S3 L'' 0;
+INY S3 L'' 0;
+IRO S3 L'' 0;
+IMI S3 L'' NO
+
+INR S4 L'' 8.84;
+ISF S4 L'' 1;
+INX S4 L'' 0;
+INY S4 L'' 0;
+IRO S4 L'' 0;
+IMI S4 L'' NO
+

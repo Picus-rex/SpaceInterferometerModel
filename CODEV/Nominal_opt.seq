@@ -1,0 +1,85 @@
+!***************************************************************************************
+! Purpose:      Define a macro Nominal_opt to restore the nominal configuration without
+!               perturbations
+!
+! Syntax:       in Nominal_opt
+!
+! Author:        C. Carboni
+!****************************************************************************************
+
+!! Surface type
+SUR  So SPH
+SUR  Ss SPH
+SUR  S2 CON
+SUR  S3 CON
+SUR  S4 SPH
+SUR  Si SPH
+
+
+!! Thickness
+THI So (1e20)
+THI Ss (315)
+THI S2 (-315)
+THI S3 (350)
+THI S4 (-50)
+THI Si (0)
+
+!! Y Radius
+RDY So (1e20)
+RDY Ss (1e20)
+RDY S2 (-600)
+RDY S3 (30)
+RDY S4 (1e20)
+RDY Si (1e20)
+
+!! Circular aperture
+CIR S1 125
+CIR S2 125
+CIR S3 15
+CIR S4 8.84
+CIR Si 8
+
+
+!! X,Y,Z Decenter
+XDE So (0)
+XDE Ss (0)
+XDE S2 (0)
+XDE S3 (0)
+XDE S4 (0)
+XDE Si (0)
+
+YDE So (14.5)
+YDE Ss (0)
+YDE S2 (0)
+YDE S3 (0)
+YDE S4 (0)
+YDE Si (-50)
+
+ZDE So (0)
+ZDE Ss (0)
+ZDE S2 (0)
+ZDE S3 (0)
+ZDE S4 (0)
+ZDE Si (50)
+
+!! Alpha, Beta, Gamma Tilt angle
+ADE So (0)
+ADE Ss (0)
+ADE S2 (0)
+ADE S3 (0)
+ADE S4 (45)
+ADE Si (90)
+
+BDE So (0)
+BDE Ss (0)
+BDE S2 (0)
+BDE S3 (0)
+BDE S4 (0)
+BDE Si (0)
+
+CDE So (0)
+CDE Ss (0)
+CDE S2 (0)
+CDE S3 (0)
+CDE S4 (0)
+CDE Si (0)

@@ -1,0 +1,110 @@
+!***************************************************************************************
+! Purpose:      Define a macro Control_loop to immplement the compensator with the
+!               bisection method.
+!
+! Syntax:       in control_loop
+!
+! Author:        C. Carboni
+!****************************************************************************************
+! Turn off echo of executing commands
+ver all no
+
+! user tunables
+^delta1  == 0.01        ! initial step in degrees
+^delta3  == 0.01        ! initial step in degrees
+^delta2  == 0.001       ! initial step in cm
+^delta4  == 0.001       ! initial step in cm
+^tol     == 1e-5        ! stop when step is small
+^maxIter == 1000
+
+! initial
+^step1    == ^delta1
+^step2    == ^delta2
+^step3    == ^delta3
+^step4    == ^delta4
+^dir1     == 1         ! +1 or –1
+^dir2     == 1         ! +1 or –1
+^dir3     == 1         ! +1 or –1
+^dir4     == 1         ! +1 or –1
+^iter     == 0
+
+! get starting OPD
+^ADE0    == (ADE S3)
+^XDE0    == (XDE S3)
+^BDE0    == (BDE S3)
+^YDE0    == (YDE S3)
+
+^OPD0    == @OpticalPath - ^OP_target
+
+UNT
+  ^iter == ^iter + 1
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! alpha
+  ADE S3 ((ADE S3) + ^dir1*^step1)
+  ^OPD1 == @OpticalPath - ^OP_target
+
+  IF (^OPD1 < ^OPD0 AND ^step1 > ^tol)
+    ! success: accept, keep direction
+    ^ADE0 == (ADE S3)
+    ^OPD0 == ^OPD1
+  ELS
+    ! failure: undo, reverse & halve step
+    ADE S3 ((ADE S3) - ^dir1*^step1)
+    ^dir1  == -^dir1
+    ^step1 == ^step1 / 2
+  END IF
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! x
+  XDE S3 ((XDE S3) + ^dir2*^step2)
+  ^OPD1 == @OpticalPath - ^OP_target
+
+  IF (^OPD1 < ^OPD0 AND ^step2 > ^tol)
+    ! success: accept, keep direction
+    ^XDE0 == (XDE S3)
+    ^OPD0 == ^OPD1
+  ELS
+    ! failure: undo, reverse & halve step
+    XDE S3 ((XDE S3) - ^dir2*^step2)
+    ^dir2  == -^dir2
+    ^step2 == ^step2 / 2
+  END IF
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! beta
+  BDE S3 ((BDE S3) + ^dir3*^step3)
+  ^OPD1 == @OpticalPath - ^OP_target
+
+  IF (^OPD1 < ^OPD0 AND ^step3 > ^tol)
+    ! success: accept, keep direction
+    ^BDE0 == (BDE S3)
+    ^OPD0 == ^OPD1
+  ELS
+    ! failure: undo, reverse & halve step
+    BDE S3 ((BDE S3) - ^dir3*^step3)
+    ^dir3  == -^dir3
+    ^step3 == ^step3 / 2
+  END IF
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! y
+  YDE S3 ((YDE S3) + ^dir4*^step4)
+  ^OPD1 == @OpticalPath - ^OP_target
+
+  IF (^OPD1 < ^OPD0 AND ^step4 > ^tol)
+    ! success: accept, keep direction
+    ^YDE0 == (YDE S3)
+    ^OPD0 == ^OPD1
+  ELS
+    ! failure: undo, reverse & halve step
+    YDE S3 ((YDE S3) - ^dir4*^step4)
+    ^dir4  == -^dir4
+    ^step4 == ^step4 / 2
+  END IF
+
+
+END UNT ((^step1 < ^tol AND ^step2 < ^tol AND ^step3 < ^tol AND ^step4 < ^tol) OR ^iter > ^maxIter)
+
+wri 'Iter'
+wri ^iter

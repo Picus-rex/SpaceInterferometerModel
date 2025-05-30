@@ -94,6 +94,7 @@ if autoplot
     ylabel("Nulling ratio")
     grid minor;
     if isstruct(export_setup)
+        glob_name = export_setup.name;
         export_setup.name = glob_name + "_nulling_baseline";
         export_figures("embedded", export_setup)
     end

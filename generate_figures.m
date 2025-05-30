@@ -328,7 +328,7 @@ for i = 1:length(export_data.options.data_files)
                 exp_figures.universes_to_plot = 1;
 
                 plot_ppop_yield(data.simulation.yield.ppop_table, data.instrument.IWA, ...
-                    data.instrument.OWA, min(rms(data.simulation.perturbation.ratio)), exp_figures);
+                    data.instrument.OWA, min(rms(data.simulation.perturbation.ratio)), "embdedded", exp_figures);
 
             case "compensator_effects"
 

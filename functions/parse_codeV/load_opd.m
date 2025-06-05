@@ -36,6 +36,8 @@ function [optical_path, OPD, x_coords, y_coords] = load_opd(filename)
 %                     - Completely rewritten to be significantly faster.
 %   2025-05-12 -------- 1.3
 %                     - Allow split importing for larger files.
+%   2025-06-05 -------- 1.3.1
+%                     - FIX: Error in loading single files.
 %
 % Author: Francesco De Bortoli
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -126,10 +128,10 @@ function lines = read_split_file(filename)
 
     % If no parts were found, read the original file
     if ~has_parts
-        if isfile(basefile)
-            lines = readlines(basefile);
+        if isfile(filename)
+            lines = readlines(filename);
         else
-            error('File "%s" not found.', basefile);
+            error('File "%s" not found.', filename);
         end
     end
 end
